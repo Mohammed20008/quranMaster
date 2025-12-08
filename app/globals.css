@@ -1,0 +1,299 @@
+@import "tailwindcss";
+
+/* Uthmanic Hafs Font for Quran Text */
+@font-face {
+  font-family: 'Uthmanic Hafs';
+  src: url('/fonts/uthmanic_hafs_v22.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Premium Theme: White, Black, Gold */
+  --background: #FFFFFF;
+  --background-secondary: #FAFAFA;
+  --foreground: #000000;
+  --foreground-secondary: #333333;
+  
+  /* Primary Colors - Luxury Gold */
+  --primary: #C69320; /* Deep Gold */
+  --primary-light: #EBCF74; /* Soft Gold */
+  --primary-dark: #926C15; /* Antique Gold */
+  --primary-gradient: linear-gradient(135deg, #C69320 0%, #926C15 100%);
+  
+  /* Accent Colors */
+  --accent-gold: #C69320;
+  --accent-black: #000000;
+  --accent-white: #FFFFFF;
+  
+  /* UI Colors */
+  --border: #E5E5E5;
+  --border-light: #F4F4F4;
+  --card-bg: #FFFFFF;
+  --card-border: rgba(198, 147, 32, 0.2); 
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(198, 147, 32, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  
+  /* Shadows - Soft & Luxurious */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.08); 
+  --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.15);
+  
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-arabic: 'Uthmanic Hafs', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+  --font-arabic-alt: 'Cairo', 'Amiri', sans-serif;
+}
+
+/* Dark theme via system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Dark Theme: Deep Black & Gold */
+    --background: #050505;
+    --background-secondary: #0A0A0A;
+    --foreground: #FFFFFF;
+    --foreground-secondary: #A1A1AA;
+    
+    --primary: #D4AF37; /* Brighter gold for dark mode */
+    --primary-light: #F3E5AB;
+    --primary-dark: #B59410;
+    --primary-gradient: linear-gradient(135deg, #D4AF37 0%, #AA8929 100%);
+    
+    --accent-gold: #D4AF37;
+    
+    --border: #27272A;
+    --border-light: #18181B;
+    --card-bg: #0A0A0A;
+    --card-border: rgba(212, 175, 55, 0.25);
+    
+    --glass-bg: rgba(0, 0, 0, 0.7);
+    --glass-border: rgba(212, 175, 55, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Dark theme via manual toggle */
+[data-theme="dark"] {
+    /* Dark Theme: Deep Black & Gold */
+    --background: #050505;
+    --background-secondary: #0A0A0A;
+    --foreground: #FFFFFF;
+    --foreground-secondary: #A1A1AA;
+    
+    --primary: #D4AF37;
+    --primary-light: #F3E5AB;
+    --primary-dark: #B59410;
+    --primary-gradient: linear-gradient(135deg, #D4AF37 0%, #AA8929 100%);
+    
+    --accent-gold: #D4AF37;
+    
+    --border: #27272A;
+    --border-light: #18181B;
+    --card-bg: #0A0A0A;
+    --card-border: rgba(212, 175, 55, 0.25);
+    
+    --glass-bg: rgba(0, 0, 0, 0.7);
+    --glass-border: rgba(212, 175, 55, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+.arabic-text {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  text-align: right;
+  line-height: 2;
+  font-size: 1.75rem;
+}
+
+.arabic-heading {
+  font-family: var(--font-arabic-alt);
+  font-weight: 700;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Utility Classes */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.gradient-primary {
+  background: var(--primary-gradient);
+}
+
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Transitions */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-colors {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Focus Styles */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--primary);
+  color: white;
+}

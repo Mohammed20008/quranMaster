@@ -1,0 +1,229 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 85vh;
+  background-color: #ffffff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sheet.open {
+  transform: translateY(0);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .sheet {
+    background-color: #1a1a1a;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.header {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: inherit;
+  z-index: 10;
+}
+
+@media (prefers-color-scheme: dark) {
+  .header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+    color: #fff;
+  }
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.closeBtn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .closeBtn {
+    color: #aaa;
+  }
+  .closeBtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.tabs {
+  display: flex;
+  padding: 0 24px;
+  gap: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 16px 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tab {
+    color: #888;
+  }
+}
+
+.tab.active {
+  color: #2ca4ab;
+  font-weight: 600;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #2ca4ab;
+  border-radius: 2px 2px 0 0;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.tafsirText {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.tafsirText.arabic {
+  direction: rtl;
+  font-family: 'Amiri', 'Traditional Arabic', serif;
+  font-size: 1.3rem; 
+  text-align: right;
+}
+
+.tafsirText h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #2ca4ab;
+}
+
+/* Specific styling for internal html content */
+.tafsirText p {
+    margin-bottom: 1rem;
+}
+
+.tafsirText .arabic {
+    font-family: 'Amiri', serif;
+    color: #2ca4ab;
+}
+
+.tafsirText .blue {
+    color: #2c7a7b;
+    font-weight: 600;
+}
+
+.tafsirText .brown {
+    color: #975a16;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tafsirText {
+    color: #e0e0e0;
+  }
+  
+  .tafsirText .blue {
+    color: #81e6d9;
+  }
+
+  .tafsirText .brown {
+     color: #f6ad55;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loading {
+    color: #aaa;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}

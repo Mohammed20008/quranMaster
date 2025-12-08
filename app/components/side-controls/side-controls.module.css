@@ -1,0 +1,128 @@
+.container {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  padding: 16px 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 16px 0 0 16px;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 56px;
+  overflow: hidden;
+}
+
+.container:hover {
+  width: 200px;
+  padding: 16px 20px;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.controlGroup:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.groupTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+  height: 0;
+  margin: 0;
+}
+
+.container:hover .groupTitle {
+  opacity: 1;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.iconBtn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sliderContainer {
+  flex: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 0;
+}
+
+.container:hover .sliderContainer {
+  opacity: 1;
+  width: auto;
+}
+
+.rangeInput {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.speedValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  min-width: 24px;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.container {
+  animation: slideIn 0.5s ease-out;
+}

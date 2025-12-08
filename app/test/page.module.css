@@ -1,0 +1,14 @@
+.main {
+  min-height: 100vh;
+  padding: 20px;
+  padding-left: 92px; /* collapsed menu width + padding */
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding-left: 20px;
+    padding-bottom: 80px; /* Mobile nav space */
+  }
+}

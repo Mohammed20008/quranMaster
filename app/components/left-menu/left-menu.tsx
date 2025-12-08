@@ -1,0 +1,384 @@
+'use client';
+
+import Link from 'next/link';
+import { useState, useMemo } from 'react';
+import { surahs } from '@/data/surah-data';
+import { getVerse } from '@/data/quran-verses';
+import styles from './left-menu.module.css';
+import { useAuth } from '@/app/context/auth-context';
+import { User, Settings, LogOut } from 'lucide-react';
+
+
+interface LeftMenuProps {
+  currentSurah: number;
+  onSurahSelect: (surahNumber: number) => void;
+  bookmarkedVerses?: Set<string>;
+  onToggleBookmark?: (verseId: string) => void;
+}
+
+type MenuSection = 'surahs' | 'bookmarks' | 'progress' | 'settings';
+
+export default function LeftMenu({ 
+  currentSurah, 
+  onSurahSelect, 
+  bookmarkedVerses = new Set(),
+  onToggleBookmark
+}: LeftMenuProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSection, setActiveSection] = useState<MenuSection | null>(null);
+  const { user, openAuthModal, logout } = useAuth();
+
+  // Filter surahs based on search query
+  const filteredSurahs = useMemo(() => {
+    if (!searchQuery) return surahs;
+    
+    const query = searchQuery.toLowerCase();
+    return surahs.filter(surah => 
+      surah.name.includes(searchQuery) ||
+      surah.transliteration.toLowerCase().includes(query) ||
+      surah.translation.toLowerCase().includes(query) ||
+      surah.number.toString().includes(query)
+    );
+  }, [searchQuery]);
+
+  const handleSectionClick = (section: MenuSection) => {
+    setActiveSection(activeSection === section ? null : section);
+  };
+
+  return (
+    <>
+      <div className={styles.primarySidebar}>
+         <div className={styles.primaryLogo}>
+          <div className={styles.primaryLogoIcon}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" opacity="0.3"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div className={styles.primaryNav}>
+           <button 
+            className={`${styles.primaryNavItem} ${activeSection === 'surahs' ? styles.active : ''}`}
+            onClick={() => handleSectionClick('surahs')}
+            title="Surahs"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </button>
+          
+          <button 
+            className={`${styles.primaryNavItem} ${activeSection === 'bookmarks' ? styles.active : ''}`}
+            onClick={() => handleSectionClick('bookmarks')}
+            title="Bookmarks"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            {bookmarkedVerses.size > 0 && (
+              <span className={styles.badge}>{bookmarkedVerses.size}</span>
+            )}
+          </button>
+
+          <button 
+            className={`${styles.primaryNavItem} ${activeSection === 'progress' ? styles.active : ''}`}
+            onClick={() => handleSectionClick('progress')}
+            title="Progress"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 6v6l4 2"></path>
+            </svg>
+          </button>
+
+          <Link 
+            href="/learn"
+            className={styles.primaryNavItem}
+            title="Learn Quran"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+          </Link>
+
+          <button 
+            className={`${styles.primaryNavItem} ${activeSection === 'settings' ? styles.active : ''}`}
+            onClick={() => handleSectionClick('settings')}
+            title="Settings"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-4.24 4.24l-4.24 4.24m15.66-4.24l-4.24-4.24m-4.24-4.24l-4.24-4.24"></path>
+            </svg>
+          </button>
+          
+          <div className={styles.authContainer}>
+            <button 
+              className={styles.authBtn}
+              onClick={() => !user && openAuthModal()}
+              title={user ? "Account" : "Sign In"}
+            >
+              {user ? (
+                user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className={styles.avatar} />
+                ) : (
+                  <div className={styles.authInitials}>{user.name[0]}</div>
+                )
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              )}
+            </button>
+
+            {user && (
+              <div className={styles.userMenu}>
+                <div className={styles.menuHeader}>
+                  <span className={styles.userName}>{user.name}</span>
+                  <span className={styles.userEmail}>{user.email}</span>
+                </div>
+                <Link href="/dashboard" className={styles.menuItem}>
+                  <User size={16} /> Profile
+                </Link>
+                <button className={styles.menuItem}>
+                  <Settings size={16} /> Settings
+                </button>
+                <button 
+                  className={`${styles.menuItem} ${styles.logoutBtn}`}
+                  onClick={logout}
+                >
+                  <LogOut size={16} /> Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.primaryFooter}>
+          <Link 
+            href="/test"
+            className={`${styles.primaryNavItem} ${styles.testModeBtn}`}
+            title="Test Mode"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </Link>
+
+
+        </div>
+      </div>
+
+      <div className={`${styles.secondarySidebar} ${activeSection ? styles.open : ''}`}>
+        {activeSection && (
+          <div className={styles.secondaryContent}>
+            {activeSection === 'surahs' && (
+              <>
+                <div className={styles.secondaryHeader}>
+                  <h2>Surahs</h2>
+                  <p>114 Chapters</p>
+                </div>
+                 <div className={styles.searchBox}>
+                  <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search Surahs..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                  {searchQuery && (
+                    <button 
+                      className={styles.clearBtn}
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                <div className={styles.surahList}>
+                  {filteredSurahs.map((surah) => (
+                    <button
+                      key={surah.number}
+                      className={`${styles.surahItem} ${currentSurah === surah.number ? styles.active : ''}`}
+                      onClick={() => onSurahSelect(surah.number)}
+                    >
+                      <div className={styles.surahNumber}>
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                          <path d="M18 3L23 13L34 13L25 20L29 31L18 24L7 31L11 20L2 13L13 13L18 3Z" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="1"/>
+                          <text x="18" y="22" textAnchor="middle" fontSize="12" fontWeight="600" fill="currentColor">
+                            {surah.number}
+                          </text>
+                        </svg>
+                      </div>
+                      
+                      <div className={styles.surahInfo}>
+                        <div className={styles.surahNames}>
+                          <span className={`${styles.surahNameArabic} arabic-heading`}>{surah.name}</span>
+                          <span className={styles.surahNameEn}>{surah.transliteration}</span>
+                        </div>
+                        <div className={styles.surahMeta}>
+                          <span className={styles.verses}>{surah.totalVerses} verses</span>
+                          <span className={styles.dot}>•</span>
+                          <span className={styles.type}>{surah.revelationType}</span>
+                        </div>
+                      </div>
+
+                      {currentSurah === surah.number && (
+                        <div className={styles.activeIndicator}>
+                          <svg width="6" height="6" viewBox="0 0 6 6">
+                            <circle cx="3" cy="3" r="3" fill="currentColor"/>
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+
+                  {filteredSurahs.length === 0 && (
+                    <div className={styles.noResults}>
+                      <p>No surahs found</p>
+                      <p className={styles.noResultsHint}>Try a different search term</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {activeSection === 'bookmarks' && (
+              <>
+                <div className={styles.secondaryHeader}>
+                  <h2>Bookmarks</h2>
+                  <p>{bookmarkedVerses.size} Saved</p>
+                </div>
+
+                {bookmarkedVerses && bookmarkedVerses.size > 0 ? (
+                  <div className={styles.bookmarksList}>
+                    {Array.from(bookmarkedVerses).map(id => {
+                      const [surahNum, verseNum] = id.split('-').map(Number);
+                      const verse = getVerse(surahNum, verseNum);
+                      const surah = surahs.find(s => s.number === surahNum);
+                      
+                      if (!verse || !surah) return null;
+
+                      return (
+                        <div key={id} className={styles.bookmarkWrapper}>
+                          <button 
+                            className={styles.bookmarkItem}
+                            onClick={() => onSurahSelect(surahNum)}
+                          >
+                            <div className={styles.bookmarkHeader}>
+                              <span className={styles.bookmarkRef}>
+                                {surah.transliteration} {surahNum}:{verseNum}
+                              </span>
+                            </div>
+                            <p className={`arabic-text ${styles.bookmarkText}`}>
+                              {verse.text}
+                            </p>
+                          </button>
+                          <button 
+                            className={styles.deleteBookmarkBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleBookmark?.(id);
+                            }}
+                            aria-label="Remove bookmark"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <h3>No Bookmarks Yet</h3>
+                    <p>Bookmark verses while reading to save them here</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {activeSection === 'progress' && (
+              <>
+                <div className={styles.secondaryHeader}>
+                  <h2>Progress</h2>
+                  <p>Track Your Journey</p>
+                </div>
+                <div className={styles.emptyState}>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                  </svg>
+                  <h3>Track Your Progress</h3>
+                  <p>Your reading progress will appear here</p>
+                </div>
+              </>
+            )}
+
+            {activeSection === 'settings' && (
+              <>
+                <div className={styles.secondaryHeader}>
+                  <h2>Settings</h2>
+                  <p>Customize Your Experience</p>
+                </div>
+                
+                <div className={styles.settingsPanel}>
+                  <div className={styles.settingGroup}>
+                    <label>Theme</label>
+                    <select className={styles.settingSelect}>
+                      <option value="auto">Auto</option>
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.settingGroup}>
+                    <label>Font Size</label>
+                    <select className={styles.settingSelect}>
+                      <option value="small">Small</option>
+                      <option value="medium">Medium</option>
+                      <option value="large">Large</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.settingGroup}>
+                     <label className={styles.checkboxLabel}>
+                      <input type="checkbox" defaultChecked />
+                      <span>Show Transliteration</span>
+                    </label>
+                  </div>
+
+                  <div className={styles.settingGroup}>
+                    <label className={styles.checkboxLabel}>
+                      <input type="checkbox" defaultChecked />
+                      <span>Show Translation</span>
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
