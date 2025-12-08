@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import LeftMenu from './components/left-menu/left-menu';
 import Header, { ViewMode } from './components/header/header';
@@ -8,7 +8,7 @@ import QuranReader from './components/quran-reader/quran-reader';
 import SideControls from './components/side-controls/side-controls';
 import { useUserData } from '@/app/hooks/use-user-data';
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialSurah = parseInt(searchParams.get('surah') || '1');
@@ -193,5 +193,13 @@ export default function Home() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
