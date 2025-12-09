@@ -53,13 +53,17 @@ export default function QuranReader({
   const [qpcData, setQpcData] = useState<Record<string, QPCVerseData>>({});
   const [loadingQPC, setLoadingQPC] = useState(false);
   const [activeMutashabihatVerse, setActiveMutashabihatVerse] = useState<string | null>(null);
+  const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set());
+  const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set());
   
 
 
-  // QPC data loading - load all at once
+  // QPC data loading - load all verse data at once (lightweight)
   useEffect(() => {
     if (fontMode === 'qpc') {
       setLoadingQPC(true);
+      setVisiblePages(new Set());
+      setLoadedPages(new Set());
       
       fetchSurahQPCData(surahNumber).then(data => {
          const map: Record<string, QPCVerseData> = {};
@@ -71,17 +75,26 @@ export default function QuranReader({
          
          setQpcData(map);
          setLoadingQPC(false);
+         
+         // Load first page immediately
+         if (data.length > 0) {
+           const firstPage = data[0]?.page;
+           if (firstPage) {
+             setVisiblePages(new Set([firstPage]));
+           }
+         }
       });
     } else {
       setQpcData({});
+      setVisiblePages(new Set());
+      setLoadedPages(new Set());
     }
   }, [fontMode, surahNumber]);
 
-  // Get all pages from QPC data
-  const activePages = useMemo(() => {
+  // Get unique pages from QPC data (for reference only, not for loading all fonts)
+  const allPages = useMemo(() => {
       const pages = new Set<number>();
       
-      // Include all pages for all verses in the surah
       for (let i = 1; i <= verses.length; i++) {
         const verseId = `${surahNumber}-${i}`;
         const verseData = qpcData[verseId];
@@ -90,10 +103,47 @@ export default function QuranReader({
         }
       }
       
-      const arr = Array.from(pages);
-      console.log('Active Pages:', arr, 'Total Verses:', verses.length);
-      return arr;
-  }, [qpcData, fontMode, verses.length, surahNumber]);
+      return Array.from(pages);
+  }, [qpcData, verses.length, surahNumber]);
+
+  // Use IntersectionObserver to track visible verses and their pages
+  useEffect(() => {
+    if (fontMode !== 'qpc' || Object.keys(qpcData).length === 0) return;
+    
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const verseId = entry.target.id.replace('verse-', '');
+          const verseData = qpcData[verseId];
+          if (verseData?.page) {
+            setVisiblePages(prev => {
+              if (prev.has(verseData.page)) return prev;
+              const newSet = new Set(prev);
+              newSet.add(verseData.page);
+              return newSet;
+            });
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: '200px 0px', // Preload pages 200px before they're visible
+      threshold: 0.1
+    });
+
+    // Observe all verse elements
+    const verseElements = document.querySelectorAll('[id^="verse-"]');
+    verseElements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [fontMode, qpcData]);
+
+  // Only load fonts for visible pages (lazy loading)
+  const activePages = useMemo(() => {
+    return Array.from(visiblePages);
+  }, [visiblePages]);
 
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
@@ -104,34 +154,40 @@ export default function QuranReader({
     }
 
     if (activePages.length === 0) {
-       // No pages to load yet (data loading?)
-       // If data is loading, we wait. If data loaded but no pages (impossible?), we say loaded.
-       // Let's assume false until pages arrive.
        setFontsLoaded(false); 
        return;
     }
 
-    // Check if fonts are ready
-    setFontsLoaded(false);
+    // Only load fonts that haven't been loaded yet
+    const pagesToLoad = activePages.filter(page => !loadedPages.has(page));
+    
+    if (pagesToLoad.length === 0) {
+      setFontsLoaded(true);
+      return;
+    }
+
+    // Load fonts for new pages
     const checkFonts = async () => {
-       const promises = activePages.map(page => {
-           // We must provide the text '16px FontName' to .load()
-           // Note: document.fonts.load() resolves when the font is loaded.
+       const promises = pagesToLoad.map(page => {
            return document.fonts.load(`16px "QPC_Page_${page}"`);
        });
        
        try {
            await Promise.all(promises);
+           setLoadedPages(prev => {
+             const newSet = new Set(prev);
+             pagesToLoad.forEach(p => newSet.add(p));
+             return newSet;
+           });
            setFontsLoaded(true);
        } catch (e) {
            console.error("Font loading error", e);
-           // Fallback to showing text if font fails to load after timeout or error
            setFontsLoaded(true);
        }
     };
 
     checkFonts();
-  }, [activePages, fontMode]);
+  }, [activePages, fontMode, loadedPages]);
 
   const toggleTestMode = () => {
     setIsTestMode(!isTestMode);
@@ -282,7 +338,13 @@ export default function QuranReader({
                         >
                           {fontMode === 'qpc' ? (
                             (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
-                              <span className={styles.skeletonText} style={{ display: 'inline-block', width: '100px', height: '1em', verticalAlign: 'middle' }}></span>
+                              <span className={styles.skeletonText} style={{ 
+                                display: 'inline-block', 
+                                width: `${50 + (verse.verse % 3) * 30}px`, 
+                                height: '1.2em', 
+                                verticalAlign: 'middle',
+                                marginLeft: '4px'
+                              }}></span>
                             ) : (
                               qpcData[verseId].words.map(w => (
                                   <span key={w.id} className={`qpc-word`}>{w.text}{' '}</span>
@@ -403,7 +465,11 @@ export default function QuranReader({
                       {/* Arabic Text */}
                       <div className={styles.arabicText}>
                         {fontMode === 'qpc' && (loadingQPC || !qpcData[verseId] || !fontsLoaded) ? (
-                           <div className={styles.skeletonText} style={{ height: '3rem', width: '80%', margin: '0 0 0 auto' }}></div>
+                           <div className={styles.skeletonVerse}>
+                             <div className={styles.skeletonLine} style={{ width: '95%' }}></div>
+                             <div className={styles.skeletonLine} style={{ width: '80%' }}></div>
+                             <div className={styles.skeletonLine} style={{ width: '70%' }}></div>
+                           </div>
                         ) : (
                           <p 
                             className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"}

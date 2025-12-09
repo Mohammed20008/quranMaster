@@ -1,3 +1,18 @@
+/* Overlay for closing menu */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 998;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
 /* Primary Sidebar - Icon-only vertical navigation */
 .primarySidebar {
   position: fixed;
@@ -189,7 +204,9 @@
   margin-top: 20px;
   border-top: 1px solid var(--border);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .testModeBtn {
@@ -203,6 +220,44 @@
     0 8px 24px rgba(198, 147, 32, 0.4),
     0 0 0 3px var(--background),
     0 0 0 4px rgba(198, 147, 32, 0.3);
+}
+
+.adminBtn {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+}
+
+.adminBtn:hover {
+  transform: translateX(3px) scale(1.05);
+  box-shadow: 
+    0 8px 24px rgba(99, 102, 241, 0.4),
+    0 0 0 3px var(--background),
+    0 0 0 4px rgba(99, 102, 241, 0.3);
+}
+
+.adminBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.adminItem {
+  color: #6366f1 !important;
+}
+
+.adminItem:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+.adminItem svg {
+  color: #6366f1;
 }
 
 /* Secondary Sidebar - Expandable content panel */
@@ -657,8 +712,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .overlay {
+    z-index: 997;
+  }
+
   .primarySidebar {
     width: 60px;
+    padding: 16px 0;
   }
 
   .secondarySidebar {
@@ -669,6 +729,115 @@
   .primaryNavItem {
     width: 44px;
     height: 44px;
+    border-radius: 12px;
+  }
+
+  .primaryNavItem::after {
+    display: none; /* Hide tooltips on mobile */
+  }
+
+  .primaryLogoIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .primaryLogoIcon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .authBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .userMenu {
+    width: 200px;
+    bottom: auto;
+    top: 100%;
+    margin-top: 8px;
+    margin-left: 8px;
+  }
+
+  .primaryFooter {
+    padding: 12px 0 0 0;
+    margin-top: 12px;
+  }
+
+  .searchInput {
+    font-size: 0.9rem;
+    padding: 10px 36px;
+  }
+
+  .surahItem {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .surahNameArabic {
+    font-size: 1rem;
+  }
+
+  .surahNameEn {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .primarySidebar {
+    width: 50px;
+    padding: 12px 0;
+  }
+
+  .secondarySidebar {
+    left: 50px;
+    width: calc(100vw - 50px);
+    max-width: 300px;
+  }
+
+  .primaryNavItem {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .primaryNavItem svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .primaryLogoIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .primaryLogo {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .authBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .searchBox {
+    margin: 12px;
+    padding-bottom: 12px;
+  }
+
+  .searchInput {
+    padding: 8px 32px;
+    font-size: 0.85rem;
+  }
+
+  .secondaryHeader {
+    padding: 20px 16px 12px;
+  }
+
+  .secondaryHeader h2 {
+    font-size: 1.25rem;
   }
 }
 
@@ -779,8 +948,8 @@
   pointer-events: none;
 }
 
-.authContainer:hover .userMenu,
-.userMenu:hover {
+/* Show user menu when visible class is applied */
+.userMenu.visible {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) translateX(0) scale(1);

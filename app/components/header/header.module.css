@@ -212,32 +212,134 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .viewModeBtn span {
+    display: none;
+  }
+  
+  .viewModeBtn {
+    padding: 8px 10px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 12px 16px;
-    flex-wrap: wrap;
+    gap: 12px;
   }
 
-  .surahInfo {
-    order: 1;
-    width: 100%;
+  .surahBadge {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
   }
 
-  .controls {
-    order: 3;
-    flex: 1;
-    justify-content: center;
-  }
-
-  .options {
-    order: 2;
+  .surahNumber {
+    font-size: 1rem;
   }
 
   .surahNames h2 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   .surahMeta {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .surahSelector {
+    padding: 8px 12px;
+  }
+  
+  .currentSurah {
+    font-size: 0.8rem;
+  }
+
+  .navBtn,
+  .iconBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .controls {
+    gap: 8px;
+  }
+
+  .options {
+    gap: 8px;
+  }
+
+  .viewModeToggle {
+    padding: 3px;
+    gap: 4px;
+  }
+
+  .viewModeBtn {
+    padding: 6px 8px;
+  }
+
+  .divider {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  .surahInfo {
+    gap: 10px;
+  }
+
+  .surahBadge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .surahNumber {
+    font-size: 0.9rem;
+  }
+
+  .surahNames h2 {
+    font-size: 0.95rem;
+  }
+
+  .surahMeta {
+    font-size: 0.65rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+
+  .navBtn,
+  .iconBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .navBtn svg,
+  .iconBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .viewModeBtn {
+    padding: 5px 6px;
+  }
+
+  .viewModeBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .surahSelector {
+    padding: 6px 10px;
+  }
+  
+  .currentSurah {
+    font-size: 0.7rem;
   }
 }

@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { surahs } from '@/data/surah-data';
-import { useAuth } from '@/app/context/auth-context';
 import styles from './header.module.css';
+
 
 export type ViewMode = 'verse' | 'page';
 
@@ -19,8 +18,6 @@ interface HeaderProps {
 }
 
 export default function Header({ currentSurah, onPrevSurah, onNextSurah, onThemeToggle, theme, viewMode, onViewModeChange }: HeaderProps) {
-  const router = useRouter();
-  const { isAuthenticated, openAuthModal } = useAuth();
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -138,15 +135,6 @@ export default function Header({ currentSurah, onPrevSurah, onNextSurah, onTheme
             </svg>
           </button>
 
-          {/* Font Size (placeholder) */}
-          <button className={styles.iconBtn} aria-label="Adjust font size" title="Font Size">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="4 7 4 4 20 4 20 7"></polyline>
-              <line x1="9" y1="20" x2="15" y2="20"></line>
-              <line x1="12" y1="4" x2="12" y2="20"></line>
-            </svg>
-          </button>
-
           {/* Theme Toggle */}
           <button 
             className={styles.iconBtn}
@@ -171,22 +159,6 @@ export default function Header({ currentSurah, onPrevSurah, onNextSurah, onTheme
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
               </svg>
             )}
-          </button>
-
-          <div className={styles.divider}></div>
-
-          {/* User Profile */}
-          <button 
-            className={styles.iconBtn}
-            onClick={() => isAuthenticated ? router.push('/dashboard') : openAuthModal()}
-            aria-label={isAuthenticated ? "Go to Dashboard" : "Sign In"}
-            title={isAuthenticated ? "Dashboard" : "Sign In"}
-            style={isAuthenticated ? { color: 'var(--primary)', background: 'var(--primary-light)' } : {}}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
           </button>
         </div>
       </div>

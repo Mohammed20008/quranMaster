@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { surahs } from '@/data/surah-data';
 import { getVerse } from '@/data/quran-verses';
 import styles from './left-menu.module.css';
@@ -24,9 +25,39 @@ export default function LeftMenu({
   bookmarkedVerses = new Set(),
   onToggleBookmark
 }: LeftMenuProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<MenuSection | null>(null);
-  const { user, openAuthModal, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, isAdmin, openAuthModal, logout } = useAuth();
+  const secondarySidebarRef = useRef<HTMLDivElement>(null);
+  const primarySidebarRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      
+      // Check if click is outside both sidebars
+      if (
+        activeSection &&
+        secondarySidebarRef.current &&
+        !secondarySidebarRef.current.contains(target) &&
+        primarySidebarRef.current &&
+        !primarySidebarRef.current.contains(target)
+      ) {
+        setActiveSection(null);
+      }
+      
+      // Close user menu if clicking outside
+      if (showUserMenu) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [activeSection, showUserMenu]);
 
   // Filter surahs based on search query
   const filteredSurahs = useMemo(() => {
@@ -45,9 +76,31 @@ export default function LeftMenu({
     setActiveSection(activeSection === section ? null : section);
   };
 
+  const handleAccountClick = () => {
+    if (user) {
+      // Navigate to dashboard when clicking the account button
+      router.push('/dashboard');
+    } else {
+      openAuthModal();
+    }
+  };
+
+  const handleAccountHover = () => {
+    if (user) {
+      setShowUserMenu(true);
+    }
+  };
+
   return (
     <>
-      <div className={styles.primarySidebar}>
+      {/* Overlay to close menu when clicking outside */}
+      {activeSection && (
+        <div 
+          className={styles.overlay}
+          onClick={() => setActiveSection(null)}
+        />
+      )}
+      <div ref={primarySidebarRef} className={styles.primarySidebar}>
          <div className={styles.primaryLogo}>
           <div className={styles.primaryLogoIcon}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -105,6 +158,20 @@ export default function LeftMenu({
             </svg>
           </Link>
 
+          <Link 
+            href="/articles"
+            className={styles.primaryNavItem}
+            title="Islamic Articles"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </Link>
+
           <button 
             className={`${styles.primaryNavItem} ${activeSection === 'settings' ? styles.active : ''}`}
             onClick={() => handleSectionClick('settings')}
@@ -116,11 +183,15 @@ export default function LeftMenu({
             </svg>
           </button>
           
-          <div className={styles.authContainer}>
+          <div 
+            className={styles.authContainer}
+            onMouseEnter={handleAccountHover}
+            onMouseLeave={() => setShowUserMenu(false)}
+          >
             <button 
-              className={styles.authBtn}
-              onClick={() => !user && openAuthModal()}
-              title={user ? "Account" : "Sign In"}
+              className={`${styles.authBtn} ${user ? styles.loggedIn : ''}`}
+              onClick={handleAccountClick}
+              title={user ? "Go to Dashboard" : "Sign In"}
             >
               {user ? (
                 user.avatar ? (
@@ -136,21 +207,33 @@ export default function LeftMenu({
               )}
             </button>
 
-            {user && (
-              <div className={styles.userMenu}>
+            {user && showUserMenu && (
+              <div className={`${styles.userMenu} ${styles.visible}`}>
                 <div className={styles.menuHeader}>
                   <span className={styles.userName}>{user.name}</span>
                   <span className={styles.userEmail}>{user.email}</span>
+                  {isAdmin && <span className={styles.adminBadge}>Admin</span>}
                 </div>
-                <Link href="/dashboard" className={styles.menuItem}>
+                <Link href="/dashboard" className={styles.menuItem} onClick={() => setShowUserMenu(false)}>
                   <User size={16} /> Profile
                 </Link>
-                <button className={styles.menuItem}>
+                {isAdmin && (
+                  <Link href="/admin" className={`${styles.menuItem} ${styles.adminItem}`} onClick={() => setShowUserMenu(false)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="7" height="7"/>
+                      <rect x="14" y="3" width="7" height="7"/>
+                      <rect x="14" y="14" width="7" height="7"/>
+                      <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    Admin Dashboard
+                  </Link>
+                )}
+                <button className={styles.menuItem} onClick={() => { setActiveSection('settings'); setShowUserMenu(false); }}>
                   <Settings size={16} /> Settings
                 </button>
                 <button 
                   className={`${styles.menuItem} ${styles.logoutBtn}`}
-                  onClick={logout}
+                  onClick={() => { logout(); setShowUserMenu(false); }}
                 >
                   <LogOut size={16} /> Logout
                 </button>
@@ -160,6 +243,20 @@ export default function LeftMenu({
         </div>
 
         <div className={styles.primaryFooter}>
+          {isAdmin && (
+            <Link 
+              href="/admin"
+              className={`${styles.primaryNavItem} ${styles.adminBtn}`}
+              title="Admin Dashboard"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </Link>
+          )}
           <Link 
             href="/test"
             className={`${styles.primaryNavItem} ${styles.testModeBtn}`}
@@ -175,7 +272,7 @@ export default function LeftMenu({
         </div>
       </div>
 
-      <div className={`${styles.secondarySidebar} ${activeSection ? styles.open : ''}`}>
+      <div ref={secondarySidebarRef} className={`${styles.secondarySidebar} ${activeSection ? styles.open : ''}`}>
         {activeSection && (
           <div className={styles.secondaryContent}>
             {activeSection === 'surahs' && (
