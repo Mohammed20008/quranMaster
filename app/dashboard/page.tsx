@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useUserData } from '@/app/hooks/use-user-data';
 import { surahs } from '@/data/surah-data';
 import styles from './dashboard.module.css';
+import Link from 'next/link';
 
 // Decorative Pattern
 const GeometricPattern = () => (
@@ -405,6 +406,35 @@ export default function Dashboard() {
 
           {/* Right Column */}
           <div className={styles.rightColumn}>
+            {/* Resources / Quick Links */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.65 }}
+              className={styles.resourcesCard}
+              style={{ marginBottom: '1.5rem', background: 'var(--card-bg)', borderRadius: '1.5rem', padding: '1.5rem', border: '1px solid var(--border)' }}
+            >
+              <h2 className={styles.settingsTitle} style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 'bold' }}>Resources</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <Link href="/sunnah" style={{ 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  padding: '1rem', background: 'var(--secondary)', borderRadius: '1rem',
+                  textDecoration: 'none', color: 'var(--text)', transition: 'transform 0.2s'
+                }} className="hover:scale-105">
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🕌</div>
+                  <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>Sunnah</span>
+                </Link>
+                <Link href="/learn" style={{ 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  padding: '1rem', background: 'var(--secondary)', borderRadius: '1rem',
+                  textDecoration: 'none', color: 'var(--text)', transition: 'transform 0.2s'
+                }} className="hover:scale-105">
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎓</div>
+                  <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>Learn</span>
+                </Link>
+              </div>
+            </motion.div>
+
             {/* Quick Settings */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
