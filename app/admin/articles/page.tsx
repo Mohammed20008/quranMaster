@@ -3,7 +3,7 @@
 import { useArticles } from '@/app/context/article-context';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import styles from '../../admin.module.css';
+import styles from '../admin.module.css';
 
 export default function ArticlesListPage() {
   const { articles, deleteArticle } = useArticles();
