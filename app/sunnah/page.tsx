@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import styles from './sunnah.module.css';
 
 // Mock Data for Sunnah
 const collections = [
@@ -45,12 +46,12 @@ export default function SunnahPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-text">
+    <div className={`${styles.sunnahContainer} min-h-screen`}>
        {/* Header */}
-       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-20">
+       <header className={`${styles.header} border-b sticky top-0 z-20`}>
          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
            <div className="flex items-center gap-4">
-             <Link href="/" className="hover:text-primary transition-colors">
+             <Link href="/" className={styles.linkHover}>
                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                  <path d="M19 12H5M12 19l-7-7 7-7"/>
                </svg>
@@ -63,9 +64,9 @@ export default function SunnahPage() {
                placeholder="Search collections..."
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
-               className="pl-10 pr-4 py-2 rounded-lg bg-secondary/50 border-none focus:ring-2 focus:ring-primary/50 outline-none w-64"
+               className={`${styles.searchBar} pl-10 pr-4 py-2 rounded-lg outline-none w-64`}
              />
-             <svg className="absolute left-3 top-2.5 text-text-secondary w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+             <svg className={`absolute left-3 top-2.5 w-4 h-4 ${styles.searchIcon}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"/>
                 <path d="M21 21l-4.35-4.35"/>
              </svg>
@@ -78,7 +79,7 @@ export default function SunnahPage() {
            <motion.div 
              initial={{ opacity: 0 }}
              animate={{ opacity: 1 }}
-             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+             className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${styles.collectionGrid}`}
            >
              {filteredCollections.map((collection, i) => (
                <motion.div
@@ -87,22 +88,22 @@ export default function SunnahPage() {
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: i * 0.1 }}
                  onClick={() => setSelectedCollection(collection.id)}
-                 className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/50 cursor-pointer transition-all hover:shadow-lg"
+                 className={`${styles.collectionCard} group p-6 rounded-2xl cursor-pointer transition-all hover:shadow-lg`}
                >
                  <div className="flex justify-between items-start mb-4">
-                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                   <div className={`${styles.collectionIcon} w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform`}>
                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                      </svg>
                    </div>
-                   <span className="text-xs font-mono bg-secondary px-2 py-1 rounded text-text-secondary">
+                   <span className={`${styles.collectionCount} text-xs font-mono px-2 py-1 rounded`}>
                      {collection.count.toLocaleString()}
                    </span>
                  </div>
-                 <h2 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">{collection.name}</h2>
-                 <h3 className="text-lg font-arabic text-text-secondary mb-3">{collection.arabic}</h3>
-                 <p className="text-sm text-text-secondary line-clamp-2">{collection.description}</p>
+                 <h2 className={`${styles.cardTitle} text-xl font-bold mb-1 group-hover:text-primary transition-colors`}>{collection.name}</h2>
+                 <h3 className={`${styles.arabicText} text-lg font-arabic mb-3`}>{collection.arabic}</h3>
+                 <p className={`${styles.descriptionText} text-sm line-clamp-2`}>{collection.description}</p>
                </motion.div>
              ))}
            </motion.div>
@@ -113,7 +114,7 @@ export default function SunnahPage() {
            >
              <button 
                onClick={() => setSelectedCollection(null)}
-               className="mb-6 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors"
+               className={`${styles.backButton} mb-6 flex items-center gap-2 transition-colors`}
              >
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                  <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -121,29 +122,29 @@ export default function SunnahPage() {
                Back to Collections
              </button>
 
-             <div className="bg-primary/5 rounded-2xl p-8 mb-8 text-center">
+             <div className={`${styles.selectedCollectionHeader} rounded-2xl p-8 mb-8 text-center`}>
                <h2 className="text-3xl font-bold mb-2">
                  {collections.find(c => c.id === selectedCollection)?.name}
                </h2>
-               <p className="text-text-secondary">Selected Hadiths</p>
+               <p className={`${styles.descriptionText}`}>Selected Hadiths</p>
              </div>
 
              <div className="space-y-6">
                {sampleHadiths.map((hadith) => (
-                 <div key={hadith.id} className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
+                 <div key={hadith.id} className={`${styles.hadithCard} rounded-xl p-6 hover:shadow-md transition-shadow`}>
                    <div className="flex justify-between items-start mb-4">
                      <div>
-                       <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">{hadith.grade}</span>
-                       <span className="ml-3 text-sm text-text-secondary">Narrated by {hadith.narrator}</span>
+                       <span className={`${styles.hadithGrade} text-xs font-bold px-2 py-1 rounded-full`}>{hadith.grade}</span>
+                       <span className={`ml-3 text-sm ${styles.narratorText}`}>Narrated by {hadith.narrator}</span>
                      </div>
-                     <button className="text-text-secondary hover:text-primary">
+                     <button className={`${styles.bookmarkButton} hover:text-white`}>
                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                        </svg>
                      </button>
                    </div>
                    <p className="text-2xl font-arabic text-right mb-4 leading-loose" dir="rtl">{hadith.arabic}</p>
-                   <p className="text-lg text-text-secondary leading-relaxed">{hadith.english}</p>
+                   <p className="text-lg leading-relaxed">{hadith.english}</p>
                  </div>
                ))}
              </div>

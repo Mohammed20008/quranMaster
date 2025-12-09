@@ -1,0 +1,107 @@
+.sunnahContainer {
+  min-height: 100vh;
+  background-color: #000000; /* Black background */
+  color: #FFD700; /* Gold text */
+}
+
+.header {
+  border-bottom: 1px solid #333333; /* Darker border for contrast */
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black header */
+  backdrop-filter: blur(5px);
+  color: #FFD700; /* Gold text */
+}
+
+.linkHover:hover {
+  color: #FFD700; /* Gold on hover */
+}
+
+.searchBar {
+  background-color: #333333; /* Darker background for search bar */
+  border: none;
+  color: #FFD700; /* Gold text */
+}
+
+.searchBar::placeholder {
+  color: #AAAAAA; /* Lighter grey for placeholder */
+}
+
+.searchIcon {
+  color: #FFD700; /* Gold icon */
+}
+
+.collectionGrid {
+  /* No specific styles needed here, children will be styled */
+}
+
+.collectionCard {
+  background-color: #1a1a1a; /* Dark grey for card background */
+  border: 1px solid #333333;
+  color: #FFD700; /* Gold text */
+}
+
+.collectionCard:hover {
+  border-color: #FFD700; /* Gold border on hover */
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); /* Gold shadow on hover */
+}
+
+.collectionIcon {
+  background-color: rgba(255, 215, 0, 0.1); /* Light gold background for icon */
+  color: #FFD700; /* Gold icon */
+}
+
+.collectionCount {
+  background-color: #333333; /* Darker background for count */
+  color: #FFD700; /* Gold text */
+}
+
+.cardTitle:hover {
+  color: #FFD700; /* Gold title on hover */
+}
+
+.arabicText {
+  color: #FFA500; /* Orange-gold for Arabic text */
+}
+
+.descriptionText {
+  color: #AAAAAA; /* Lighter grey for description */
+}
+
+.backButton {
+  color: #FFD700; /* Gold back button */
+}
+
+.backButton:hover {
+  color: #FFFFFF; /* White on hover */
+}
+
+.selectedCollectionHeader {
+  background-color: rgba(255, 215, 0, 0.1); /* Light gold background */
+  color: #FFD700; /* Gold text */
+}
+
+.hadithCard {
+  background-color: #1a1a1a; /* Dark grey for hadith card */
+  border: 1px solid #333333;
+  color: #FFD700; /* Gold text */
+}
+
+.hadithCard:hover {
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Subtle gold shadow */
+}
+
+.hadithGrade {
+  background-color: rgba(255, 215, 0, 0.2); /* Light gold background for grade */
+  color: #FFD700; /* Gold grade text */
+}
+
+.narratorText {
+  color: #AAAAAA; /* Lighter grey for narrator */
+}
+
+.bookmarkButton {
+  color: #FFD700; /* Gold bookmark button */
+}
+
+.bookmarkButton:hover {
+  color: #FFFFFF; /* White on hover */
+}
