@@ -144,6 +144,19 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--foreground);
 }
 
+/* Global Content Offset for Sidebar */
+main {
+  margin-left: 70px; /* Accounts for desktop sidebar width */
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  main {
+    margin-left: 0;
+    margin-bottom: 60px; /* Accounts for mobile bottom nav */
+  }
+}
+
 .arabic-text {
   font-family: var(--font-arabic);
   direction: rtl;

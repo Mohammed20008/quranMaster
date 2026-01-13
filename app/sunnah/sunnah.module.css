@@ -1,107 +1,446 @@
+/* Container */
 .sunnahContainer {
   min-height: 100vh;
-  background-color: #000000; /* Black background */
-  color: #FFD700; /* Gold text */
+  background: var(--background);
+  color: var(--foreground);
+  position: relative;
+  overflow-x: hidden;
+  padding: 2rem;
 }
 
+.sunnahContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  background: radial-gradient(circle at 50% 0%, rgba(198, 147, 32, 0.15) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sunnahContainer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(var(--card-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.1;
+  z-index: 0;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+}
+
+/* Header */
 .header {
-  border-bottom: 1px solid #333333; /* Darker border for contrast */
-  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black header */
-  backdrop-filter: blur(5px);
-  color: #FFD700; /* Gold text */
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
-.linkHover:hover {
-  color: #FFD700; /* Gold on hover */
+.backLink {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  transition: all 0.3s ease;
 }
 
-.searchBar {
-  background-color: #333333; /* Darker background for search bar */
-  border: none;
-  color: #FFD700; /* Gold text */
+.backLink:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateX(-4px);
 }
 
-.searchBar::placeholder {
-  color: #AAAAAA; /* Lighter grey for placeholder */
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  margin-top: 0.125rem;
+}
+
+/* Search */
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .searchIcon {
-  color: #FFD700; /* Gold icon */
+  position: absolute;
+  left: 1rem;
+  color: var(--foreground-secondary);
+  pointer-events: none;
 }
 
-.collectionGrid {
-  /* No specific styles needed here, children will be styled */
+.searchInput {
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  width: 300px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(198, 147, 32, 0.1);
+}
+
+.searchInput::placeholder {
+  color: var(--foreground-secondary);
+  opacity: 0.6;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.statCard {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.4s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.statIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(198, 147, 32, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.statValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  font-weight: 600;
+}
+
+/* Category Tabs */
+.categoryTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.categoryTab {
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--foreground-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.categoryTab:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.categoryTabActive {
+  background: var(--primary-gradient);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.3);
+}
+
+.categoryTabActive:hover {
+  box-shadow: 0 8px 16px rgba(198, 147, 32, 0.4);
+}
+
+/* Collections Grid */
+.collectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
 }
 
 .collectionCard {
-  background-color: #1a1a1a; /* Dark grey for card background */
-  border: 1px solid #333333;
-  color: #FFD700; /* Gold text */
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .collectionCard:hover {
-  border-color: #FFD700; /* Gold border on hover */
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); /* Gold shadow on hover */
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(198, 147, 32, 0.2);
+  border-color: var(--primary);
+}
+
+.cardGlow {
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 200px;
+  height: 200px;
+  background: var(--primary);
+  opacity: 0;
+  filter: blur(80px);
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.collectionCard:hover .cardGlow {
+  opacity: 0.15;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
 .collectionIcon {
-  background-color: rgba(255, 215, 0, 0.1); /* Light gold background for icon */
-  color: #FFD700; /* Gold icon */
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(198, 147, 32, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.collectionCard:hover .collectionIcon {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1) rotate(5deg);
 }
 
 .collectionCount {
-  background-color: #333333; /* Darker background for count */
-  color: #FFD700; /* Gold text */
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  background: rgba(198, 147, 32, 0.1);
+  border: 1px solid rgba(198, 147, 32, 0.2);
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.cardTitle:hover {
-  color: #FFD700; /* Gold title on hover */
+.collectionTitle {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+  transition: color 0.3s ease;
 }
 
-.arabicText {
-  color: #FFA500; /* Orange-gold for Arabic text */
+.collectionCard:hover .collectionTitle {
+  color: var(--primary);
 }
 
-.descriptionText {
-  color: #AAAAAA; /* Lighter grey for description */
+.collectionArabic {
+  font-family: var(--font-arabic);
+  font-size: 1.125rem;
+  color: var(--foreground-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.8;
 }
 
-.backButton {
-  color: #FFD700; /* Gold back button */
+.collectionAuthor {
+  font-size: 0.875rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
 
-.backButton:hover {
-  color: #FFFFFF; /* White on hover */
+.collectionDescription {
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.selectedCollectionHeader {
-  background-color: rgba(255, 215, 0, 0.1); /* Light gold background */
-  color: #FFD700; /* Gold text */
+.collectionFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
 }
 
-.hadithCard {
-  background-color: #1a1a1a; /* Dark grey for hadith card */
-  border: 1px solid #333333;
-  color: #FFD700; /* Gold text */
+.collectionCard:hover .collectionFooter {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.hadithCard:hover {
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Subtle gold shadow */
+/* Loading & Empty States */
+.loadingState,
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--foreground-secondary);
 }
 
-.hadithGrade {
-  background-color: rgba(255, 215, 0, 0.2); /* Light gold background for grade */
-  color: #FFD700; /* Gold grade text */
+.loadingSpinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
 }
 
-.narratorText {
-  color: #AAAAAA; /* Lighter grey for narrator */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.bookmarkButton {
-  color: #FFD700; /* Gold bookmark button */
+.emptyState svg {
+  margin: 0 auto 1.5rem;
+  color: var(--foreground-secondary);
+  opacity: 0.5;
 }
 
-.bookmarkButton:hover {
-  color: #FFFFFF; /* White on hover */
+.emptyState p {
+  font-size: 1.125rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .collectionsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .searchInput {
+    width: 200px;
+  }
+
+  .pageTitle {
+    font-size: 1.25rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .collectionsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .collectionCard {
+    padding: 1.5rem;
+  }
+
+  .categoryTabs {
+    gap: 0.5rem;
+  }
+
+  .categoryTab {
+    font-size: 0.8125rem;
+    padding: 0.625rem 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    position: relative;
+  }
+
+  .searchContainer {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
 }

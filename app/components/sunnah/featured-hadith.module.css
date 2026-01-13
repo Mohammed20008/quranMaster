@@ -1,0 +1,166 @@
+.featuredContainer {
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 10;
+}
+
+.featuredCard {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid transparent;
+  border-radius: 2rem;
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  transition: all 0.4s ease;
+  background-clip: padding-box;
+}
+
+/* Shimmer Border Effect */
+.featuredCard::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--card-border), var(--primary), var(--card-border));
+  z-index: -1;
+  border-radius: 2rem;
+  background-size: 200% 200%;
+  animation: borderShimmer 4s ease infinite;
+  opacity: 0.5;
+}
+
+@keyframes borderShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.featuredCard:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 30px 60px rgba(198, 147, 32, 0.25);
+}
+
+.cornerDecor {
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  opacity: 0.08;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, rgba(198, 147, 32, 0.1), rgba(198, 147, 32, 0.2));
+  border: 1px solid rgba(198, 147, 32, 0.4);
+  border-radius: 50px;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.15);
+}
+
+.arabicText {
+  font-family: var(--font-arabic);
+  font-size: 2.25rem;
+  line-height: 2.5;
+  color: var(--foreground);
+  margin-bottom: 2rem;
+  text-align: right;
+  direction: rtl;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.englishText {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--foreground-secondary);
+  margin-bottom: 1.5rem;
+  font-style: italic;
+  max-width: 90%;
+}
+
+.narrator {
+  font-size: 1rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.reference {
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(198, 147, 32, 0.1);
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+}
+
+.actionBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.actionBtn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-4px) rotate(5deg);
+  box-shadow: 0 8px 20px rgba(198, 147, 32, 0.4);
+}
+
+.actionBtn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .featuredCard {
+    padding: 2rem;
+  }
+  
+  .arabicText {
+    font-size: 1.75rem;
+    line-height: 2.2;
+  }
+  
+  .englishText {
+    font-size: 1.125rem;
+    max-width: 100%;
+  }
+  
+  .actions {
+    justify-content: center;
+  }
+}

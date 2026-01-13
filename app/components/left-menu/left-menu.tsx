@@ -17,7 +17,36 @@ interface LeftMenuProps {
   onToggleBookmark?: (verseId: string) => void;
 }
 
-type MenuSection = 'surahs' | 'bookmarks' | 'progress' | 'settings';
+type MenuSection = 'search' | 'surahs' | 'bookmarks' | 'progress' | 'settings';
+
+// Helper function to normalize Arabic text (remove diacritics)
+function normalizeArabic(text: string): string {
+  return text
+    .replace(/[\u064B-\u0652\u0670]/g, '') // Remove Arabic diacritics
+    .replace(/[\u0653-\u065F]/g, '') // Remove additional marks
+    .trim();
+}
+
+interface QuranSearchResult {
+  type: 'quran';
+  surahNum: number;
+  verseNum: number;
+  arabicText: string;
+  englishText: string;
+  key: string;
+}
+
+interface HadithSearchResult {
+  type: 'hadith';
+  bookName: string;
+  hadithId: number;
+  idInBook: number;
+  arabicText: string;
+  englishNarrator: string;
+  englishText: string;
+}
+
+type SearchResult = QuranSearchResult | HadithSearchResult;
 
 export default function LeftMenu({ 
   currentSurah, 
@@ -32,6 +61,12 @@ export default function LeftMenu({
   const { user, isAdmin, openAuthModal, logout } = useAuth();
   const secondarySidebarRef = useRef<HTMLDivElement>(null);
   const primarySidebarRef = useRef<HTMLDivElement>(null);
+  
+  // Search state
+  const [activeSearchTab, setActiveSearchTab] = useState<'quran' | 'hadith'>('quran');
+  const [advancedSearchQuery, setAdvancedSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -58,6 +93,143 @@ export default function LeftMenu({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [activeSection, showUserMenu]);
+
+  // Search Quran
+  useEffect(() => {
+    if (activeSearchTab !== 'quran' || !advancedSearchQuery || advancedSearchQuery.length < 2) {
+      if (activeSearchTab === 'quran') setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const [quranData, translationData] = await Promise.all([
+          import('@/data/quran.json').then(m => m.default),
+          import('@/data/translation/en-maarif-ul-quran-simple.json').then(m => m.default),
+        ]);
+
+        const quranResults: QuranSearchResult[] = [];
+        const queryLower = advancedSearchQuery.toLowerCase();
+        let matchCount = 0;
+
+        // Search both Arabic and English
+        for (const [surahKey, verses] of Object.entries(quranData)) {
+          if (matchCount >= 50) break;
+          for (const verse of verses as Array<{ chapter: number; verse: number; text: string }>) {
+            if (matchCount >= 50) break;
+            const key = `${verse.chapter}:${verse.verse}`;
+            const translationEntry = (translationData as Record<string, { t: string }>)[key];
+            const englishText = translationEntry?.t || '';
+            
+            // Normalize Arabic text for better matching
+            const normalizedVerseText = normalizeArabic(verse.text);
+            const normalizedQuery = normalizeArabic(advancedSearchQuery);
+            
+            // Check Arabic (normalized) OR English (case-insensitive)
+            if (normalizedVerseText.includes(normalizedQuery) || englishText.toLowerCase().includes(queryLower)) {
+              quranResults.push({
+                type: 'quran',
+                surahNum: verse.chapter,
+                verseNum: verse.verse,
+                arabicText: verse.text,
+                englishText,
+                key,
+              });
+              matchCount++;
+            }
+          }
+        }
+
+        setSearchResults(quranResults);
+      } catch (error) {
+        console.error('Quran search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [advancedSearchQuery, activeSearchTab]);
+
+  // Search Hadith
+  useEffect(() => {
+    if (activeSearchTab !== 'hadith' || !advancedSearchQuery || advancedSearchQuery.length < 2) {
+      if (activeSearchTab === 'hadith') setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const hadithBooks = [
+          { file: 'bukhari', nameEn: 'Sahih al-Bukhari' },
+          { file: 'muslim', nameEn: 'Sahih Muslim' },
+          { file: 'abudawud', nameEn: 'Sunan Abu Dawud' },
+          { file: 'tirmidhi', nameEn: "Jami` at-Tirmidhi" },
+          { file: 'nasai', nameEn: "Sunan an-Nasa'i" },
+          { file: 'ibnmajah', nameEn: 'Sunan Ibn Majah' },
+          { file: 'malik', nameEn: 'Muwatta Malik' },
+          { file: 'ahmed', nameEn: 'Musnad Ahmad' },
+          { file: 'darimi', nameEn: 'Sunan ad-Darimi' },
+        ];
+
+        const hadithResults: HadithSearchResult[] = [];
+        const queryLower = advancedSearchQuery.toLowerCase();
+        let matchCount = 0;
+
+        for (const book of hadithBooks) {
+          if (matchCount >= 50) break;
+
+          try {
+            const bookData = await import(`@/data/sunnah/by_book/the_9_books/${book.file}.json`).then(m => m.default);
+            const hadiths = bookData.hadiths as Array<{
+              id: number;
+              idInBook: number;
+              arabic: string;
+              english: { narrator: string; text: string };
+            }>;
+
+            for (const hadith of hadiths) {
+              if (matchCount >= 50) break;
+
+              // Normalize Arabic text for better matching
+              const normalizedHadithText = normalizeArabic(hadith.arabic);
+              const normalizedQuery = normalizeArabic(advancedSearchQuery);
+              
+              const matchesArabic = normalizedHadithText.includes(normalizedQuery);
+              const matchesEnglish = 
+                hadith.english.narrator.toLowerCase().includes(queryLower) ||
+                hadith.english.text.toLowerCase().includes(queryLower);
+
+              if (matchesArabic || matchesEnglish) {
+                hadithResults.push({
+                  type: 'hadith',
+                  bookName: book.nameEn,
+                  hadithId: hadith.id,
+                  idInBook: hadith.idInBook,
+                  arabicText: hadith.arabic,
+                  englishNarrator: hadith.english.narrator,
+                  englishText: hadith.english.text,
+                });
+                matchCount++;
+              }
+            }
+          } catch (error) {
+            console.error(`Error searching ${book.file}:`, error);
+          }
+        }
+
+        setSearchResults(hadithResults);
+      } catch (error) {
+        console.error('Hadith search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [advancedSearchQuery, activeSearchTab]);
 
   // Filter surahs based on search query
   const filteredSurahs = useMemo(() => {
@@ -112,6 +284,17 @@ export default function LeftMenu({
         </div>
 
         <div className={styles.primaryNav}>
+           <button 
+            className={`${styles.primaryNavItem} ${activeSection === 'search' ? styles.active : ''}`}
+            onClick={() => handleSectionClick('search')}
+            title="Advanced Search"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+
            <button 
             className={`${styles.primaryNavItem} ${activeSection === 'surahs' ? styles.active : ''}`}
             onClick={() => handleSectionClick('surahs')}
@@ -275,6 +458,121 @@ export default function LeftMenu({
       <div ref={secondarySidebarRef} className={`${styles.secondarySidebar} ${activeSection ? styles.open : ''}`}>
         {activeSection && (
           <div className={styles.secondaryContent}>
+            {activeSection === 'search' && (
+              <>
+                <div className={styles.secondaryHeader}>
+                  <h2>Advanced Search</h2>
+                  <p>Search Quran & Hadith</p>
+                </div>
+                
+                <div className={styles.searchTabs}>
+                  <button
+                    className={`${styles.searchTab} ${activeSearchTab === 'quran' ? styles.active : ''}`}
+                    onClick={() => {
+                      setActiveSearchTab('quran');
+                      setSearchResults([]);
+                    }}
+                  >
+                    Quran
+                  </button>
+                  <button
+                    className={`${styles.searchTab} ${activeSearchTab === 'hadith' ? styles.active : ''}`}
+                    onClick={() => {
+                      setActiveSearchTab('hadith');
+                      setSearchResults([]);
+                    }}
+                  >
+                    Hadith
+                  </button>
+                </div>
+
+                <div className={styles.searchBox}>
+                  <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder={activeSearchTab === 'quran' ? 'Search verses in Arabic or English...' : 'Search hadiths in Arabic or English...'}
+                    value={advancedSearchQuery}
+                    onChange={(e) => setAdvancedSearchQuery(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                  {advancedSearchQuery && (
+                    <button 
+                      className={styles.clearBtn}
+                      onClick={() => setAdvancedSearchQuery('')}
+                      aria-label="Clear search"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                <div className={styles.searchPanelContent}>
+                  {isSearching ? (
+                    <div className={styles.searchResultsPlaceholder}>
+                      <div className={styles.loadingSpinner}></div>
+                      <p>Searching...</p>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className={styles.searchResultsList}>
+                      {searchResults.map((result, index) =>
+                        result.type === 'quran' ? (
+                          <div
+                            key={`${result.key}-${index}`}
+                            className={styles.searchResultItem}
+                            onClick={() => {
+                              onSurahSelect(result.surahNum);
+                              setTimeout(() => {
+                                const verseElement = document.getElementById(`verse-${result.surahNum}-${result.verseNum}`);
+                                if (verseElement) verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              }, 500);
+                              if (window.innerWidth < 768) setActiveSection(null);
+                            }}
+                          >
+                            <div className={styles.searchResultRef}>
+                              {surahs[result.surahNum - 1]?.transliteration} {result.key}
+                            </div>
+                            <p className={`${styles.searchResultText} ${styles.searchResultArabic} arabic-text`}>
+                              {result.arabicText}
+                            </p>
+                            {result.englishText && (
+                              <p className={styles.searchResultText}>{result.englishText}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <div key={`hadith-${result.hadithId}-${index}`} className={styles.searchResultItem}>
+                            <div className={styles.searchResultRef}>
+                              {result.bookName} #{result.idInBook}
+                            </div>
+                            <p className={`${styles.searchResultText} ${styles.searchResultArabic} arabic-text`}>
+                              {result.arabicText}
+                            </p>
+                            <div className={styles.hadithEnglish}>
+                              <p className={styles.narrator}>{result.englishNarrator}</p>
+                              <p className={styles.searchResultText}>{result.englishText}</p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : advancedSearchQuery.length >= 2 ? (
+                    <div className={styles.searchResultsPlaceholder}>
+                      <p>No results found</p>
+                    </div>
+                  ) : (
+                    <div className={styles.searchResultsPlaceholder}>
+                      <p>Type at least 2 characters to search</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             {activeSection === 'surahs' && (
               <>
                 <div className={styles.secondaryHeader}>

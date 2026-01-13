@@ -596,6 +596,51 @@
   letter-spacing: 3px;
 }
 
+
+/* Skeleton Loader for Arabic Text */
+.skeletonVerse {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-end; /* RTL mostly */
+  justify-content: center;
+  padding: 24px 0 20px 0;
+  margin-bottom: 20px;
+}
+
+.skeletonLine {
+  height: 32px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonLine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(198, 147, 32, 0.1) 20%, /* Gold tint */
+    rgba(198, 147, 32, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Page View Verse Actions Popup */
 .pageVerse {
   position: relative;
