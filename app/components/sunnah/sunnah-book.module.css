@@ -1,18 +1,20 @@
-/* Container & Layout */
+/* Main Container */
 .container {
   min-height: 100vh;
-  background: var(--background);
+  background: var(--bg-primary);
   color: var(--foreground);
   position: relative;
+  width: 100%;
 }
 
 .backgroundPattern {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 600px;
-  background: radial-gradient(circle at 50% 0%, rgba(198, 147, 32, 0.15) 0%, transparent 70%);
+  height: 100%;
+  background-image: var(--pattern-url, none);
+  opacity: 0.03;
   pointer-events: none;
   z-index: 0;
 }
@@ -22,85 +24,77 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  height: 70px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='dark'] .navbar {
-  background: rgba(10, 10, 10, 0.8);
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: rgba(10, 10, 10, 0.85);
 }
 
 .navContent {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem 1.5rem;
+  padding: 0 20px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
 }
 
 .navLeft, .navRight {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 16px;
 }
 
-/* Navigation Buttons */
 .navBtn {
-  width: 44px;
-  height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
+  color: var(--foreground-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--foreground);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
 }
 
-.navBtn:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.2);
+.navBtn:hover, .navBtnActive {
+  background: var(--bg-hover);
+  color: var(--primary);
+  transform: translateY(-1px);
 }
 
-.navBtnActive {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-/* Book Title Area */
 .bookInfo {
+  margin-left: 16px;
   display: flex;
   flex-direction: column;
 }
 
 .bookTitle {
-  font-size: 1.125rem;
+  font-size: 1.4rem;
   font-weight: 700;
+  margin: 0;
   line-height: 1.2;
 }
 
 .bookSubtitle {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--foreground-secondary);
-  font-family: var(--font-arabic);
+  font-weight: 500;
 }
 
 /* Chapter Dropdown */
 .chapterDropdown {
   position: relative;
+  z-index: 50;
 }
 
 .dropdownTrigger {
@@ -108,114 +102,241 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--card-bg);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 240px;
+  transition: all 0.2s;
+  min-width: 200px;
 }
 
 .dropdownTrigger:hover {
   border-color: var(--primary);
-  background: var(--bg-secondary);
+  background: var(--bg-hover);
 }
 
 .currentChapter {
   flex: 1;
-  text-align: left;
-  font-size: 0.95rem;
-  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: right;
+  direction: rtl;
 }
 
 .dropdownMenu {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  width: 320px;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 350px;
   max-height: 400px;
-  overflow-y: auto;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   padding: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 200;
-  transform-origin: top left;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .chapterSearch {
+  padding: 8px;
   position: sticky;
   top: 0;
   background: var(--card-bg);
-  padding: 8px;
-  margin-bottom: 8px;
   z-index: 10;
   border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
 }
 
 .chapterSearchInput {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg-secondary);
   color: var(--foreground);
-  font-size: 0.9rem;
 }
 
 .dropdownItem {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  padding: 10px 12px;
+  padding: 12px 16px;
   border: none;
   background: transparent;
-  color: var(--foreground);
+  width: 100%;
+  text-align: right; /* Default for Arabic */
   cursor: pointer;
   border-radius: 8px;
-  transition: all 0.2s;
-  text-align: left;
+  transition: all 0.15s;
+  color: var(--foreground);
+  gap: 4px;
 }
 
 .dropdownItem:hover {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: var(--bg-hover);
 }
 
 .dropdownItemActive {
-  background: var(--primary);
-  color: white;
-}
-
-.dropdownItemActive:hover {
-  background: var(--primary);
-  color: white;
+  background: rgba(198, 147, 32, 0.1); /* Primary color low opacity */
+  color: var(--primary);
 }
 
 .dropdownItemEn {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 1.1rem;
 }
 
 .dropdownItemAr {
   font-size: 0.85rem;
-  font-family: var(--font-arabic);
-  opacity: 0.8;
+  color: var(--foreground-secondary);
+  direction: ltr;
+  text-align: left;
 }
 
-/* Search Panel Overlay */
+/* Main Content */
+.mainContent {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.chapterHeader {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 40px;
+  background: var(--card-bg);
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.chapterTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--primary);
+  line-height: 1.4;
+}
+
+.chapterArabic {
+  font-size: 1.2rem;
+  color: var(--foreground-secondary);
+}
+
+/* Hadith Card */
+.hadithCard {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.hadithCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.hadithMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hadithBadges {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.hadithNum {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--foreground-secondary);
+  background: var(--bg-secondary);
+  padding: 6px 12px;
+  border-radius: 50px;
+}
+
+.hadithGrade {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #27ae60;
+  background: rgba(39, 174, 96, 0.1);
+  padding: 6px 12px;
+  border-radius: 50px;
+}
+
+.hadithActions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--foreground-secondary);
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+
+.arabicText {
+  font-family: var(--font-arabic);
+  font-size: 1.8rem;
+  line-height: 2.2;
+  text-align: right;
+  direction: rtl;
+  margin-bottom: 24px;
+  color: var(--foreground);
+}
+
+.englishText {
+  font-family: var(--font-english);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--foreground);
+  opacity: 0.9;
+}
+
+.narrator {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+/* Search Overlay */
 .searchOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0,0,0,0.5);
   backdrop-filter: blur(4px);
-  z-index: 150;
+  z-index: 200;
   display: flex;
   justify-content: flex-end;
 }
@@ -223,75 +344,55 @@
 .searchPanel {
   width: 100%;
   max-width: 500px;
-  background: var(--card-bg);
   height: 100%;
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+  background: var(--card-bg);
+  box-shadow: -10px 0 40px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
 }
 
 .searchHeader {
   padding: 20px;
-  border-bottom: 1px solid var(--border);
   display: flex;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
   align-items: center;
-  gap: 12px;
 }
 
 .searchInputWrapper {
   flex: 1;
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.panelSearchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--foreground-secondary);
+  pointer-events: none;
 }
 
 .panelSearchInput {
   width: 100%;
-  padding: 12px 40px 12px 44px;
-  border-radius: 12px;
+  padding: 12px 12px 12px 40px;
   border: 1px solid var(--border);
+  border-radius: 12px;
   background: var(--bg-secondary);
-  font-size: 1rem;
   color: var(--foreground);
-  transition: all 0.2s;
+  font-size: 1rem;
 }
 
 .panelSearchInput:focus {
   outline: none;
   border-color: var(--primary);
-  background: var(--card-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.panelSearchIcon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--foreground-secondary);
 }
 
 .closeSearchBtn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: none;
   background: transparent;
-  color: var(--foreground-secondary);
+  border: none;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.closeSearchBtn:hover {
-  background: var(--bg-secondary);
-  color: var(--foreground);
+  color: var(--foreground-secondary);
 }
 
 .searchResults {
@@ -301,183 +402,35 @@
 }
 
 .searchResultCard {
-  background: var(--bg-secondary);
-  border-radius: 12px;
   padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   margin-bottom: 12px;
   cursor: pointer;
-  border: 1px solid transparent;
   transition: all 0.2s;
 }
 
 .searchResultCard:hover {
-  border-color: var(--primary);
-  background: var(--card-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-/* Main Content */
-.mainContent {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  position: relative;
-  z-index: 1;
-}
-
-.chapterHeader {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.chapterTitle {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.chapterArabic {
-  font-family: var(--font-arabic);
-  font-size: 1.5rem;
-  color: var(--foreground-secondary);
-}
-
-/* Hadith Card */
-.hadithCard {
-  background: var(--card-bg); /* Use solid color initially, glass effect handled by opacity usually */
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-[data-theme='dark'] .hadithCard {
-  background: rgba(30, 30, 30, 0.6);
-}
-
-.hadithCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  background: var(--bg-hover);
   border-color: var(--primary);
 }
 
-.hadithMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.hadithBadges {
-  display: flex;
-  gap: 8px;
-}
-
-.hadithNum {
-  font-family: monospace;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--primary);
-  background: rgba(198, 147, 32, 0.1);
-  padding: 6px 12px;
-  border-radius: 8px;
-}
-
-.hadithGrade {
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: var(--bg-secondary);
-}
-
-.hadithActions {
-  display: flex;
-  gap: 8px;
-}
-
-.actionBtn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  border: none;
-  background: transparent;
-  color: var(--foreground-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.actionBtn:hover {
-  background: var(--bg-secondary);
-  color: var(--primary);
-}
-
-.arabicText {
-  font-family: var(--font-arabic);
-  font-size: 1.6rem;
-  line-height: 2.2;
-  text-align: right;
-  direction: rtl;
-  margin-bottom: 2rem;
-  color: var(--foreground);
-}
-
-.englishText {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: var(--foreground-secondary);
-  margin-bottom: 1.5rem;
-}
-
-.narrator {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.narrator::before {
-  content: '';
-  display: block;
-  width: 20px;
-  height: 2px;
-  background: var(--primary);
-}
-
-/* Loading States */
+/* Loader */
 .loadingContainer {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 4rem;
+  padding: 60px;
+  width: 100%;
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--border);
-  border-top-color: var(--primary);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(198, 147, 32, 0.3);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
@@ -486,31 +439,31 @@
 
 @media (max-width: 768px) {
   .navContent {
-    padding: 1rem;
+    padding: 0 16px;
   }
-  
   .bookTitle {
+    font-size: 1.1rem;
+  }
+  .bookSubtitle {
     display: none;
   }
-  
   .dropdownTrigger {
-    min-width: unset;
-    padding: 10px;
+    min-width: auto;
+    padding: 8px 12px;
   }
-
   .currentChapter {
     display: none;
   }
-
-  .hadithCard {
-    padding: 1.5rem;
+  .mainContent {
+    padding: 20px 16px;
   }
-
+  .chapterHeader {
+    padding: 24px;
+  }
+  .hadithCard {
+    padding: 20px;
+  }
   .arabicText {
     font-size: 1.4rem;
-  }
-  
-  .sidePanel {
-    max-width: 100%;
   }
 }

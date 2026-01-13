@@ -13,6 +13,7 @@ import { QPCVerseData } from '@/types/qpc';
 import translationData from '../../../data/translation/en-maarif-ul-quran-simple.json';
 import transliterationData from '../../../data/translitration/syllables-transliteration.json';
 import MutashabihatView from './mutashabihat-view';
+import ShareModal from '../share/share-modal';
 
 interface QuranReaderProps {
   surahNumber: number;
@@ -56,6 +57,13 @@ export default function QuranReader({
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set());
   const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set());
   
+  // Share Modal State
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareVerseData, setShareVerseData] = useState<{
+    arabic: string;
+    english: string;
+    verseNumber: number;
+  } | null>(null);
 
 
   // QPC data loading - load all verse data at once (lightweight)
@@ -228,28 +236,36 @@ export default function QuranReader({
     setToast(`Playing verse ${verse.verse}...`);
   };
 
-  const shareVerse = async (verse: QuranVerse) => {
-    const text = `${verse.text}\n\n— Quran ${surahNumber}:${verse.verse}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Quran ${surahNumber}:${verse.verse}`,
-          text: text,
-          url: window.location.href, // Or a specific verse link
-        });
-      } catch (err) {
-        console.log('Share canceled');
-      }
-    } else {
-      // Fallback
-      copyVerse(verse);
-      setToast('Link copied to clipboard (Share not supported)');
-    }
+  const shareVerse = (verse: QuranVerse) => {
+    const englishText = (translationData as any)[`${surahNumber}:${verse.verse}`]?.t || "";
+    setShareVerseData({
+      arabic: verse.text,
+      english: englishText,
+      verseNumber: verse.verse
+    });
+    setShareModalOpen(true);
   };
 
   return (
     <div className={styles.reader}>
       <QPCFontLoader pages={activePages} />
+      
+      {/* Share Modal */}
+      {shareVerseData && (
+        <ShareModal 
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          title={`Share Surah ${surah.name} : ${shareVerseData.verseNumber}`}
+          sourceTitle={`Surah ${surah.transliteration}`}
+          arabicText={shareVerseData.arabic}
+          englishText={shareVerseData.english}
+          meta={{
+            title: `Surah ${surah.transliteration} (${surahNumber}:${shareVerseData.verseNumber})`,
+            subtitle: 'QuranMaster'
+          }}
+        />
+      )}
+
       {/* Surah Header */}
       <div className={styles.surahHeader}>
         <div className={styles.surahHeaderContent}>

@@ -40,6 +40,7 @@ export default function RootLayout({
         <link 
           href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Scheherazade+New:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" 
           rel="stylesheet" 
+          crossOrigin="anonymous"
         />
       </head>
       <body

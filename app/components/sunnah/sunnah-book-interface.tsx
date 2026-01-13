@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './sunnah-book.module.css';
+import ShareModal from '@/app/components/share/share-modal';
 
 interface Hadith {
   id: number | string;
@@ -43,6 +44,12 @@ function normalizeArabic(text: string): string {
     .trim();
 }
 
+// Clean Hadith text helper to remove artifacts like black circles
+function cleanHadithText(text: string): string {
+  if (!text) return '';
+  return text.replace(/[●⚫⏺•]/g, '').trim();
+}
+
 export default function SunnahBookInterface({
   initialHadiths,
   totalCount,
@@ -62,6 +69,11 @@ export default function SunnahBookInterface({
   const [searchResults, setSearchResults] = useState<Hadith[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [chapterSearch, setChapterSearch] = useState('');
+  const [pendingScrollId, setPendingScrollId] = useState<string | number | null>(null);
+
+  // Share Editor State
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareHadith, setShareHadith] = useState<Hadith | null>(null);
 
   // Refs
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -77,13 +89,33 @@ export default function SunnahBookInterface({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter chapters for dropdown
+  // Scroll handler
+  useEffect(() => {
+    if (pendingScrollId && !loading && hadiths.length > 0) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`hadith-${pendingScrollId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.style.transition = 'background-color 0.5s';
+          const originalBg = element.style.backgroundColor;
+          element.style.backgroundColor = 'rgba(198, 147, 32, 0.1)';
+          setTimeout(() => {
+            element.style.backgroundColor = originalBg;
+          }, 1500);
+          setPendingScrollId(null);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [pendingScrollId, loading, hadiths]);
+
+  // Filter chapters
   const filteredChapters = chapterList.filter(c => 
     c.english.toLowerCase().includes(chapterSearch.toLowerCase()) ||
     c.arabic.includes(chapterSearch)
   );
 
-  // Handle Chapter Change
+  // Chapter selection
   const handleChapterSelect = async (chapterId: number | string) => {
     setIsDropdownOpen(false);
     if (chapterId === currentChapter) return;
@@ -96,7 +128,9 @@ export default function SunnahBookInterface({
       const data = await res.json();
       if (res.ok && Array.isArray(data.hadiths)) {
         setHadiths(data.hadiths);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!pendingScrollId) {
+             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     } catch (error) {
       console.error('Failed to load chapter:', error);
@@ -105,7 +139,7 @@ export default function SunnahBookInterface({
     }
   };
 
-  // Search Logic
+  // Search
   useEffect(() => {
     if (!searchQuery || searchQuery.length < 2) {
       setSearchResults([]);
@@ -115,11 +149,6 @@ export default function SunnahBookInterface({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        // We'll search across all hadiths in this book using the API or loading the full JSON if possible
-        // For performance, let's try to fetch the full book data client-side once, or use a search API endpoint
-        // Since we don't have a specific search API for a book, we'll implement a client-side search 
-        // by lazily loading the full book json. This might be heavy but accurate.
-        
         const bookData = await import(`@/data/sunnah/by_book/${category}/${book}.json`);
         const allHadiths = (bookData.hadiths || bookData.default?.hadiths || []) as Hadith[];
         
@@ -128,13 +157,15 @@ export default function SunnahBookInterface({
         
         const results = allHadiths.filter(h => {
             const normArabic = normalizeArabic(h.arabic || '');
+            const cleanArabic = cleanHadithText(h.arabic || '');
             const engText = (h.english?.text || '').toLowerCase();
             const narrator = (h.english?.narrator || '').toLowerCase();
             
             return normArabic.includes(normalizedQuery) || 
+                   cleanArabic.includes(searchQuery) ||
                    engText.includes(queryLower) || 
                    narrator.includes(queryLower);
-        }).slice(0, 50); // Limit results
+        }).slice(0, 50); 
         
         setSearchResults(results);
       } catch (error) {
@@ -147,12 +178,34 @@ export default function SunnahBookInterface({
     return () => clearTimeout(timer);
   }, [searchQuery, category, book]);
 
-  // Find current chapter info
+  // Editor Functions
+  const openShareModal = (hadith: Hadith) => {
+    setShareHadith(hadith);
+    setShareModalOpen(true);
+  };
+
   const activeChapterInfo = chapterList.find(c => c.id === currentChapter);
 
   return (
     <div className={styles.container}>
-      {/* Search Overlay */}
+      {/* Share Modal */}
+      {shareHadith && (
+        <ShareModal 
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          title="Share Hadith"
+          sourceTitle={meta.title}
+          arabicText={shareHadith.arabic}
+          englishText={shareHadith.english.text}
+          subText={shareHadith.english.narrator}
+          meta={{
+            title: meta.title,
+            subtitle: 'Sunnah.com / QuranMaster'
+          }}
+        />
+      )}
+
+      {/* Search Overlay & Normal Interface */}
       <AnimatePresence>
         {isSearchOpen && (
           <div className={styles.searchOverlay} onClick={() => setIsSearchOpen(false)}>
@@ -198,23 +251,17 @@ export default function SunnahBookInterface({
                       key={hadith.id} 
                       className={styles.searchResultCard}
                       onClick={() => {
-                        // Navigate to chapter if possible, or just show text
-                        // For now we will populate the main view with this result or just handle selection
-                        // To keep it simple, let's close search and set just this hadith in view if specific logic needed
-                        // But better: load the chapter this hadith belongs to. 
-                        // However we don't always know chapter ID easily from hadith object without lookup.
-                        // Assuming hadith object has chapterId:
                         if (hadith.chapterId) {
+                            setPendingScrollId(hadith.id);
                             handleChapterSelect(hadith.chapterId);
                             setIsSearchOpen(false);
-                            // Scroll to hadith logic would go here
                         }
                       }}
                     >
                       <div className={styles.hadithMeta} style={{marginBottom: '8px', border: 'none', padding: 0}}>
                         <span className={styles.hadithNum}>#{hadith.idInBook || hadith.id}</span>
                       </div>
-                      <p className={styles.arabicText} style={{fontSize: '1.2rem', marginBottom: '8px'}}>{hadith.arabic.substring(0, 100)}...</p>
+                      <p className={styles.arabicText} style={{fontSize: '1.2rem', marginBottom: '8px'}}>{cleanHadithText(hadith.arabic).substring(0, 100)}...</p>
                       <p className={styles.englishText} style={{fontSize: '0.9rem', marginBottom: '0'}}>{hadith.english.text.substring(0, 100)}...</p>
                     </div>
                   ))
@@ -249,13 +296,12 @@ export default function SunnahBookInterface({
             </Link>
 
             <div className={styles.bookInfo}>
-              <h1 className={styles.bookTitle}>{meta.title}</h1>
-              <span className={styles.bookSubtitle}>{meta.arabicTitle}</span>
+              <h1 className={styles.bookTitle} style={{fontFamily: 'var(--font-arabic)'}}>{meta.arabicTitle}</h1>
+              <span className={styles.bookSubtitle}>{meta.title}</span>
             </div>
           </div>
 
           <div className={styles.navRight}>
-            {/* Chapter Dropdown */}
             <div className={styles.chapterDropdown} ref={dropdownRef}>
               <div 
                 className={styles.dropdownTrigger}
@@ -265,8 +311,8 @@ export default function SunnahBookInterface({
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>
-                <div className={styles.currentChapter}>
-                   {activeChapterInfo ? `${activeChapterInfo.id}. ${activeChapterInfo.english}` : 'Select Chapter'}
+                <div className={styles.currentChapter} style={{fontFamily: 'var(--font-arabic)', fontSize: '1rem'}}>
+                   {activeChapterInfo ? activeChapterInfo.arabic : 'Select Chapter'}
                 </div>
                 <svg 
                   width="16" 
@@ -298,8 +344,8 @@ export default function SunnahBookInterface({
                       className={`${styles.dropdownItem} ${currentChapter === chapter.id ? styles.dropdownItemActive : ''}`}
                       onClick={() => handleChapterSelect(chapter.id)}
                     >
-                      <span className={styles.dropdownItemEn}>{chapter.id}. {chapter.english}</span>
-                      <span className={styles.dropdownItemAr}>{chapter.arabic}</span>
+                      <span className={styles.dropdownItemEn} style={{fontFamily: 'var(--font-arabic)', fontSize: '1rem', fontWeight: 600}}>{chapter.arabic}</span>
+                      <span className={styles.dropdownItemAr} style={{fontFamily: 'inherit', fontSize: '0.85rem'}}>{chapter.id}. {chapter.english}</span>
                     </button>
                   ))}
                   {filteredChapters.length === 0 && (
@@ -327,8 +373,8 @@ export default function SunnahBookInterface({
       <main className={styles.mainContent}>
         {activeChapterInfo && (
           <div className={styles.chapterHeader}>
-            <h2 className={styles.chapterTitle}>{activeChapterInfo.english}</h2>
-            <div className={styles.chapterArabic}>{activeChapterInfo.arabic}</div>
+            <h2 className={styles.chapterTitle} style={{fontFamily: 'var(--font-arabic)'}}>{activeChapterInfo.arabic}</h2>
+            <div className={styles.chapterArabic} style={{fontFamily: 'inherit', fontSize: '1.2rem', direction: 'ltr'}}>{activeChapterInfo.english}</div>
           </div>
         )}
 
@@ -352,7 +398,7 @@ export default function SunnahBookInterface({
                transition={{ duration: 0.3 }}
              >
                 {hadiths.map((hadith, index) => (
-                  <div key={hadith.id} className={styles.hadithCard}>
+                  <div key={hadith.id} id={`hadith-${hadith.id}`} className={styles.hadithCard}>
                     <div className={styles.hadithMeta}>
                        <div className={styles.hadithBadges}>
                          <span className={styles.hadithNum}>Hadith {hadith.idInBook || hadith.id}</span>
@@ -363,7 +409,7 @@ export default function SunnahBookInterface({
                            className={styles.actionBtn} 
                            title="Copy"
                            onClick={() => {
-                             navigator.clipboard.writeText(`${hadith.arabic}\n\n${hadith.english.text}`);
+                             navigator.clipboard.writeText(`${cleanHadithText(hadith.arabic)}\n\n${hadith.english.text}`);
                            }}
                          >
                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -371,10 +417,23 @@ export default function SunnahBookInterface({
                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                            </svg>
                          </button>
+                         <button 
+                           className={styles.actionBtn} 
+                           title="Share Image"
+                           onClick={() => openShareModal(hadith)}
+                         >
+                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                             <circle cx="18" cy="5" r="3"></circle>
+                             <circle cx="6" cy="12" r="3"></circle>
+                             <circle cx="18" cy="19" r="3"></circle>
+                             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                           </svg>
+                         </button>
                        </div>
                     </div>
                     
-                    <p className={styles.arabicText}>{hadith.arabic}</p>
+                    <p className={styles.arabicText}>{cleanHadithText(hadith.arabic)}</p>
                     
                     {hadith.english.narrator && (
                       <div className={styles.narrator}>{hadith.english.narrator}</div>
