@@ -1,0 +1,516 @@
+/* Container & Layout */
+.container {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  position: relative;
+}
+
+.backgroundPattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 600px;
+  background: radial-gradient(circle at 50% 0%, rgba(198, 147, 32, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .navbar {
+  background: rgba(10, 10, 10, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.navContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.navLeft, .navRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Navigation Buttons */
+.navBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.navBtn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.2);
+}
+
+.navBtnActive {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Book Title Area */
+.bookInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.bookTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.bookSubtitle {
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  font-family: var(--font-arabic);
+}
+
+/* Chapter Dropdown */
+.chapterDropdown {
+  position: relative;
+}
+
+.dropdownTrigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 240px;
+}
+
+.dropdownTrigger:hover {
+  border-color: var(--primary);
+  background: var(--bg-secondary);
+}
+
+.currentChapter {
+  flex: 1;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  transform-origin: top left;
+}
+
+.chapterSearch {
+  position: sticky;
+  top: 0;
+  background: var(--card-bg);
+  padding: 8px;
+  margin-bottom: 8px;
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+}
+
+.chapterSearchInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.dropdownItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.dropdownItem:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.dropdownItemActive {
+  background: var(--primary);
+  color: white;
+}
+
+.dropdownItemActive:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.dropdownItemEn {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.dropdownItemAr {
+  font-size: 0.85rem;
+  font-family: var(--font-arabic);
+  opacity: 0.8;
+}
+
+/* Search Panel Overlay */
+.searchOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.searchPanel {
+  width: 100%;
+  max-width: 500px;
+  background: var(--card-bg);
+  height: 100%;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.searchHeader {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchInputWrapper {
+  flex: 1;
+  position: relative;
+}
+
+.panelSearchInput {
+  width: 100%;
+  padding: 12px 40px 12px 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  font-size: 1rem;
+  color: var(--foreground);
+  transition: all 0.2s;
+}
+
+.panelSearchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.panelSearchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--foreground-secondary);
+}
+
+.closeSearchBtn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeSearchBtn:hover {
+  background: var(--bg-secondary);
+  color: var(--foreground);
+}
+
+.searchResults {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.searchResultCard {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.searchResultCard:hover {
+  border-color: var(--primary);
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Main Content */
+.mainContent {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.chapterHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.chapterTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chapterArabic {
+  font-family: var(--font-arabic);
+  font-size: 1.5rem;
+  color: var(--foreground-secondary);
+}
+
+/* Hadith Card */
+.hadithCard {
+  background: var(--card-bg); /* Use solid color initially, glass effect handled by opacity usually */
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .hadithCard {
+  background: rgba(30, 30, 30, 0.6);
+}
+
+.hadithCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
+}
+
+.hadithMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hadithBadges {
+  display: flex;
+  gap: 8px;
+}
+
+.hadithNum {
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(198, 147, 32, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.hadithGrade {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.hadithActions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background: var(--bg-secondary);
+  color: var(--primary);
+}
+
+.arabicText {
+  font-family: var(--font-arabic);
+  font-size: 1.6rem;
+  line-height: 2.2;
+  text-align: right;
+  direction: rtl;
+  margin-bottom: 2rem;
+  color: var(--foreground);
+}
+
+.englishText {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--foreground-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.narrator {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.narrator::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--primary);
+}
+
+/* Loading States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .navContent {
+    padding: 1rem;
+  }
+  
+  .bookTitle {
+    display: none;
+  }
+  
+  .dropdownTrigger {
+    min-width: unset;
+    padding: 10px;
+  }
+
+  .currentChapter {
+    display: none;
+  }
+
+  .hadithCard {
+    padding: 1.5rem;
+  }
+
+  .arabicText {
+    font-size: 1.4rem;
+  }
+  
+  .sidePanel {
+    max-width: 100%;
+  }
+}
