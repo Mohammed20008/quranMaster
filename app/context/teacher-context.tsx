@@ -12,6 +12,7 @@ interface TeacherContextType {
   getApplication: (id: string) => TeacherApplication | undefined;
   getTeacher: (id: string) => Teacher | undefined;
   getTeacherByEmail: (email: string) => Teacher | undefined;
+  updateTeacher: (id: string, updates: Partial<Teacher>) => void;
 }
 
 const TeacherContext = createContext<TeacherContextType | undefined>(undefined);
@@ -93,23 +94,39 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
   };
 
   const rejectApplication = (applicationId: string, adminNotes: string) => {
+    // 1. Update application status
     setApplications(prev => prev.map(app =>
       app.id === applicationId
         ? { ...app, status: 'rejected' as const, reviewedAt: new Date().toISOString(), adminNotes }
         : app
     ));
+
+    // 2. Remove from teachers list if exists (Effectively "Delete Teacher")
+    const application = applications.find(app => app.id === applicationId);
+    if (application) {
+       setTeachers(prev => prev.filter(t => t.email !== application.personalInfo.email));
+    }
   };
 
   const getApplication = (id: string) => {
     return applications.find(app => app.id === id);
   };
 
-  const getTeacher = (id: string) => {
-    return teachers.find(teacher => teacher.id === id);
+  const getTeacher = (idOrSlug: string) => {
+    return teachers.find(teacher => 
+      teacher.id === idOrSlug || 
+      teacher.profileUrl.endsWith(`/${idOrSlug}`)
+    );
   };
 
   const getTeacherByEmail = (email: string) => {
     return teachers.find(teacher => teacher.email === email);
+  };
+
+  const updateTeacher = (id: string, updates: Partial<Teacher>) => {
+    setTeachers(prev => prev.map(teacher => 
+      teacher.id === id ? { ...teacher, ...updates } : teacher
+    ));
   };
 
   return (
@@ -123,6 +140,7 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
         getApplication,
         getTeacher,
         getTeacherByEmail,
+        updateTeacher,
       }}
     >
       {children}

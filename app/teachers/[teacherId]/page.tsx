@@ -103,15 +103,23 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
 
                  {/* Video Intro Placeholder */}
                  <section className="bg-gray-900 rounded-2xl overflow-hidden relative aspect-video shadow-2xl group cursor-pointer">
-                     <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all flex items-center justify-center">
-                         <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center pl-1 group-hover:scale-110 transition-transform">
-                             <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white border-b-[10px] border-b-transparent"></div>
-                         </div>
-                     </div>
-                     <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-                         <p className="text-white font-bold">Watch Introduction Video</p>
-                         <p className="text-gray-300 text-sm">Get to know {teacher.name} in 2 minutes</p>
-                     </div>
+                     {teacher.videoUrl ? (
+                         <a href={teacher.videoUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 block">
+                             <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-all flex items-center justify-center">
+                                 <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center pl-1 group-hover:scale-110 transition-transform">
+                                     <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white border-b-[10px] border-b-transparent"></div>
+                                 </div>
+                             </div>
+                             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                                 <p className="text-white font-bold">Watch Introduction Video</p>
+                                 <p className="text-gray-300 text-sm">Get to know {teacher.name} in 2 minutes</p>
+                             </div>
+                         </a>
+                     ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-gray-500">
+                            <p>No introduction video added yet.</p>
+                        </div>
+                     )}
                  </section>
 
                  {/* Qualifications */}

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import styles from './learn.module.css';
+import { useTeachers } from '@/app/context/teacher-context';
+import { Teacher } from '@/types/teacher';
 
 const BookingModal = dynamic(() => import('./booking-modal'), { 
   ssr: false,
@@ -191,6 +193,65 @@ export default function LearnPage() {
           ))}
         </div>
       </section>
+
+      {/* New Teachers Section */}
+      <NewTeachersSection />
+      
     </div>
+  );
+}
+
+function NewTeachersSection() {
+  const { teachers } = useTeachers();
+  const [newTeachers, setNewTeachers] = useState<Teacher[]>([]);
+
+  useEffect(() => {
+    // Sort by join date (newest first) and take top 3
+    // In a real app, date parsing needs to be robust. 
+    // Assuming joinedAt is ISO string.
+    const sorted = [...teachers].sort((a, b) => 
+      new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()
+    ).slice(0, 3);
+    setNewTeachers(sorted);
+  }, [teachers]);
+
+  if (newTeachers.length === 0) return null;
+
+  return (
+      <section className={styles.section}>
+        <div className={styles.sectionTitle}>
+          <div style={{ background: '#dcfce7', padding: '8px', borderRadius: '50%', color: '#166534' }}>
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+               <path d="M12 2v20M2 12h20"/>
+             </svg>
+          </div>
+          <h2>New Teachers to Try</h2>
+        </div>
+        <div className={styles.grid}>
+          {newTeachers.map((teacher) => (
+            <div key={teacher.id} className={styles.teacherCard} style={{ border: '2px solid #dcfce7' }}>
+              <div style={{ position: 'relative' }}>
+                 <img src={teacher.photo} alt={teacher.name} className={styles.avatar} />
+                 <span style={{ position: 'absolute', top: 0, right: 0, background: '#166534', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>NEW</span>
+              </div>
+              <div className={styles.teacherInfo}>
+                <h3 className={styles.teacherName}>{teacher.name}</h3>
+                <div className={styles.teacherMeta}>
+                  <span>{teacher.subjects[0] || 'Quran Teacher'}</span>
+                  <div className={styles.rating}>
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>{teacher.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+                <Link href={teacher.profileUrl} className={styles.connectBtn} style={{ textAlign: 'center', textDecoration: 'none' }}>
+                  View Profile
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
   );
 }

@@ -7,18 +7,23 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Teacher } from '@/types/teacher';
 
+import AvatarPicker from '@/app/components/ui/avatar-picker';
+
 export default function TeacherProfileSettings() {
   const { user, isAuthenticated } = useAuth();
-  const { teachers, getTeacherByEmail } = useTeachers();
+  const { teachers, getTeacherByEmail, updateTeacher } = useTeachers();
   const router = useRouter();
   
   const [profile, setProfile] = useState<Teacher | null>(null);
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
 
   // Form states (simplified for this demo)
   const [bio, setBio] = useState('');
   const [hourlyRate, setHourlyRate] = useState(0);
+  const [avatar, setAvatar] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
 
   useEffect(() => {
     if (isAuthenticated && user?.email) {
@@ -27,16 +32,37 @@ export default function TeacherProfileSettings() {
            setProfile(teacher);
            setBio(teacher.bio);
            setHourlyRate(teacher.hourlyRate || 0);
+           setAvatar(teacher.photo);
+           setVideoUrl(teacher.videoUrl || '');
        }
     }
   }, [isAuthenticated, user, getTeacherByEmail]);
 
   const handleSave = async () => {
+    if (!profile) return;
     setIsSaving(true);
-    await new Promise(r => setTimeout(r, 1000));
-    // Here we would call an update function from context
-    // updateTeacher(profile.id, { bio, hourlyRate, ... })
+    
+    // Simulate network delay
+    await new Promise(r => setTimeout(r, 800));
+    
+    // Update context
+    updateTeacher(profile.id, { 
+      bio, 
+      hourlyRate,
+      photo: avatar,
+      videoUrl,
+      // In a real app we would update subjects too if they changed
+    });
+    
+    // Refresh local profile state from the updated context (optional, or just trust the state)
+    // For now, we update the profile state locally to reflect changes immediately if needed, 
+    // but context update will trigger re-render of components using 'teachers'
+    
     setIsSaving(false);
+    
+    // Use sonner toast if available, otherwise alert
+    // import { toast } from 'sonner'; (need to check if imported)
+    // Falling back to alert for simplicity if import not added, or try/catch 
     alert('Profile updated successfully!');
   };
 
@@ -84,6 +110,31 @@ export default function TeacherProfileSettings() {
             <div className="p-8">
                {activeTab === 'general' && (
                   <div className="space-y-6">
+                      <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
+                        <div className="relative group">
+                          <img 
+                            src={avatar || profile.photo} 
+                            alt={profile.name} 
+                            className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 group-hover:border-[#d4af37] transition-colors"
+                          />
+                          <button 
+                            onClick={() => setIsAvatarPickerOpen(true)}
+                            className="absolute bottom-0 right-0 bg-[#d4af37] text-white p-2 rounded-full shadow-lg hover:bg-[#b4941f] transition-colors"
+                            title="Change Avatar"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                              <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                          </button>
+                        </div>
+                        <div>
+                           <h3 className="font-bold text-lg text-gray-900">Profile Photo</h3>
+                           <p className="text-sm text-gray-500 mb-2">Click the camera icon to choose a new look.</p>
+                           <button onClick={() => setIsAvatarPickerOpen(true)} className="text-[#d4af37] hover:underline text-sm font-semibold">Choose Avatar</button>
+                        </div>
+                      </div>
+
                       <div>
                           <label className="block text-sm font-bold text-gray-700 mb-2">Display Name</label>
                           <input type="text" value={profile.name} disabled className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed" />
@@ -98,6 +149,18 @@ export default function TeacherProfileSettings() {
                             rows={6} 
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none"
                           />
+                      </div>
+
+                      <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">Introduction Video URL (YouTube/Vimeo)</label>
+                          <input 
+                              type="url"
+                              placeholder="https://youtube.com/..."
+                              className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none"
+                              value={videoUrl}
+                              onChange={(e) => setVideoUrl(e.target.value)}
+                          />
+                          <p className="text-xs text-gray-400 mt-1">Add a link to your introduction video to attract more students.</p>
                       </div>
 
                        <div>
@@ -148,6 +211,12 @@ export default function TeacherProfileSettings() {
             </div>
          </div>
       </main>
+      <AvatarPicker 
+        isOpen={isAvatarPickerOpen}
+        onClose={() => setIsAvatarPickerOpen(false)}
+        currentAvatar={avatar}
+        onSelect={(newAvatar) => setAvatar(newAvatar)}
+      />
     </div>
   );
 }

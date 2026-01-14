@@ -95,7 +95,7 @@ export default function LeftMenu({
           import('@/data/translation/en-maarif-ul-quran-simple.json').then(m => m.default),
         ]);
 
-        const quranResults: QuranSearchResult[] = [];
+        const quranResults: SearchResult[] = [];
         const queryLower = advancedSearchQuery.toLowerCase();
         let matchCount = 0;
 

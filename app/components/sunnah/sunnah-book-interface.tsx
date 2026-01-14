@@ -111,6 +111,19 @@ export default function SunnahBookInterface({
   const [isSearching, setIsSearching] = useState(false);
   const [chapterSearch, setChapterSearch] = useState('');
   const [pendingScrollId, setPendingScrollId] = useState<string | number | null>(null);
+  
+  // Pagination
+  const [displayLimit, setDisplayLimit] = useState(20);
+  const hasMore = displayLimit < hadiths.length;
+
+  const handleLoadMore = () => {
+    setDisplayLimit(prev => prev + 20);
+  };
+
+  // Reset pagination when hadiths change (chapter change)
+  useEffect(() => {
+    setDisplayLimit(20);
+  }, [hadiths]);
 
   // Share Editor State
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -438,7 +451,7 @@ export default function SunnahBookInterface({
                exit={{ opacity: 0 }}
                transition={{ duration: 0.3 }}
              >
-                {hadiths.map((hadith, index) => (
+                {hadiths.slice(0, displayLimit).map((hadith, index) => (
                   <div key={hadith.id} id={`hadith-${hadith.id}`} className={styles.hadithCard}>
                     <div className={styles.hadithMeta}>
                        <div className={styles.hadithBadges}>
@@ -478,7 +491,7 @@ export default function SunnahBookInterface({
                     
 
                     <div className={styles.translationContainer}>
-                      <CollapsibleSection title="Translation">
+                      <CollapsibleSection title="Translation" defaultOpen={true}>
                         {hadith.english.narrator && (
                           <div className={styles.narrator}>{hadith.english.narrator}</div>
                         )}
@@ -487,6 +500,20 @@ export default function SunnahBookInterface({
                     </div>
                   </div>
                 ))}
+                
+                {hasMore && (
+                    <div className="flex justify-center py-8">
+                        <button 
+                            onClick={handleLoadMore}
+                            className="bg-[#d4af37] text-white px-8 py-3 rounded-full font-bold hover:bg-[#b4941f] transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                        >
+                            <span>Load More Hadiths</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M7 11l5 5 5-5"/>
+                            </svg>
+                        </button>
+                    </div>
+                )}
              </motion.div>
           )}
         </AnimatePresence>

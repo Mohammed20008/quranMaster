@@ -2,8 +2,15 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+// Simple in-memory cache
+let cachedCollections: any[] | null = null;
+
 export async function GET() {
   try {
+    if (cachedCollections) {
+      return NextResponse.json({ collections: cachedCollections });
+    }
+
     const sunnahDataPath = path.join(process.cwd(), 'data', 'sunnah', 'by_book');
     
     // Read all categories
@@ -40,6 +47,7 @@ export async function GET() {
       }
     }
     
+    cachedCollections = collections;
     return NextResponse.json({ collections });
   } catch (error) {
     console.error('Error loading sunnah collections:', error);

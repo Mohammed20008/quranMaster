@@ -6,8 +6,6 @@ export async function sendEmail(to: string, subject: string, htmlBody: string): 
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
-  // Log the email to console (mocking the sending)
-  // In production, you would use 'resend' or 'nodemailer' here with the htmlBody
   console.log(`
     📨 MOCK EMAIL SENDING...
     to: ${to}
@@ -15,6 +13,19 @@ export async function sendEmail(to: string, subject: string, htmlBody: string): 
     html (preview): ${htmlBody.substring(0, 100)}...
     ------------------------
   `);
+
+  if (typeof window !== 'undefined') {
+      try {
+          // Create a Blob containing the HTML
+          const blob = new Blob([htmlBody], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          
+          // Open the specific "email" in a new window/tab
+          window.open(url, '_blank');
+      } catch (e) {
+          console.error('Failed to open email preview', e);
+      }
+  }
   
   return true;
 }

@@ -45,6 +45,7 @@ export interface Teacher {
   availability: string;
   ijazah: boolean;
   joinedAt: string;
+  videoUrl?: string;
 }
 
 export interface TeacherSession {
