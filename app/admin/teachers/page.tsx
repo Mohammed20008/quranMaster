@@ -508,7 +508,7 @@ export default function TeacherApplicationsPage() {
                   cursor: 'pointer',
                 }}
                 onClick={(e) => {
-                  if ((e.target as HTMLElement).type !== 'checkbox') {
+                  if ((e.target as HTMLInputElement).type !== 'checkbox') {
                     router.push(`/admin/teachers/${app.id}`);
                   }
                 }}
