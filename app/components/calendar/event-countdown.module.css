@@ -1,0 +1,138 @@
+.container {
+  width: 100%;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.majorEventsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.majorEventCard {
+  padding: 2rem;
+  border-radius: 1.5rem;
+  color: white;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.majorEventCard:hover {
+  transform: translateY(-5px);
+}
+
+.eventIcon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.eventName {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  opacity: 0.95;
+}
+
+.countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.days {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.eventsGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.eventCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.eventCard:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.eventDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+
+.eventInfo {
+  flex: 1;
+}
+
+.eventInfo h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--foreground);
+}
+
+.eventDesc {
+  font-size: 0.9rem;
+  color: var(--foreground-secondary);
+  margin: 0 0 0.75rem 0;
+}
+
+.eventMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--foreground-secondary);
+}
+
+.daysAway {
+  padding: 0.25rem 0.75rem;
+  background: var(--secondary);
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .majorEventsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+}

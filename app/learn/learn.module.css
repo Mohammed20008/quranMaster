@@ -180,25 +180,37 @@
   max-width: 600px;
 }
 
-.startSessionBtn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 16px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
+.startSessionBtn, .joinTeacherBtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.75rem;
+  background: var(--primary);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  text-decoration: none;
 }
 
-.startSessionBtn:hover {
+.startSessionBtn:hover, .joinTeacherBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.joinTeacherBtn {
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.joinTeacherBtn:hover {
+  background: var(--secondary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .practiceVisual {

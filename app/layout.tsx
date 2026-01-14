@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 
 import { Providers } from './providers';
 import AuthModal from './components/auth/auth-modal';
+import AIChatButton from './components/ai/ai-chat-button';
 
 export const metadata: Metadata = {
   title: "Al-Quran - القرآن الكريم",
@@ -50,6 +51,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <AuthModal />
+          <AIChatButton />
         </Providers>
       </body>
     </html>

@@ -98,6 +98,11 @@ export default function LearnPage() {
         <p className={styles.subtitle}>
           Learn Tajweed rules, perfect your recitation, and connect with qualified teachers to guide your journey.
         </p>
+        <div style={{ marginTop: '2rem' }}>
+          <Link href="/learn/join-teacher" className={styles.joinTeacherBtn}>
+            Apply to be a Teacher
+          </Link>
+        </div>
       </div>
 
       {/* Recitation Session */}

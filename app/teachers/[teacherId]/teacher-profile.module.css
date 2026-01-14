@@ -1,0 +1,232 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.notFound {
+  text-align: center;
+  padding: 4rem;
+}
+
+.profileHeader {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.coverImage {
+  height: 200px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 0 2rem 2rem;
+}
+
+.headerContent {
+  padding: 0 2rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  margin-top: -60px;
+  flex-wrap: wrap;
+}
+
+.avatarWrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid var(--background);
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.ijazahBadge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 2px solid var(--background);
+}
+
+.teacherIdentity {
+  flex: 1;
+  padding-bottom: 1rem;
+}
+
+.teacherIdentity h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--foreground-secondary);
+}
+
+.star {
+  color: #fbbf24;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.bookBtn, .messageBtn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.bookBtn {
+  background: var(--primary);
+  color: white;
+}
+
+.bookBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.messageBtn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.messageBtn:hover {
+  background: var(--secondary);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  padding: 0 2rem;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.bio {
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.list li {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list li::before {
+  content: '•';
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.sidebar .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+}
+
+.card h3 {
+  margin: 0 0 1.5rem 0;
+}
+
+.infoItem {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--foreground-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: var(--secondary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .teacherIdentity {
+    padding-bottom: 0;
+  }
+}
