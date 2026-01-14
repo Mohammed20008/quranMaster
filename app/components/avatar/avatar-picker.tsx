@@ -73,7 +73,7 @@ export default function AvatarPicker({ userName, currentAvatar, onSelect, onUplo
       transition: 'all 0.3s ease',
     };
 
-    if (avatar.type === 'gradient') {
+    if (avatar.type === 'gradient' && avatar.colors) {
       return (
         <div style={{
           ...baseStyle,
@@ -84,7 +84,7 @@ export default function AvatarPicker({ userName, currentAvatar, onSelect, onUplo
       );
     }
 
-    if (avatar.type === 'pattern') {
+    if (avatar.type === 'pattern' && avatar.color) {
       return (
         <div style={{
           ...baseStyle,
@@ -99,7 +99,7 @@ export default function AvatarPicker({ userName, currentAvatar, onSelect, onUplo
       );
     }
 
-    if (avatar.type === 'solid') {
+    if (avatar.type === 'solid' && avatar.color) {
       return (
         <div style={{
           ...baseStyle,
