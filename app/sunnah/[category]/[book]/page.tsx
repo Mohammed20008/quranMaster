@@ -24,11 +24,19 @@ interface BookMeta {
   description: string;
 }
 
+// Simple in-memory cache
+const bookCache = new Map<string, BookMeta>();
+
 // Get metadata and chapters list from by_book
 async function getBookMetaAndChapters(
   category: string,
   book: string
 ): Promise<BookMeta> {
+  const cacheKey = `${category}/${book}`;
+  if (bookCache.has(cacheKey)) {
+    return bookCache.get(cacheKey)!;
+  }
+
   const bookPath = path.join(
     process.cwd(),
     "data",
@@ -46,7 +54,7 @@ async function getBookMetaAndChapters(
     const metadata = json.metadata || json;
     const chapters = json.chapters || json.book || [];
     
-    return {
+    const result = {
       title: metadata?.english?.title || metadata?.title || metadata?.name || book,
       arabicTitle: metadata?.arabic?.title || metadata?.arabicTitle || '',
       author: metadata?.english?.author || metadata?.author || '',
@@ -54,6 +62,9 @@ async function getBookMetaAndChapters(
       length: metadata?.length || metadata?.hadithCount || 0,
       description: metadata?.english?.introduction || metadata?.description || '',
     };
+
+    bookCache.set(cacheKey, result);
+    return result;
   } catch (error) {
     console.error(`Error loading book metadata for ${book}:`, error);
     // Return minimal structure if file not found

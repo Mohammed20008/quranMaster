@@ -467,3 +467,33 @@
     font-size: 1.4rem;
   }
 }
+
+/* Collapsible Section */
+.collapsible {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+.collapsibleHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.collapsibleHeader:hover {
+  color: var(--primary);
+}
+
+.collapsibleContent {
+  padding-bottom: 16px;
+}

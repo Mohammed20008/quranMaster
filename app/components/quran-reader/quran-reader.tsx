@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, Fragment } from 'react';
 import { surahs } from '@/data/surah-data';
 import { getVersesBySurah, QuranVerse } from '@/data/quran-verses';
 import { ViewMode } from '../header/header';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './quran-reader.module.css';
 import Toast from '../ui/toast';
 import TafsirSheet from '../tafsir/tafsir-sheet';
@@ -38,6 +39,48 @@ export default function QuranReader({
   fontSize = 32
 }: QuranReaderProps) {
   
+  // Helper for collapsible sections
+  function CollapsibleSection({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    return (
+      <div className={styles.collapsible}>
+        <button 
+          className={styles.collapsibleHeader} 
+          onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+        >
+          <span>{title}</span>
+          <svg 
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2"
+            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
+          >
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div className={styles.collapsibleContent}>
+                {children}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   const surah = surahs.find(s => s.number === surahNumber);
   const verses = getVersesBySurah(surahNumber);
 
@@ -510,12 +553,21 @@ export default function QuranReader({
 
                       {/* Translation and Transliteration */}
                       <div className={styles.verseTranslations}>
-                        <div className={styles.transliteration}>
-                          <p>{(transliterationData as any)[`${surahNumber}:${verse.verse}`]}</p>
-                        </div>
-                        <div className={styles.translation}>
-                          <p>{(translationData as any)[`${surahNumber}:${verse.verse}`]?.t}</p>
-                        </div>
+                        {(transliterationData as any)[`${surahNumber}:${verse.verse}`] && (
+                          <CollapsibleSection title="Transliteration">
+                            <div className={styles.transliteration}>
+                              <p>{(transliterationData as any)[`${surahNumber}:${verse.verse}`]}</p>
+                            </div>
+                          </CollapsibleSection>
+                        )}
+                        
+                        {(translationData as any)[`${surahNumber}:${verse.verse}`]?.t && (
+                          <CollapsibleSection title="Translation">
+                            <div className={styles.translation}>
+                              <p>{(translationData as any)[`${surahNumber}:${verse.verse}`]?.t}</p>
+                            </div>
+                          </CollapsibleSection>
+                        )}
                       </div>
 
                       {/* Verse Actions - Hide actions when blurred to prevent cheating/accidental clicks */}

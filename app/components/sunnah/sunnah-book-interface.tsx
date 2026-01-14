@@ -47,7 +47,48 @@ function normalizeArabic(text: string): string {
 // Clean Hadith text helper to remove artifacts like black circles
 function cleanHadithText(text: string): string {
   if (!text) return '';
-  return text.replace(/[●⚫⏺•]/g, '').trim();
+  return text.replace(/[●⚫⏺•·▪\u25CF\u25CB\u25AA\u25AB\uF0B7]/g, '').trim();
+}
+
+function CollapsibleSection({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className={styles.collapsible}>
+      <button 
+        className={styles.collapsibleHeader} 
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{title}</span>
+        <svg 
+          width="20" 
+          height="20" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2"
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className={styles.collapsibleContent}>
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export default function SunnahBookInterface({
@@ -435,11 +476,15 @@ export default function SunnahBookInterface({
                     
                     <p className={styles.arabicText}>{cleanHadithText(hadith.arabic)}</p>
                     
-                    {hadith.english.narrator && (
-                      <div className={styles.narrator}>{hadith.english.narrator}</div>
-                    )}
-                    
-                    <p className={styles.englishText}>{hadith.english.text}</p>
+
+                    <div className={styles.translationContainer}>
+                      <CollapsibleSection title="Translation">
+                        {hadith.english.narrator && (
+                          <div className={styles.narrator}>{hadith.english.narrator}</div>
+                        )}
+                        <p className={styles.englishText}>{hadith.english.text}</p>
+                      </CollapsibleSection>
+                    </div>
                   </div>
                 ))}
              </motion.div>

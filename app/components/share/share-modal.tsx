@@ -31,7 +31,7 @@ const SHARE_IMAGES = [
 // Clean text helpers
 function cleanText(text: string): string {
   if (!text) return '';
-  return text.replace(/[●⚫⏺•]/g, '').trim();
+  return text.replace(/[●⚫⏺•·▪\u25CF\u25CB\u25AA\u25AB\uF0B7]/g, '').trim();
 }
 
 export default function ShareModal({
