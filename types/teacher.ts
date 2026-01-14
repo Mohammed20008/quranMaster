@@ -34,6 +34,7 @@ export interface Teacher {
   email: string;
   phone: string;
   photo: string;
+  avatarId?: string;
   bio: string;
   qualifications: string[];
   subjects: string[];
@@ -46,6 +47,9 @@ export interface Teacher {
   ijazah: boolean;
   joinedAt: string;
   videoUrl?: string;
+  teachingStyle?: string[]; // e.g. "Patient", "Structured", "Conversational"
+  totalStudents?: number;
+  totalSessions?: number;
 }
 
 export interface TeacherSession {

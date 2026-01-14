@@ -17,11 +17,14 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isTeacher: boolean;
+  teacherId: string | null;
   isAuthModalOpen: boolean;
   login: (userData: Omit<User, 'role'>) => void;
   logout: () => void;
   openAuthModal: () => void;
   closeAuthModal: () => void;
+  getLoginRedirectPath: (email: string) => string;
 }
 
 // Admin emails - In production, this should come from a database or environment variable
@@ -54,17 +57,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
+  const [teacherId, setTeacherId] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Get teacher ID by email
+  const getTeacherIdByEmail = (email: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const storedTeachers = localStorage.getItem('teachers');
+      if (storedTeachers) {
+        const teachers = JSON.parse(storedTeachers);
+        const teacher = teachers.find((t: any) => t.email.toLowerCase() === email.toLowerCase());
+        return teacher?.id || null;
+      }
+    } catch (e) {
+      console.error('Error getting teacher ID', e);
+    }
+    return null;
+  };
+
+  const getLoginRedirectPath = (email: string): string => {
+    if (isAdminEmail(email)) return '/admin';
+    
+    // Check if teacher
+    if (isTeacherEmail(email)) {
+      const tId = getTeacherIdByEmail(email);
+      return tId ? `/teachers/${tId}` : '/teacher/dashboard';
+    }
+
+    return '/dashboard'; // Default user dashboard
+  };
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       const email = session.user.email || '';
+      const role = isAdminEmail(email) ? 'admin' : (isTeacherEmail(email) ? 'teacher' : 'user');
       setUser({
         name: session.user.name || 'User',
         email: email,
         avatar: session.user.image || undefined,
-        role: isAdminEmail(email) ? 'admin' : (isTeacherEmail(email) ? 'teacher' : 'user'),
+        role,
       });
+      if (role === 'teacher') {
+        setTeacherId(getTeacherIdByEmail(email));
+      }
     } else if (status === 'unauthenticated') {
       // Fallback to local storage for manual auth if not in NextAuth session
       const stored = localStorage.getItem('user_session');
@@ -72,10 +108,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
          try {
            const parsedUser = JSON.parse(stored);
            // Ensure role is set correctly
+           const role = isAdminEmail(parsedUser.email) ? 'admin' : (isTeacherEmail(parsedUser.email) ? 'teacher' : 'user');
            setUser({
              ...parsedUser,
-             role: isAdminEmail(parsedUser.email) ? 'admin' : (isTeacherEmail(parsedUser.email) ? 'teacher' : 'user'),
+             role,
            });
+           if (role === 'teacher') {
+             setTeacherId(getTeacherIdByEmail(parsedUser.email));
+           }
          } catch (e) {
            console.error('Failed to parse user session', e);
          }
@@ -98,7 +138,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Smart Redirect
     if (userWithRole.role === 'teacher') {
-      router.push('/teacher/dashboard');
+      const tId = getTeacherIdByEmail(userWithRole.email);
+      if (tId) {
+        router.push(`/teachers/${tId}`);
+      } else {
+        router.push('/teacher/dashboard');
+      }
     } else if (userWithRole.role === 'admin') {
        router.push('/admin');
     } else {
@@ -124,11 +169,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
+        isTeacher: user?.role === 'teacher',
+        teacherId,
         isAuthModalOpen,
         login,
         logout,
         openAuthModal,
-        closeAuthModal
+        closeAuthModal,
+        getLoginRedirectPath
       }}
     >
       {children}

@@ -1,12 +1,40 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error('GEMINI_API_KEY is not configured in environment variables');
+// Error types for better error handling
+export enum AIErrorType {
+  API_KEY_INVALID = 'API_KEY_INVALID',
+  RATE_LIMIT = 'RATE_LIMIT',
+  QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  MODEL_ERROR = 'MODEL_ERROR',
+  UNKNOWN = 'UNKNOWN',
 }
 
-const genAI = new GoogleGenerativeAI(apiKey);
+interface AIResponse {
+  success: boolean;
+  message: string;
+  errorType?: AIErrorType;
+  errorDetails?: string;
+}
+
+const apiKey = process.env.GROQ_API_KEY;
+
+// Validate API key on initialization
+let groq: Groq | null = null;
+
+function initializeAI(): Groq {
+  if (!apiKey || apiKey.trim() === '') {
+    console.error('❌ GROQ_API_KEY is not configured in environment variables');
+    throw new Error('GROQ_API_KEY is not configured');
+  }
+
+  if (!groq) {
+    groq = new Groq({ apiKey });
+    console.log('✅ Groq AI initialized successfully');
+  }
+
+  return groq;
+}
 
 const SYSTEM_INSTRUCTION = `You are a knowledgeable and respectful Islamic AI assistant for QuranMaster, an app helping Muslims read and learn the Quran and Hadith.
 
@@ -30,108 +58,222 @@ When users ask about specific Surahs or verses, provide context, meaning, and pr
 
 Remember: You're here to educate, inspire, and support Muslims in their faith journey.`;
 
-export async function generateAIResponse(userMessage: string, conversationHistory: Array<{ role: string; content: string }> = []) {
-  const maxRetries = 2;
+/**
+ * Classify error and return appropriate error type
+ */
+function classifyError(error: any): AIErrorType {
+  const errorMessage = error?.message?.toLowerCase() || '';
+  const errorCode = error?.code || error?.status;
+  const errorType = error?.type?.toLowerCase() || '';
+
+  console.log('🔍 Error Classification Debug:', {
+    message: errorMessage,
+    code: errorCode,
+    type: errorType,
+  });
+
+  // API Key errors
+  if (
+    errorMessage.includes('invalid api key') ||
+    errorMessage.includes('incorrect api key') ||
+    errorMessage.includes('unauthorized') ||
+    errorMessage.includes('authentication') ||
+    errorCode === 401
+  ) {
+    return AIErrorType.API_KEY_INVALID;
+  }
+
+  // Rate limiting
+  if (errorMessage.includes('rate limit') || errorCode === 429) {
+    return AIErrorType.RATE_LIMIT;
+  }
+
+  // Quota/billing errors
+  if (
+    errorMessage.includes('quota') ||
+    errorMessage.includes('insufficient_quota') ||
+    errorMessage.includes('billing')
+  ) {
+    return AIErrorType.QUOTA_EXCEEDED;
+  }
+
+  // Network errors
+  if (
+    errorMessage.includes('network') ||
+    errorMessage.includes('fetch') ||
+    errorMessage.includes('enotfound') ||
+    errorMessage.includes('timeout')
+  ) {
+    return AIErrorType.NETWORK_ERROR;
+  }
+
+  // Model errors
+  if (errorMessage.includes('model') || errorCode === 400 || errorCode === 503) {
+    return AIErrorType.MODEL_ERROR;
+  }
+
+  return AIErrorType.UNKNOWN;
+}
+
+/**
+ * Get user-friendly error message based on error type
+ */
+function getUserFriendlyError(errorType: AIErrorType, errorDetails?: string): string {
+  switch (errorType) {
+    case AIErrorType.API_KEY_INVALID:
+      return '🔑 The AI service is not properly configured. Please contact the administrator to update the API key.';
+    
+    case AIErrorType.RATE_LIMIT:
+      return '⏱️ Too many requests at the moment. Please wait 30-60 seconds and try again.';
+    
+    case AIErrorType.QUOTA_EXCEEDED:
+      return '📊 The AI service has reached its daily quota. Please try again tomorrow or contact the administrator.';
+    
+    case AIErrorType.NETWORK_ERROR:
+      return '🌐 Unable to connect to the AI service. Please check your internet connection and try again.';
+    
+    case AIErrorType.MODEL_ERROR:
+      return '🤖 The AI model is temporarily unavailable. Please try again in a moment.';
+    
+    case AIErrorType.UNKNOWN:
+    default:
+      return '❌ An unexpected error occurred. Please try again in a moment. If the problem persists, please contact support.';
+  }
+}
+
+/**
+ * Generate AI response with robust error handling and retry logic
+ */
+export async function generateAIResponse(
+  userMessage: string,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
+): Promise<AIResponse> {
+  const maxRetries = 3;
   let lastError: any = null;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-pro', // Using stable production model
-        systemInstruction: SYSTEM_INSTRUCTION,
+      console.log(`🤖 AI Request (Attempt ${attempt}/${maxRetries}): "${userMessage.substring(0, 50)}..."`);
+
+      const ai = initializeAI();
+
+      // Build messages array for chat completion
+      const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+        { role: 'system', content: SYSTEM_INSTRUCTION },
+        ...conversationHistory.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+        } as Groq.Chat.ChatCompletionMessageParam)),
+        { role: 'user', content: userMessage },
+      ];
+
+      // Use Groq's chat completion with Llama 3
+      const response = await ai.chat.completions.create({
+        model: 'llama3-8b-8192', // Fast, free, and high quality
+        messages,
+        max_tokens: 500,
+        temperature: 0.7,
       });
 
-      // Build the chat history
-      const history = conversationHistory.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }],
-      }));
+      const aiMessage = response.choices[0]?.message?.content?.trim() || '';
 
-      const chat = model.startChat({
-        history,
-        generationConfig: {
-          maxOutputTokens: 800,
-          temperature: 0.7,
-          topP: 0.9,
-        },
-      });
+      if (!aiMessage) {
+        throw new Error('Empty response from Groq');
+      }
 
-      const result = await chat.sendMessage(userMessage);
-      const response = result.response;
-      const text = response.text();
+      console.log(`✅ AI Response received: "${aiMessage.substring(0, 50)}..."`);
 
       return {
         success: true,
-        message: text,
+        message: aiMessage,
       };
+
     } catch (error: any) {
       lastError = error;
-      console.error(`AI Generation Error (attempt ${attempt + 1}):`, error);
+      const errorType = classifyError(error);
 
-      // Check for rate limit or quota errors
-      if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
-        if (attempt < maxRetries) {
-          // Wait before retrying (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 2000));
-          continue;
-        }
-        return {
-          success: false,
-          message: '⚠️ The AI is currently busy due to rate limits. Please wait a moment and try again, or click the admin button to get human assistance.',
-          error: 'RATE_LIMIT',
-        };
+      console.error(`❌ AI Error (Attempt ${attempt}/${maxRetries}):`, {
+        errorType,
+        message: error?.message,
+        status: error?.status,
+      });
+
+      // Don't retry for certain error types
+      if (errorType === AIErrorType.API_KEY_INVALID || errorType === AIErrorType.QUOTA_EXCEEDED) {
+        console.error('🛑 Non-retryable error detected. Stopping attempts.');
+        break;
       }
 
-      // Check for quota exceeded
-      if (error?.message?.includes('quota') || error?.message?.includes('QUOTA_EXCEEDED')) {
-        return {
-          success: false,
-          message: '⚠️ The AI quota has been exceeded. Please contact the admin for assistance, or try again later.',
-          error: 'QUOTA_EXCEEDED',
-        };
+      // For rate limits, wait longer before retrying
+      if (errorType === AIErrorType.RATE_LIMIT && attempt < maxRetries) {
+        const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s, 8s
+        console.log(`⏳ Rate limit hit. Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
       }
 
-      // For other errors, retry if we have attempts left
+      // For other errors, short delay before retry
       if (attempt < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        continue;
       }
     }
   }
 
-  // If all retries failed
+  // All retries failed
+  const errorType = classifyError(lastError);
+  const userFriendlyMessage = getUserFriendlyError(errorType, lastError?.message);
+
+  console.error('💥 All retry attempts failed:', {
+    errorType,
+    originalError: lastError?.message,
+  });
+
   return {
     success: false,
-    message: 'I apologize, but I encountered an error processing your request. Please try again in a moment, or click the admin button for human assistance.',
-    error: lastError instanceof Error ? lastError.message : 'Unknown error',
+    message: userFriendlyMessage,
+    errorType,
+    errorDetails: process.env.NODE_ENV === 'development' ? lastError?.message : undefined,
   };
 }
 
-export async function generateStreamingResponse(userMessage: string, conversationHistory: Array<{ role: string; content: string }> = []) {
+/**
+ * Generate streaming AI response (for future implementation)
+ */
+export async function generateStreamingResponse(
+  userMessage: string,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
+) {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
-      systemInstruction: SYSTEM_INSTRUCTION,
+    const ai = initializeAI();
+
+    const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYSTEM_INSTRUCTION },
+      ...conversationHistory.map(msg => ({
+        role: msg.role,
+        content: msg.content,
+      } as Groq.Chat.ChatCompletionMessageParam)),
+      { role: 'user', content: userMessage },
+    ];
+
+    const stream = await ai.chat.completions.create({
+      model: 'llama3-8b-8192',
+      messages,
+      max_tokens: 500,
+      temperature: 0.7,
+      stream: true,
     });
 
-    const history = conversationHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }],
-    }));
-
-    const chat = model.startChat({
-      history,
-      generationConfig: {
-        maxOutputTokens: 1000,
-        temperature: 0.7,
-        topP: 0.9,
-      },
+    return stream;
+  } catch (error: any) {
+    const errorType = classifyError(error);
+    console.error('❌ AI Streaming Error:', {
+      errorType,
+      status: error?.status,
+      message: error?.message,
     });
-
-    const result = await chat.sendMessageStream(userMessage);
-    return result.stream;
-  } catch (error) {
-    console.error('AI Streaming Error:', error);
     throw error;
   }
 }
+
+// Export type for use in API routes
+export type { AIResponse };

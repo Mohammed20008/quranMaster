@@ -11,7 +11,7 @@ import { X, Mail, Lock, User, Github, Chrome } from 'lucide-react';
 type AuthMode = 'login' | 'register';
 
 export default function AuthModal() {
-  const { isAuthModalOpen, closeAuthModal, login } = useAuth();
+  const { isAuthModalOpen, closeAuthModal, login, getLoginRedirectPath } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -64,7 +64,10 @@ export default function AuthModal() {
         // Successful login
         resetForm();
         closeAuthModal();
-        router.push('/dashboard');
+        
+        // Smart Redirect
+        const redirectPath = getLoginRedirectPath(email);
+        router.push(redirectPath);
       }
     } catch (error) {
       setError('An unexpected error occurred');
@@ -224,10 +227,10 @@ export default function AuthModal() {
                   </div>
 
                   <div className={styles.socialButtons}>
-                    <button className={styles.socialBtn} onClick={() => signIn('google', { callbackUrl: '/dashboard' })}>
+                    <button className={styles.socialBtn} onClick={() => signIn('google')}>
                       <Chrome size={18} /> Google
                     </button>
-                    <button className={styles.socialBtn} onClick={() => signIn('github', { callbackUrl: '/dashboard' })}>
+                    <button className={styles.socialBtn} onClick={() => signIn('github')}>
                       <Github size={18} /> GitHub
                     </button>
                   </div>

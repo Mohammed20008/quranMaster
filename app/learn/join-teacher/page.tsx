@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
 import styles from './join-teacher.module.css';
 import { TeacherApplication } from '@/types/teacher';
@@ -12,6 +13,7 @@ const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Children', 'Adults'];
 
 export default function JoinTeacherPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { submitApplication } = useTeachers();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Omit<TeacherApplication, 'id' | 'status' | 'submittedAt' | 'reviewedAt' | 'adminNotes'>>({
@@ -23,6 +25,20 @@ export default function JoinTeacherPage() {
     demoLecture: '',
     bio: '',
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        personalInfo: {
+          ...prev.personalInfo,
+          name: user.name || '',
+          email: user.email || '',
+          photo: user.avatar || ''
+        }
+      }));
+    }
+  }, [user]);
 
   const updateField = (section: string, field: string, value: any) => {
     setFormData(prev => ({
@@ -66,13 +82,19 @@ export default function JoinTeacherPage() {
               onChange={e => updateField('personalInfo', 'name', e.target.value)}
               className={styles.input}
             />
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.personalInfo.email}
-              onChange={e => updateField('personalInfo', 'email', e.target.value)}
-              className={styles.input}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.personalInfo.email}
+                readOnly
+                className={`${styles.input} ${styles.readOnlyInput}`}
+                style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed', color: '#6b7280' }}
+              />
+              <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#10b981' }}>
+                ✓ Verified
+              </span>
+            </div>
             <input
               type="tel"
               placeholder="Phone"

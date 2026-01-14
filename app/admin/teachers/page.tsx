@@ -1,22 +1,27 @@
 'use client';
 
-import { sendEmail, generateRejectionEmail } from '@/app/lib/email-service';
+import { sendEmail, generateRejectionEmail, generateAcceptanceEmail, sendApplicationReceivedEmail } from '@/app/lib/email-service';
 import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import * as XLSX from 'xlsx';
 import styles from '../admin.module.css';
 
 export default function TeacherApplicationsPage() {
   const { isAuthenticated, isAdmin } = useAuth();
-  const { applications, rejectApplication } = useTeachers();
+  const { applications, rejectApplication, approveApplication } = useTeachers();
   const router = useRouter();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'name-asc'>('date-desc');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
+  const [rateFilter, setRateFilter] = useState<{ min: number; max: number }>({ min: 0, max: 100 });
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoadingAuth(false), 500);
@@ -39,13 +44,24 @@ export default function TeacherApplicationsPage() {
 
   if (!isAuthenticated || !isAdmin) return null;
 
+  // Get unique subjects from all applications
+  const allSubjects = Array.from(new Set(
+    applications.flatMap(app => app.teachingInfo.subjects)
+  ));
+
   // Stats for the header
   const stats = {
     total: applications.length,
     pending: applications.filter(a => a.status === 'pending').length,
     approved: applications.filter(a => a.status === 'approved').length,
     rejected: applications.filter(a => a.status === 'rejected').length,
+    avgRate: applications.filter(a => a.teachingInfo.hourlyRate).reduce((sum, a) => sum + (a.teachingInfo.hourlyRate || 0), 0) / applications.filter(a => a.teachingInfo.hourlyRate).length || 0,
   };
+
+  // Trend calculations (mock data - in real app, fetch historical data)
+  const lastWeekApplications = applications.filter(
+    app => new Date(app.submittedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  ).length;
 
   const filteredApplications = applications
     .filter(app => filter === 'all' || app.status === filter)
@@ -54,12 +70,101 @@ export default function TeacherApplicationsPage() {
       app.personalInfo.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.teachingInfo.subjects.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
     )
+    .filter(app => subjectFilter === 'all' || app.teachingInfo.subjects.includes(subjectFilter))
+    .filter(app => {
+      const rate = app.teachingInfo.hourlyRate || 0;
+      return rate >= rateFilter.min && rate <= rateFilter.max;
+    })
     .sort((a, b) => {
       if (sortBy === 'date-desc') return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
       if (sortBy === 'date-asc') return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
       if (sortBy === 'name-asc') return a.personalInfo.name.localeCompare(b.personalInfo.name);
       return 0;
     });
+
+  const exportToExcel = () => {
+    const exportData = filteredApplications.map(app => ({
+      Name: app.personalInfo.name,
+      Email: app.personalInfo.email,
+      Phone: app.personalInfo.phone,
+      Status: app.status,
+      'Submitted Date': new Date(app.submittedAt).toLocaleDateString(),
+      Subjects: app.teachingInfo.subjects.join(', '),
+      Levels: app.teachingInfo.levels.join(', '),
+      'Hourly Rate': app.teachingInfo.hourlyRate || 'Not specified',
+      Availability: app.teachingInfo.availability,
+      Experience: app.qualifications.experience,
+      Ijazah: app.qualifications.ijazah ? 'Yes' : 'No',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Teachers');
+    XLSX.writeFile(wb, `quranmaster-teachers-${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredApplications.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredApplications.map(app => app.id)));
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleBulkApprove = async () => {
+    if (!confirm(`Approve ${selectedIds.size} applications?`)) return;
+    
+    try {
+      for (const id of selectedIds) {
+        const app = applications.find(a => a.id === id);
+        if (app && app.status === 'pending') {
+          approveApplication(id);
+          const emailHtml = await generateAcceptanceEmail(app.personalInfo.name, 'Pending');
+          await sendEmail(app.personalInfo.email, 'Welcome to QuranMaster!', emailHtml);
+        }
+      }
+      alert(`${selectedIds.size} applications approved!`);
+      setSelectedIds(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error(error);
+      alert('Some applications failed to process');
+    }
+  };
+
+  const handleBulkReject = async () => {
+    const reason = prompt('Enter rejection reason for all selected applications:');
+    if (!reason) return;
+    if (!confirm(`Reject ${selectedIds.size} applications?`)) return;
+    
+    try {
+      for (const id of selectedIds) {
+        const app = applications.find(a => a.id === id);
+        if (app && app.status === 'pending') {
+          rejectApplication(id, reason);
+          const emailHtml = await generateRejectionEmail(app.personalInfo.name, reason);
+          await sendEmail(app.personalInfo.email, 'Application Update - QuranMaster', emailHtml);
+        }
+      }
+      alert(`${selectedIds.size} applications rejected!`);
+      setSelectedIds(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error(error);
+      alert('Some applications failed to process');
+    }
+  };
 
   const handleQuickReject = async (appId: string, personalInfo: any, reason: string) => {
     try {
@@ -94,30 +199,98 @@ export default function TeacherApplicationsPage() {
       </header>
 
       <main className={styles.main}>
-        {/* Stats Overview */}
+        {/* Stats Overview - Enhanced with Trends */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
           gap: '1rem', 
           marginBottom: '2rem' 
         }}>
           <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
             <div style={{ color: 'var(--foreground-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Total Applications</div>
             <div style={{ fontSize: '2rem', fontWeight: '800' }}>{stats.total}</div>
+            <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.5rem' }}>↑ {lastWeekApplications} this week</div>
           </div>
           <div style={{ background: '#ec489915', padding: '1.5rem', borderRadius: '1rem', border: '1px solid #ec489930' }}>
             <div style={{ color: '#db2777', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Pending Review</div>
             <div style={{ fontSize: '2rem', fontWeight: '800', color: '#db2777' }}>{stats.pending}</div>
+            <div style={{ fontSize: '0.75rem', color: '#db2777', marginTop: '0.5rem' }}>Needs attention</div>
           </div>
           <div style={{ background: '#10b98115', padding: '1.5rem', borderRadius: '1rem', border: '1px solid #10b98130' }}>
             <div style={{ color: '#059669', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Approved</div>
             <div style={{ fontSize: '2rem', fontWeight: '800', color: '#059669' }}>{stats.approved}</div>
+            <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.5rem' }}>{((stats.approved / stats.total) * 100 || 0).toFixed(0)}% approval rate</div>
           </div>
           <div style={{ background: '#ef444415', padding: '1.5rem', borderRadius: '1rem', border: '1px solid #ef444430' }}>
             <div style={{ color: '#dc2626', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Rejected</div>
             <div style={{ fontSize: '2rem', fontWeight: '800', color: '#dc2626' }}>{stats.rejected}</div>
           </div>
+          <div style={{ background: '#f59e0b15', padding: '1.5rem', borderRadius: '1rem', border: '1px solid #f59e0b30' }}>
+            <div style={{ color: '#d97706', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Avg. Hourly Rate</div>
+            <div style={{ fontSize: '2rem', fontWeight: '800', color: '#d97706' }}>${stats.avgRate.toFixed(0)}</div>
+            <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '0.5rem' }}>per hour</div>
+          </div>
         </div>
+
+        {/* Bulk Actions Bar */}
+        {showBulkActions && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              background: 'linear-gradient(135deg, #d4af37, #b4941f)',
+              padding: '1rem 1.5rem',
+              borderRadius: '1rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)'
+            }}
+          >
+            <div>
+              <strong>{selectedIds.size}</strong> application{selectedIds.size !== 1 ? 's' : ''} selected
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button onClick={handleBulkApprove} style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                padding: '0.5rem 1.5rem',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                fontWeight: '600',
+                transition: 'all 0.2s'
+              }}>
+                ✓ Approve Selected
+              </button>
+              <button onClick={handleBulkReject} style={{
+                background: 'rgba(239, 68, 68, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                padding: '0.5rem 1.5rem',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                fontWeight: '600',
+                transition: 'all 0.2s'
+              }}>
+                ✕ Reject Selected
+              </button>
+              <button onClick={() => { setSelectedIds(new Set()); setShowBulkActions(false); }} style={{
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                cursor: 'pointer'
+              }}>
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Controls */}
         <div style={{ 
@@ -126,8 +299,9 @@ export default function TeacherApplicationsPage() {
           gap: '1rem', 
           marginBottom: '1.5rem',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'flex-start'
         }}>
+          {/* Status Filters */}
           <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '4px' }}>
             {(['all', 'pending', 'approved', 'rejected'] as const).map(status => (
               <button
@@ -150,32 +324,132 @@ export default function TeacherApplicationsPage() {
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '300px', justifyContent: 'flex-end' }}>
+          {/* Utility Row */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+            {/* Export Button */}
+            <button
+              onClick={exportToExcel}
+              style={{
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              📊 Export Excel
+            </button>
+          </div>
+        </div>
+
+        {/* Advanced Filters */}
+        <div style={{ 
+          background: 'var(--surface)', 
+          border: '1px solid var(--border)', 
+          borderRadius: '1rem', 
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '1rem'
+        }}>
+          {/* Search */}
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)', marginBottom: '0.5rem', display: 'block' }}>Search</label>
             <input 
               type="text" 
               placeholder="Search by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                background: 'var(--surface)',
+                background: 'var(--background)',
                 border: '1px solid var(--border)',
                 padding: '0.5rem 1rem',
                 borderRadius: '0.5rem',
                 color: 'var(--foreground)',
-                flex: 1,
-                maxWidth: '300px'
+                width: '100%'
               }}
             />
+          </div>
+
+          {/* Subject Filter */}
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)', marginBottom: '0.5rem', display: 'block' }}>Subject</label>
+            <select
+              value={subjectFilter}
+              onChange={(e) => setSubjectFilter(e.target.value)}
+              style={{
+                background: 'var(--background)',
+                border: '1px solid var(--border)',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                color: 'var(--foreground)',
+                cursor: 'pointer',
+                width: '100%'
+              }}
+            >
+              <option value="all">All Subjects</option>
+              {allSubjects.map(subject => (
+                <option key={subject} value={subject}>{subject}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Rate Range Filter */}
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)', marginBottom: '0.5rem', display: 'block' }}>Hourly Rate Range: ${rateFilter.min} - ${rateFilter.max}</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input 
+                type="number"
+                placeholder="Min"
+                value={rateFilter.min}
+                onChange={(e) => setRateFilter({ ...rateFilter, min: Number(e.target.value) })}
+                style={{
+                  background: 'var(--background)',
+                  border: '1px solid var(--border)',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  color: 'var(--foreground)',
+                  width: '80px'
+                }}
+              />
+              <span>-</span>
+              <input 
+                type="number"
+                placeholder="Max"
+                value={rateFilter.max}
+                onChange={(e) => setRateFilter({ ...rateFilter, max: Number(e.target.value) })}
+                style={{
+                  background: 'var(--background)',
+                  border: '1px solid var(--border)',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  color: 'var(--foreground)',
+                  width: '80px'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Sort */}
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)', marginBottom: '0.5rem', display: 'block' }}>Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               style={{
-                background: 'var(--surface)',
+                background: 'var(--background)',
                 border: '1px solid var(--border)',
                 padding: '0.5rem 1rem',
                 borderRadius: '0.5rem',
                 color: 'var(--foreground)',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                width: '100%'
               }}
             >
               <option value="date-desc">Newest First</option>
@@ -185,14 +459,39 @@ export default function TeacherApplicationsPage() {
           </div>
         </div>
 
-        {/* List */}
+        {/* List with Select All */}
         {filteredApplications.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--foreground-secondary)', background: 'var(--surface)', borderRadius: '1rem', border: '1px solid var(--border)' }}>
             <h3 style={{fontSize: '1.2rem', marginBottom: '0.5rem'}}>No applications found</h3>
             <p>Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div>
+            {/* Select All Checkbox */}
+            {filter === 'pending' && (
+              <div style={{ 
+                background: 'var(--surface)', 
+                border: '1px solid var(--border)',
+                borderRadius: '0.75rem',
+                padding: '1rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <input 
+                  type="checkbox"
+                  checked={selectedIds.size === filteredApplications.length && filteredApplications.length > 0}
+                  onChange={handleSelectAll}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                <label style={{ fontWeight: '600', cursor: 'pointer' }} onClick={handleSelectAll}>
+                  Select All ({filteredApplications.length})
+                </label>
+              </div>
+            )}
+
+            <div className="grid gap-4">
             {filteredApplications.map((app, idx) => (
               <motion.div
                 key={app.id}
@@ -202,14 +501,29 @@ export default function TeacherApplicationsPage() {
                 className={styles.articleCard}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(200px, 2fr) 1fr 1fr auto',
+                  gridTemplateColumns: app.status === 'pending' ? '40px minmax(200px, 2fr) 1fr 1fr auto' : 'minmax(200px, 2fr) 1fr 1fr auto',
                   gap: '1rem',
                   alignItems: 'center',
                   padding: '1.5rem',
                   cursor: 'pointer',
                 }}
-                onClick={() => router.push(`/admin/teachers/${app.id}`)}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).type !== 'checkbox') {
+                    router.push(`/admin/teachers/${app.id}`);
+                  }
+                }}
               >
+                {/* Checkbox for pending applications */}
+                {app.status === 'pending' && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <input 
+                      type="checkbox"
+                      checked={selectedIds.has(app.id)}
+                      onChange={() => handleSelect(app.id)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                  </div>
+                )}
                 <div className={styles.articleInfo}>
                   <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', fontWeight: 700 }}>
                     {app.personalInfo.name}
@@ -291,6 +605,7 @@ export default function TeacherApplicationsPage() {
                 </div>
               </motion.div>
             ))}
+            </div>
           </div>
         )}
       </main>
