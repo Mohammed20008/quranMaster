@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 type UserRole = 'user' | 'admin' | 'teacher';
 
@@ -50,6 +51,7 @@ const isTeacherEmail = (email: string): boolean => {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -81,6 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [session, status]);
 
+
+  
+
+
   const login = (userData: Omit<User, 'role'>) => {
     const userWithRole: User = {
       ...userData,
@@ -89,6 +95,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userWithRole);
     localStorage.setItem('user_session', JSON.stringify(userWithRole));
     setIsAuthModalOpen(false);
+
+    // Smart Redirect
+    if (userWithRole.role === 'teacher') {
+      router.push('/teacher/dashboard');
+    } else if (userWithRole.role === 'admin') {
+       router.push('/admin');
+    } else {
+       // Optional: Redirect to standard dashboard or stay
+       // router.push('/dashboard'); 
+    }
   };
 
   const logout = async () => {

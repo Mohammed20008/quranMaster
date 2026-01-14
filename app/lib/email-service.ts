@@ -31,6 +31,14 @@ export async function sendWhatsAppNotification(to: string, message: string): Pro
     ------------------------
   `);
 
+  if (typeof window !== 'undefined') {
+      const encodedMessage = encodeURIComponent(message);
+      // Clean phone number: remove non-numeric or +, depending on standard.
+      // Assuming 'to' is like '+123...'
+      const cleanPhone = to.replace(/[^\d+]/g, ''); 
+      window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
+  }
+
   return true;
 }
 

@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Read and explore the Holy Quran with translations and transliterations",
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,6 +54,7 @@ export default function RootLayout({
           {children}
           <AuthModal />
           <AIChatButton />
+          <Toaster position="top-center" richColors closeButton /> 
         </Providers>
       </body>
     </html>

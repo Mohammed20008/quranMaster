@@ -4,6 +4,7 @@ import { sendEmail, sendWhatsAppNotification, generateAcceptanceEmail, generateR
 import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import styles from '../../admin.module.css';
@@ -58,17 +59,18 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
             emailHtml
         );
 
+        toast.success(`Application Approved! Email & WhatsApp sent to ${application.personalInfo.email}`);
+
         // Send WhatsApp
         await sendWhatsAppNotification(
             application.personalInfo.phone,
             `Salam ${application.personalInfo.name}, congratulations! Your teacher application on QuranMaster has been approved. You can now access your profile dashboard.`
         );
 
-        alert(`Application approved!\n\nEmail & WhatsApp sent to ${application.personalInfo.email}`);
         router.push('/admin/teachers');
       } catch (error) {
         console.error(error);
-        alert('Error approving application');
+        toast.error('Error approving application');
       } finally {
         setIsProcessing(false);
       }
