@@ -1,4 +1,5 @@
 // Avatar utility functions and constants
+import React from 'react';
 
 export const AVATAR_PRESETS = [
   // Gradient Circles
@@ -94,7 +95,7 @@ export function renderAvatar(
   userName: string,
   size: number = 120,
   className?: string
-): JSX.Element {
+): React.JSX.Element {
   const userInitial = userName ? userName[0].toUpperCase() : 'U';
   const style = getAvatarStyle(preset, size, userInitial);
 
