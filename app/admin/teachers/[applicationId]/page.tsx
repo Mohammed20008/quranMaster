@@ -1,6 +1,6 @@
 'use client';
 
-import { sendEmail, generateAcceptanceEmail, generateRejectionEmail } from '@/app/lib/email-service';
+import { sendEmail, sendWhatsAppNotification, generateAcceptanceEmail, generateRejectionEmail } from '@/app/lib/email-service';
 import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
 import { useRouter } from 'next/navigation';
@@ -45,18 +45,26 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
     if (confirm('Approve this teacher application?')) {
       setIsProcessing(true);
       try {
-        approveApplication(applicationId, notes || undefined); // Use unwrapped applicationId
+        approveApplication(applicationId, notes || undefined); 
         
         const teacher = getTeacherByEmail(application.personalInfo.email);
         const profileUrl = teacher ? `${window.location.origin}${teacher.profileUrl}` : 'Profile URL pending';
 
+        // Send Email
+        const emailHtml = await generateAcceptanceEmail(application.personalInfo.name, profileUrl);
         await sendEmail(
             application.personalInfo.email,
-            'Application Approved - QuranMaster',
-            generateAcceptanceEmail(application.personalInfo.name, profileUrl)
+            'Welcome to the QuranMaster Family',
+            emailHtml
         );
 
-        alert(`Application approved!\n\nEmail sent to ${application.personalInfo.email}`);
+        // Send WhatsApp
+        await sendWhatsAppNotification(
+            application.personalInfo.phone,
+            `Salam ${application.personalInfo.name}, congratulations! Your teacher application on QuranMaster has been approved. You can now access your profile dashboard.`
+        );
+
+        alert(`Application approved!\n\nEmail & WhatsApp sent to ${application.personalInfo.email}`);
         router.push('/admin/teachers');
       } catch (error) {
         console.error(error);
@@ -75,12 +83,13 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
     if (confirm('Reject this application?')) {
         setIsProcessing(true);
         try {
-            rejectApplication(applicationId, notes); // Use unwrapped applicationId
+            rejectApplication(applicationId, notes);
             
+            const emailHtml = await generateRejectionEmail(application.personalInfo.name, notes);
             await sendEmail(
                 application.personalInfo.email,
-                'Application Status - QuranMaster',
-                generateRejectionEmail(application.personalInfo.name, notes)
+                'Update Regarding Your Application - QuranMaster',
+                emailHtml
             );
 
             alert('Application rejected.');
@@ -92,6 +101,34 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
             setIsProcessing(false);
         }
     }
+  };
+
+  const handleDelete = async () => {
+     const reason = prompt("Enter reason for removing this teacher (this will be sent as an apology email):");
+     if (!reason) return;
+
+     if (confirm('Are you sure you want to remove this teacher? This will change status to Rejected and send an email.')) {
+        setIsProcessing(true);
+        try {
+            // Reusing reject logic as "Delete" in this context
+            rejectApplication(applicationId, reason);
+
+            const emailHtml = await generateRejectionEmail(application.personalInfo.name, reason);
+            await sendEmail(
+                application.personalInfo.email,
+                'Update Regarding Your Teacher Account - QuranMaster',
+                emailHtml
+            );
+
+            alert('Teacher removed and apology email sent.');
+            router.push('/admin/teachers');
+        } catch (error) {
+            console.error(error);
+            alert('Error removing teacher');
+        } finally {
+            setIsProcessing(false);
+        }
+     }
   };
 
   return (
@@ -117,7 +154,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
           {/* Personal Info Card */}
           <section style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '1.5rem', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
-               <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'white', fontWeight: 'bold' }}>
+               <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #d4af37, #b4941f)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'white', fontWeight: 'bold' }}>
                   {application.personalInfo.name[0]}
                </div>
                <div>
@@ -206,7 +243,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
                    Current Status: {application.status.toUpperCase()}
                 </div>
 
-                {application.status === 'pending' ? (
+                {application.status === 'pending' && (
                   <>
                     <textarea
                       value={notes}
@@ -230,19 +267,18 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
                         padding: '1rem',
                         borderRadius: '0.75rem',
                         border: 'none',
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        background: 'linear-gradient(135deg, #d4af37 0%, #b4941f 100%)',
                         color: 'white',
                         fontWeight: 700,
                         cursor: 'pointer',
                         transition: 'transform 0.2s',
-                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                        boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)'
                       }}>
                         {isProcessing ? 'Processing...' : 'Approve Application'}
                       </button>
                       <button onClick={handleReject} disabled={isProcessing} style={{
                         padding: '1rem',
                         borderRadius: '0.75rem',
-                        border: 'none',
                         background: 'var(--surface)',
                         color: '#ef4444',
                         fontWeight: 600,
@@ -254,10 +290,35 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ ap
                       </button>
                     </div>
                   </>
-                ) : (
-                  <button onClick={() => router.push('/admin/teachers')} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.75rem', background: 'var(--secondary)', border: 'none', cursor: 'pointer', fontWeight: '500' }}>
-                    Back to List
-                  </button>
+                )}
+                
+                {application.status === 'approved' && (
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <button onClick={() => router.push('/admin/teachers')} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.75rem', background: 'var(--secondary)', border: 'none', cursor: 'pointer', fontWeight: '500' }}>
+                        Back to List
+                      </button>
+                      
+                      <hr style={{margin: '0.5rem 0', opacity: 0.2}}/>
+                      
+                      <button onClick={handleDelete} disabled={isProcessing} style={{
+                        width: '100%',
+                        padding: '0.75rem', 
+                        borderRadius: '0.75rem', 
+                        background: '#fee2e2',
+                        color: '#b91c1c',
+                        border: '1px solid #fca5a5', 
+                        cursor: 'pointer', 
+                        fontWeight: '600'
+                      }}>
+                        Remove Teacher
+                      </button>
+                   </div>
+                )}
+                
+                {application.status === 'rejected' && (
+                    <button onClick={() => router.push('/admin/teachers')} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.75rem', background: 'var(--secondary)', border: 'none', cursor: 'pointer', fontWeight: '500' }}>
+                      Back to List
+                    </button>
                 )}
               </div>
            </div>

@@ -1,49 +1,43 @@
-export async function sendEmail(to: string, subject: string, body: string): Promise<boolean> {
+import { render } from '@react-email/render';
+import { TeacherApprovalEmail } from '@/app/emails/teacher-approval';
+import { TeacherRejectionEmail } from '@/app/emails/teacher-rejection';
+
+export async function sendEmail(to: string, subject: string, htmlBody: string): Promise<boolean> {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   // Log the email to console (mocking the sending)
+  // In production, you would use 'resend' or 'nodemailer' here with the htmlBody
   console.log(`
     📨 MOCK EMAIL SENDING...
     to: ${to}
     subject: ${subject}
-    body: ${body}
+    html (preview): ${htmlBody.substring(0, 100)}...
     ------------------------
   `);
   
   return true;
 }
 
-export function generateAcceptanceEmail(teacherName: string, profileUrl: string): string {
-  return `
-    Dear ${teacherName},
 
-    Congratulations! Your application to join QuranMaster as a teacher has been approved.
-    
-    You can view your public profile here:
-    ${profileUrl}
-    
-    Please log in to your dashboard to complete your profile setup and set your availability.
-    
-    Welcome to the team!
-    QuranMaster Team
-  `;
+export async function sendWhatsAppNotification(to: string, message: string): Promise<boolean> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  console.log(`
+    📱 MOCK WHATSAPP SENDING...
+    to: ${to}
+    message: ${message}
+    ------------------------
+  `);
+
+  return true;
 }
 
-export function generateRejectionEmail(teacherName: string, reason: string): string {
-  return `
-    Dear ${teacherName},
+export async function generateAcceptanceEmail(teacherName: string, profileUrl: string): Promise<string> {
+  return await render(TeacherApprovalEmail({ teacherName, profileUrl }));
+}
 
-    Thank you for your interest in joining QuranMaster.
-    
-    After reviewing your application, we regret to inform you that we cannot accept it at this time.
-    
-    Reason:
-    ${reason}
-    
-    You are welcome to apply again in the future.
-    
-    Best regards,
-    QuranMaster Team
-  `;
+export async function generateRejectionEmail(teacherName: string, reason: string): Promise<string> {
+  return await render(TeacherRejectionEmail({ teacherName, reason }));
 }

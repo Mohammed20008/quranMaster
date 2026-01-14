@@ -1,5 +1,6 @@
 'use client';
 
+import { sendEmail, generateRejectionEmail } from '@/app/lib/email-service';
 import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
 import { useRouter } from 'next/navigation';
@@ -10,7 +11,7 @@ import styles from '../admin.module.css';
 
 export default function TeacherApplicationsPage() {
   const { isAuthenticated, isAdmin } = useAuth();
-  const { applications } = useTeachers();
+  const { applications, rejectApplication } = useTeachers();
   const router = useRouter();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
@@ -59,6 +60,22 @@ export default function TeacherApplicationsPage() {
       if (sortBy === 'name-asc') return a.personalInfo.name.localeCompare(b.personalInfo.name);
       return 0;
     });
+
+  const handleQuickReject = async (appId: string, personalInfo: any, reason: string) => {
+    try {
+      rejectApplication(appId, reason);
+      const emailHtml = await generateRejectionEmail(personalInfo.name, reason);
+      await sendEmail(
+          personalInfo.email,
+          'Update Regarding Your Application - QuranMaster',
+          emailHtml
+      );
+      alert('Teacher application rejected and email sent.');
+    } catch (error) {
+       console.error(error);
+       alert('Failed to process rejection');
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -234,9 +251,43 @@ export default function TeacherApplicationsPage() {
                   >
                     {app.status}
                   </span>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{color: 'var(--foreground-secondary)'}}>
-                    <path d="M9 18l6-6-6-6"/>
-                  </svg>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // If already rejected, do nothing or show different logic
+                        if (app.status === 'rejected') return;
+
+                        if(confirm('Are you sure you want to remove/reject this teacher?')) {
+                          const reason = prompt("Enter reason for rejection/removal:");
+                          if (reason) {
+                             // We need to use rejectApplication from context
+                             // Since we are inside the map, we need to call the function
+                             // But we need to make sure we have access to it.
+                             // We will implement a handleQuickReject function in the component.
+                             handleQuickReject(app.id, app.personalInfo, reason);
+                          }
+                        }
+                      }}
+                      title="Reject / Remove"
+                      style={{
+                        padding: '0.4rem',
+                        borderRadius: '0.5rem',
+                        background: '#fee2e2',
+                        color: '#b91c1c',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: app.status === 'rejected' ? 'none' : 'block'
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{color: 'var(--foreground-secondary)'}}>
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </div>
                 </div>
               </motion.div>
             ))}

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
-type UserRole = 'user' | 'admin';
+type UserRole = 'user' | 'admin' | 'teacher';
 
 interface User {
   name: string;
@@ -33,6 +33,20 @@ const isAdminEmail = (email: string): boolean => {
   return ADMIN_EMAILS.includes(email.toLowerCase());
 };
 
+const isTeacherEmail = (email: string): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const storedTeachers = localStorage.getItem('teachers');
+    if (storedTeachers) {
+      const teachers = JSON.parse(storedTeachers);
+      return teachers.some((t: any) => t.email.toLowerCase() === email.toLowerCase());
+    }
+  } catch (e) {
+    console.error('Error checking teacher status', e);
+  }
+  return false;
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -47,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: session.user.name || 'User',
         email: email,
         avatar: session.user.image || undefined,
-        role: isAdminEmail(email) ? 'admin' : 'user',
+        role: isAdminEmail(email) ? 'admin' : (isTeacherEmail(email) ? 'teacher' : 'user'),
       });
     } else if (status === 'unauthenticated') {
       // Fallback to local storage for manual auth if not in NextAuth session
@@ -58,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
            // Ensure role is set correctly
            setUser({
              ...parsedUser,
-             role: isAdminEmail(parsedUser.email) ? 'admin' : 'user',
+             role: isAdminEmail(parsedUser.email) ? 'admin' : (isTeacherEmail(parsedUser.email) ? 'teacher' : 'user'),
            });
          } catch (e) {
            console.error('Failed to parse user session', e);
@@ -70,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: Omit<User, 'role'>) => {
     const userWithRole: User = {
       ...userData,
-      role: isAdminEmail(userData.email) ? 'admin' : 'user',
+      role: isAdminEmail(userData.email) ? 'admin' : (isTeacherEmail(userData.email) ? 'teacher' : 'user'),
     };
     setUser(userWithRole);
     localStorage.setItem('user_session', JSON.stringify(userWithRole));

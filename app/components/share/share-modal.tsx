@@ -3,6 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng, toBlob } from 'html-to-image';
+import {
+  FacebookShareButton, FacebookIcon,
+  TwitterShareButton, TwitterIcon,
+  WhatsappShareButton, WhatsappIcon,
+  TelegramShareButton, TelegramIcon,
+  LinkedinShareButton, LinkedinIcon,
+} from 'react-share';
 import styles from './share-modal.module.css';
 
 interface ShareModalProps {
@@ -396,42 +403,45 @@ export default function ShareModal({
                   </div>
                   
                   <div className={styles.editorActions}>
-                     {!pendingShareFile ? (
-                       <button 
-                         className={styles.downloadBtn} 
-                         onClick={handleNativeShare} 
-                         disabled={isGenerating}
-                         title="Share to Apps (Mobile Only) or Download"
-                       >
-                          {isGenerating ? (
-                            <span style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                              <div className={styles.spinner} style={{width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white'}}></div>
-                              Generating...
-                            </span>
-                          ) : (
-                            <>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '8px'}}>
-                                <circle cx="18" cy="5" r="3"></circle>
-                                <circle cx="6" cy="12" r="3"></circle>
-                                <circle cx="18" cy="19" r="3"></circle>
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                              </svg>
-                              Share Image
-                            </>
-                          )}
-                       </button>
-                     ) : (
+                     {!pendingShareFile && (
+                       <div style={{display: 'flex', gap: '8px'}}>
+                           <button 
+                             className={styles.downloadBtn} 
+                             onClick={handleNativeShare} 
+                             disabled={isGenerating}
+                             title="Share to Apps (Mobile)"
+                             style={{flex: 1}}
+                           >
+                              {isGenerating ? '...' : 'Share'}
+                           </button>
+                           {/* React Share Buttons */}
+                           <div style={{display: 'flex', gap: '8px'}}>
+                              <FacebookShareButton url={'https://quranmaster.com'} hashtag="#QuranMaster">
+                                <FacebookIcon size={40} round />
+                              </FacebookShareButton>
+                              <TwitterShareButton url={'https://quranmaster.com'} title={editorState.enText} hashtags={['QuranMaster', 'Islam', 'Quran']}>
+                                <TwitterIcon size={40} round />
+                              </TwitterShareButton>
+                              <WhatsappShareButton url={'https://quranmaster.com'} title={editorState.enText + '\n\n' + editorState.arText}>
+                                <WhatsappIcon size={40} round />
+                              </WhatsappShareButton>
+                              <TelegramShareButton url={'https://quranmaster.com'} title={editorState.enText}>
+                                <TelegramIcon size={40} round />
+                              </TelegramShareButton>
+                              <LinkedinShareButton url={'https://quranmaster.com'} title={meta.title} summary={editorState.enText} source="QuranMaster">
+                                <LinkedinIcon size={40} round />
+                              </LinkedinShareButton>
+                           </div>
+                       </div>
+                     )}
+
+                     {pendingShareFile && (
                        <button 
                          className={styles.downloadBtn} 
                          onClick={handleConfirmShare}
-                         style={{backgroundColor: '#22c55e'}}
+                         style={{backgroundColor: '#22c55e', width: '100%'}}
                        >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '8px'}}>
-                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                          </svg>
-                          Tap to Complete Share
+                          Confirm Share
                        </button>
                      )}
 
