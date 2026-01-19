@@ -1,0 +1,194 @@
+.playerBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.playerBar.collapsed {
+  transform: translateY(calc(100% - 4px));
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 16px;
+}
+
+.progressContainer {
+  position: relative;
+  height: 4px;
+  background: var(--border);
+  width: calc(100% + 48px);
+  margin: 0 -24px 16px;
+  cursor: pointer;
+}
+
+.progressContainer:hover {
+  height: 6px;
+}
+
+.bufferedBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(198, 147, 32, 0.2);
+  transition: width 0.3s ease;
+}
+
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--primary-gradient);
+  transition: width 0.1s linear;
+}
+
+.progressKnob {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: white;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: none;
+}
+
+.progressContainer:hover .progressKnob {
+  display: block;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.reciterImg {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: var(--shadow-sm);
+}
+
+.textInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.surahName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.reciterName {
+  font-size: 0.8rem;
+  color: var(--foreground-secondary);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.controlBtn {
+  background: transparent;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.controlBtn:hover {
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+.playBtn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.playBtn:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.timeInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  min-width: 100px;
+}
+
+.timeDivider {
+  opacity: 0.5;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.actionBtn {
+  background: transparent;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.actionBtn:hover {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+@media (max-width: 768px) {
+  .info {
+    display: none;
+  }
+  
+  .container {
+    padding: 0 16px 12px;
+  }
+}

@@ -7,6 +7,7 @@ import Header, { ViewMode } from '../components/header/header';
 import QuranReader from '../components/quran-reader/quran-reader';
 import SideControls from '../components/side-controls/side-controls';
 import { useUserData } from '@/app/hooks/use-user-data';
+import AudioPlayerBar from '../components/audio/audio-player-bar';
 
 function QuranContent() {
   const searchParams = useSearchParams();
@@ -14,6 +15,7 @@ function QuranContent() {
   const initialSurah = parseInt(searchParams.get('surah') || '1');
   
   const [currentSurah, setCurrentSurah] = useState(initialSurah);
+  const [currentPage, setCurrentPage] = useState<number | undefined>();
   const { 
     bookmarks, 
     toggleBookmark, 
@@ -101,6 +103,7 @@ function QuranContent() {
           theme={settings.theme}
           viewMode={settings.viewMode}
           onViewModeChange={handleViewModeChange}
+          currentPage={currentPage}
         />
 
         {/* Quran Reader */}
@@ -118,7 +121,10 @@ function QuranContent() {
           onToggleBookmark={toggleBookmark}
           onNextSurah={handleNextSurah}
           fontSize={settings.fontSize}
+          onPageChange={setCurrentPage}
         />
+
+        <AudioPlayerBar />
       </main>
 
       <style jsx>{`

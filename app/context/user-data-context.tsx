@@ -17,10 +17,11 @@ export interface LastRead {
 
 export interface UserSettings {
   fontSize: number;
-  viewMode: 'verse' | 'page';
+  viewMode: 'verse' | 'page' | 'spread';
   showTranslation: boolean;
   showTransliteration: boolean;
   theme: 'light' | 'dark';
+  selectedReciterId: number;
 }
 
 export interface UserDataContextType {
@@ -48,6 +49,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   showTranslation: true,
   showTransliteration: true,
   theme: 'light',
+  selectedReciterId: 1, // Default to Alafasy
 };
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
