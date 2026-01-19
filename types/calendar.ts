@@ -21,3 +21,15 @@ export interface PrayerTimes {
   maghrib: string;
   isha: string;
 }
+
+export interface UserEvent {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  hijriMonth?: number; // 1-12
+  hijriDay?: number;   // 1-30
+  gregorianMonth?: number; // 1-12
+  gregorianDay?: number;   // 1-31
+  type: 'hijri' | 'gregorian';
+}

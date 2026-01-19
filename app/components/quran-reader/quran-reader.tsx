@@ -228,9 +228,9 @@ export default function QuranReader({
   const surah = surahs.find(s => s.number === surahNumber);
   const verses = getVersesBySurah(surahNumber);
 
-  // Adjust font size and line height for spread mode
-  const displayFontSize = viewMode === 'spread' ? fontSize * 0.85 : fontSize;
-  const displayLineHeight = viewMode === 'spread' ? 1.8 : 1.8;
+  // Target specific line counts for Mushaf modes
+  const displayFontSize = viewMode === 'spread' ? fontSize * 1.15 : (viewMode === 'page' ? fontSize * 1.1 : fontSize);
+  const displayLineHeight = viewMode === 'spread' ? 1.65 : (viewMode === 'page' ? 1.85 : 2.2);
 
   if (!surah) {
     return <div className={styles.error}>Surah not found</div>;
@@ -656,7 +656,15 @@ export default function QuranReader({
                                   <span>{info.surahName}</span>
                                   <span>Juz' {info.juzNumber}</span>
                                 </div>
-                                <div className={styles.pageText}>
+                                <div 
+                                  className={styles.pageText}
+                                  style={{ 
+                                    textJustify: 'inter-word', 
+                                    wordSpacing: '0.12em',
+                                    fontSize: `${displayFontSize}px`,
+                                    lineHeight: displayLineHeight
+                                  } as React.CSSProperties}
+                                >
                                   {pages[pageNum]?.map((verse: any) => {
                                   const verseId = `${verse.chapter}-${verse.verse}`;
                                   const isBlurred = isTestMode && !revealedVerses.has(verseId);
@@ -673,7 +681,7 @@ export default function QuranReader({
                                     >
                                       <span 
                                         className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                                        style={{ fontSize: `${displayFontSize}px`, lineHeight: displayLineHeight }}
+                                        style={{ fontSize: 'inherit', lineHeight: 'inherit' }}
                                       >
                                         {fontMode === 'qpc' ? (
                                           (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
@@ -775,7 +783,15 @@ export default function QuranReader({
                                         <span>{info.sName}</span>
                                         <span>Juz' {info.jNum}</span>
                                     </div>
-                                    <div className={styles.pageText}>
+                                    <div 
+                                        className={styles.pageText}
+                                        style={{ 
+                                            textJustify: 'inter-word', 
+                                            wordSpacing: '0.1em',
+                                            fontSize: `${displayFontSize}px`,
+                                            lineHeight: displayLineHeight
+                                        } as React.CSSProperties}
+                                    >
                                         {pages[pageNum].map((verse: any) => {
                                             const verseId = `${verse.chapter}-${verse.verse}`;
                                             const isBlurred = isTestMode && !revealedVerses.has(verseId);
@@ -792,7 +808,7 @@ export default function QuranReader({
                                                 >
                                                     <span 
                                                         className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                                                        style={{ fontSize: `${displayFontSize}px`, lineHeight: displayLineHeight }}
+                                                        style={{ fontSize: 'inherit', lineHeight: 'inherit' }}
                                                     >
                                                         {fontMode === 'qpc' ? (
                                                             (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Conversation, Message, SupportRequest } from '@/types/message';
 import { useAuth } from './auth-context';
 
@@ -26,15 +26,13 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [hasUnreadAdminMessages, setHasUnreadAdminMessages] = useState(false);
 
-  // Load conversations from localStorage
+  // Load from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('quran_app_conversations');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         setConversations(parsed);
-        
-        // Check for unread admin messages
         const hasUnread = parsed.some((conv: Conversation) => 
           conv.messages.some((msg: Message) => msg.sender === 'admin' && !msg.isRead)
         );
@@ -45,12 +43,10 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save to localStorage when conversations change
+  // Save to localStorage
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem('quran_app_conversations', JSON.stringify(conversations));
-      
-      // Update unread status
       const hasUnread = conversations.some(conv => 
         conv.messages.some(msg => msg.sender === 'admin' && !msg.isRead)
       );
@@ -58,7 +54,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     }
   }, [conversations]);
 
-  const createConversation = (): string => {
+  const createConversation = useCallback((): string => {
     const conversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newConversation: Conversation = {
       id: conversationId,
@@ -75,14 +71,14 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     setConversations(prev => [...prev, newConversation]);
     setCurrentConversation(newConversation);
     return conversationId;
-  };
+  }, [user]);
 
-  const addMessage = (messageData: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => {
+  const addMessage = useCallback((messageData: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => {
     const newMessage: Message = {
       ...messageData,
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
-      isRead: messageData.sender === 'user', // User's own messages are always read
+      isRead: messageData.sender === 'user',
     };
 
     setConversations(prev => prev.map(conv => {
@@ -96,37 +92,35 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       return conv;
     }));
 
-    // Update current conversation
-    if (currentConversation?.id === messageData.conversationId) {
-      setCurrentConversation(prev => prev ? {
-        ...prev,
-        messages: [...prev.messages, newMessage],
-        updatedAt: new Date().toISOString(),
-      } : null);
-    }
-  };
+    setCurrentConversation(prev => {
+      if (prev?.id === messageData.conversationId) {
+        return {
+          ...prev,
+          messages: [...prev.messages, newMessage],
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return prev;
+    });
+  }, []);
 
-  const getConversation = (id: string) => {
+  const getConversation = useCallback((id: string) => {
     const conv = conversations.find(c => c.id === id);
     if (conv) {
-      // Mark admin messages as read when viewing
       setConversations(prev => prev.map(c => {
         if (c.id === id) {
           return {
             ...c,
-            messages: c.messages.map(msg => ({
-              ...msg,
-              isRead: true,
-            })),
+            messages: c.messages.map(msg => ({ ...msg, isRead: true })),
           };
         }
         return c;
       }));
     }
     return conv;
-  };
+  }, [conversations]);
 
-  const markAsWaitingForAdmin = (conversationId: string) => {
+  const markAsWaitingForAdmin = useCallback((conversationId: string) => {
     setConversations(prev => prev.map(conv => {
       if (conv.id === conversationId) {
         return {
@@ -138,9 +132,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       }
       return conv;
     }));
-  };
+  }, []);
 
-  const addAdminReply = (conversationId: string, content: string) => {
+  const addAdminReply = useCallback((conversationId: string, content: string) => {
     const adminMessage: Message = {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       conversationId,
@@ -161,16 +155,13 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       }
       return conv;
     }));
-  };
+  }, []);
 
-  const getSupportRequests = (): SupportRequest[] => {
+  const getSupportRequests = useCallback((): SupportRequest[] => {
     return conversations
       .filter(conv => conv.status === 'waiting-for-admin' || conv.status === 'admin-replied')
       .map(conv => {
-        const lastUserMessage = [...conv.messages]
-          .reverse()
-          .find(msg => msg.sender === 'user');
-
+        const lastUserMessage = [...conv.messages].reverse().find(msg => msg.sender === 'user');
         return {
           conversationId: conv.id,
           userEmail: conv.userEmail,
@@ -180,9 +171,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
           status: conv.status === 'waiting-for-admin' ? 'pending' : 'responded',
         };
       });
-  };
+  }, [conversations]);
 
-  const markAsResponded = (conversationId: string) => {
+  const markAsResponded = useCallback((conversationId: string) => {
     setConversations(prev => prev.map(conv => {
       if (conv.id === conversationId) {
         return {
@@ -193,9 +184,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       }
       return conv;
     }));
-  };
+  }, []);
 
-  const closeConversation = (conversationId: string) => {
+  const closeConversation = useCallback((conversationId: string) => {
     setConversations(prev => prev.map(conv => {
       if (conv.id === conversationId) {
         return {
@@ -206,7 +197,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       }
       return conv;
     }));
-  };
+  }, []);
 
   return (
     <MessagesContext.Provider

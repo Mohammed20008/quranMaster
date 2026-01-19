@@ -95,7 +95,7 @@
 .bookSubtitle {
   font-size: 0.875rem;
   color: var(--foreground-secondary);
-  font-family: var(--font-arabic);
+  font-family: var(--font-hadith);
 }
 
 /* Chapter Dropdown */
@@ -205,7 +205,7 @@
 
 .dropdownItemAr {
   font-size: 0.85rem;
-  font-family: var(--font-arabic);
+  font-family: var(--font-hadith);
   opacity: 0.8;
 }
 
@@ -343,7 +343,7 @@
 }
 
 .chapterArabic {
-  font-family: var(--font-arabic);
+  font-family: var(--font-hadith);
   font-size: 1.5rem;
   color: var(--foreground-secondary);
 }
@@ -430,7 +430,7 @@
 }
 
 .arabicText {
-  font-family: var(--font-arabic);
+  font-family: var(--font-hadith);
   font-size: 1.6rem;
   line-height: 2.2;
   text-align: right;

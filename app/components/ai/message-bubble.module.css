@@ -21,20 +21,22 @@
 }
 
 .userBubble {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
+  border: 1px solid var(--primary);
   color: white;
   border-bottom-right-radius: 0.25rem;
 }
 
 .aiBubble {
-  background: var(--surface);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   color: var(--foreground);
+  border-left: 3px solid var(--primary);
   border-bottom-left-radius: 0.25rem;
 }
 
 .adminBubble {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: var(--primary-gradient);
   color: white;
   border-bottom-left-radius: 0.25rem;
 }

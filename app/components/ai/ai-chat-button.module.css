@@ -5,20 +5,21 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   border: none;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(198, 147, 32, 0.4);
   z-index: 9997;
   transition: all 0.3s ease;
 }
 
 .chatButton:hover {
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 12px 32px rgba(198, 147, 32, 0.6);
+  transform: translateY(-2px);
 }
 
 .badge {

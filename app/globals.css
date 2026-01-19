@@ -47,6 +47,7 @@
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-arabic: 'Uthmanic Hafs', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+  --font-hadith: 'Amiri', serif;
   --font-arabic-alt: 'Cairo', 'Amiri', sans-serif;
 }
 

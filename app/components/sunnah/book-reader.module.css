@@ -98,7 +98,7 @@
 .chapterArabic {
   font-size: 0.75rem;
   opacity: 0.85;
-  font-family: var(--font-arabic);
+  font-family: var(--font-hadith);
   line-height: 1.6;
 }
 
@@ -221,7 +221,7 @@
 }
 
 .hadithArabic {
-  font-family: var(--font-arabic);
+  font-family: var(--font-hadith);
   font-size: 2rem;
   line-height: 2.4;
   color: var(--foreground);

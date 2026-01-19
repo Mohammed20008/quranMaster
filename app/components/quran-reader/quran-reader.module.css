@@ -135,11 +135,14 @@
 
 .pageText {
   text-align: justify;
-  text-align-last: center;
+  text-justify: inter-word;
   direction: rtl;
-  line-height: 2.2;
-  font-size: 2rem;
-  padding: 0 16px;
+  line-height: inherit;
+  font-size: inherit;
+  padding: 0;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .mushafPage .pageText {
@@ -200,10 +203,18 @@
 }
 
 .mushafPage {
-  padding: 50px 45px;
+  padding: 40px 45px;
   min-height: 80vh;
   position: relative;
   background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pageView .mushafPage {
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 [data-theme='dark'] .mushafPage {

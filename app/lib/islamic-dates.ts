@@ -1,5 +1,6 @@
 // @ts-ignore
 import moment from 'moment-hijri';
+import type { Moment } from 'moment';
 
 export interface IslamicEvent {
   name: string;
@@ -163,3 +164,36 @@ export const HIJRI_MONTHS = [
   'Dhu al-Qi\'dah',
   'Dhu al-Hijjah',
 ];
+
+// Check if a Hijri day is a Sunnah fasting day
+export function isSunnahFastingDay(hijriDay: number, gregDate: Moment, hijriMonth?: number): { isFasting: boolean; reason?: string } {
+  // Mondays and Thursdays
+  const dayOfWeek = gregDate.day(); // 0 (Sun) - 6 (Sat)
+  
+  // Exception: Tashreeq days (11, 12, 13 of Dhu al-Hijjah) - Fasting is forbidden
+  if (hijriMonth === 12 && (hijriDay === 11 || hijriDay === 12 || hijriDay === 13)) {
+    return { isFasting: false };
+  }
+
+  if (dayOfWeek === 1) return { isFasting: true, reason: 'Monday' };
+  if (dayOfWeek === 4) return { isFasting: true, reason: 'Thursday' };
+
+  // Ayam al-Beed (13th, 14th, 15th)
+  if (hijriDay === 13 || hijriDay === 14 || hijriDay === 15) {
+    return { isFasting: true, reason: 'White Day' };
+  }
+
+  return { isFasting: false };
+}
+
+// Get Moon Phase based on Hijri day (approximate)
+export function getMoonPhase(hijriDay: number): { name: string; icon: string } {
+  if (hijriDay === 1) return { name: 'New Moon', icon: '🌑' };
+  if (hijriDay < 7) return { name: 'Waxing Crescent', icon: '🌙' };
+  if (hijriDay === 7 || hijriDay === 8) return { name: 'First Quarter', icon: '🌓' };
+  if (hijriDay < 14) return { name: 'Waxing Gibbous', icon: '🌔' };
+  if (hijriDay === 14 || hijriDay === 15) return { name: 'Full Moon', icon: '🌕' };
+  if (hijriDay < 22) return { name: 'Waning Gibbous', icon: '🌖' };
+  if (hijriDay === 22 || hijriDay === 23) return { name: 'Last Quarter', icon: '🌗' };
+  return { name: 'Waning Crescent', icon: '🌘' };
+}
