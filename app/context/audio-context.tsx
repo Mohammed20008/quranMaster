@@ -179,9 +179,47 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     audioRef.current.currentTime = time;
   };
 
+  const preloaderRef = useRef<HTMLAudioElement | null>(null);
+  
+  const preloadNextVerse = () => {
+    const currentState = stateRef.current;
+    if (currentState.currentSurah && currentState.playbackMode === 'verse' && currentReciter) {
+        const surah = surahs.find((s: any) => s.number === currentState.currentSurah);
+        if (!surah) return;
+
+        let nextSurah = currentState.currentSurah;
+        let nextVerse = (currentState.currentVerse || 0) + 1;
+
+        if (nextVerse > surah.totalVerses) {
+            if (nextSurah < 114) {
+                nextSurah++;
+                nextVerse = 1;
+            } else {
+                return;
+            }
+        }
+
+        const everyAyahKey = currentReciter.everyAyahKey || 'Alafasy_128kbps';
+        const surahStr = nextSurah.toString().padStart(3, '0');
+        const verseStr = nextVerse.toString().padStart(3, '0');
+        const url = `https://www.everyayah.com/data/${everyAyahKey}/${surahStr}${verseStr}.mp3`;
+
+        if (preloaderRef.current && preloaderRef.current.src !== url) {
+            console.log('Preloading next verse:', `${nextSurah}:${nextVerse}`);
+            preloaderRef.current.src = url;
+            preloaderRef.current.load();
+        }
+    }
+  };
+
   useEffect(() => {
     const audio = new Audio();
+    audio.preload = 'auto';
     audioRef.current = audio;
+
+    const preloader = new Audio();
+    preloader.preload = 'auto';
+    preloaderRef.current = preloader;
 
     const handleTimeUpdate = () => {
       setState(prev => ({ ...prev, currentTime: audio.currentTime }));
@@ -193,6 +231,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     const handlePlay = () => {
       setState(prev => ({ ...prev, isPlaying: true }));
+      preloadNextVerse();
     };
 
     const handlePause = () => {
@@ -232,6 +271,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audio.removeEventListener('progress', handleProgress);
       audio.pause();
       audioRef.current = null;
+      preloaderRef.current = null;
     };
   }, []);
 

@@ -33,7 +33,7 @@ export default function Header({
   currentPage
 }: HeaderProps) {
   const { settings, updateSettings } = useUserData();
-  const { state: audioState, playSurah, playVerse, togglePlay, stop, currentReciter } = useAudio();
+  const { state: audioState, playSurah, playVerse, playPage, togglePlay, stop, currentReciter } = useAudio();
   
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);

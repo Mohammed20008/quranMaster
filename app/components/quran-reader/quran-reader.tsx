@@ -180,6 +180,10 @@ export default function QuranReader({
   const surah = surahs.find(s => s.number === surahNumber);
   const verses = getVersesBySurah(surahNumber);
 
+  // Adjust font size and line height for spread mode
+  const displayFontSize = viewMode === 'spread' ? fontSize * 0.85 : fontSize;
+  const displayLineHeight = viewMode === 'spread' ? 1.8 : 1.8;
+
   if (!surah) {
     return <div className={styles.error}>Surah not found</div>;
   }
@@ -299,20 +303,11 @@ export default function QuranReader({
 
   // Scroll active verse into view
   useEffect(() => {
-    console.log('Audio State Sync:', { 
-      audioSurah: audioState.currentSurah, 
-      audioVerse: audioState.currentVerse, 
-      readerSurah: surahNumber 
-    });
-
     if (audioState.currentSurah === surahNumber && audioState.currentVerse) {
         const verseId = `${surahNumber}-${audioState.currentVerse}`;
         const verseEl = document.getElementById(`verse-${verseId}`);
         if (verseEl) {
-            console.log('Scrolling to verse:', verseId);
             verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            console.warn('Verse element not found for scrolling:', verseId);
         }
     }
   }, [audioState.currentSurah, audioState.currentVerse, surahNumber]);
@@ -490,7 +485,7 @@ export default function QuranReader({
                                     >
                                       <span 
                                         className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                                        style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}
+                                        style={{ fontSize: `${displayFontSize}px`, lineHeight: displayLineHeight }}
                                       >
                                         {fontMode === 'qpc' ? (
                                           (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
@@ -557,7 +552,7 @@ export default function QuranReader({
                         >
                           <span 
                             className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                            style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}
+                            style={{ fontSize: `${displayFontSize}px`, lineHeight: displayLineHeight }}
                           >
                             {fontMode === 'qpc' ? (
                               (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
@@ -655,7 +650,7 @@ export default function QuranReader({
                           <p 
                             className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"}
                             style={{ 
-                              fontSize: `${fontSize}px`, 
+                              fontSize: `${displayFontSize}px`, 
                               lineHeight: '2',
                               marginBottom: '0',
                               textAlign: 'right',
