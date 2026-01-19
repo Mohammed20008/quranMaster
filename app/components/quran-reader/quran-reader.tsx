@@ -9,8 +9,10 @@ import styles from './quran-reader.module.css';
 import Toast from '../ui/toast';
 import TafsirSheet from '../tafsir/tafsir-sheet';
 import { fetchSurahQPCData } from '@/app/actions/get-qpc-data';
+import { fetchQuranMetadata } from '@/app/actions/get-metadata';
 import QPCFontLoader from './qpc-font-loader';
 import { QPCVerseData } from '@/types/qpc';
+import quranData from '@/data/quran.json';
 import translationData from '../../../data/translation/en-maarif-ul-quran-simple.json';
 import transliterationData from '../../../data/translitration/syllables-transliteration.json';
 import MutashabihatView from './mutashabihat-view';
@@ -164,6 +166,52 @@ function VersePopup({
   );
 }
 
+// Outstanding Notification Component
+function TransitionNotification({ title, message, onClose }: { title: string; message: string; onClose: () => void }) {
+  const isJuz = title.toLowerCase().includes('juz');
+  const isHizb = title.toLowerCase().includes('hizb');
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: -100, scale: 0.9 }}
+      animate={{ opacity: 1, y: 30, scale: 1 }}
+      exit={{ opacity: 0, y: -100, scale: 0.9 }}
+      className={styles.outstandingNotification}
+    >
+      <div className={styles.notificationGlow}></div>
+      <div className={styles.notificationContent}>
+        <div className={`${styles.notificationIcon} ${isJuz ? styles.iconJuz : isHizb ? styles.iconHizb : styles.iconRub}`}>
+          {isJuz ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+          ) : isHizb ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+          )}
+        </div>
+        <div className={styles.notificationText}>
+          <h3>{title}</h3>
+          <p>{message}</p>
+        </div>
+        <button onClick={onClose} className={styles.notificationClose}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function QuranReader({ 
   surahNumber, 
   showTransliteration = true, 
@@ -199,6 +247,69 @@ export default function QuranReader({
   const [activeMutashabihatVerse, setActiveMutashabihatVerse] = useState<string | null>(null);
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set());
   const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set());
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  // Metadata for transitions
+  const [juzData, setJuzData] = useState<any>(null);
+  const [hizbData, setHizbData] = useState<any>(null);
+  const [rubData, setRubData] = useState<any>(null);
+
+  const [outstandingNotification, setOutstandingNotification] = useState<{ title: string; message: string } | null>(null);
+  const [lastNotificationKey, setLastNotificationKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchQuranMetadata('juz').then(setJuzData);
+    fetchQuranMetadata('hizb').then(setHizbData);
+    fetchQuranMetadata('rub').then(setRubData);
+  }, []);
+
+  // Transition Detection Logic
+  useEffect(() => {
+    if (!audioState.currentVerse || !audioState.currentSurah || !juzData || !hizbData || !rubData) return;
+
+    const currentKey = `${audioState.currentSurah}:${audioState.currentVerse}`;
+    
+    // Check for Juz Start
+    Object.values(juzData).forEach((j: any) => {
+      if (j.first_verse_key === currentKey && lastNotificationKey !== `juz-${j.juz_number}`) {
+        setOutstandingNotification({ 
+          title: 'Al-Juz', 
+          message: `Juz ${j.juz_number} starts here` 
+        });
+        setLastNotificationKey(`juz-${j.juz_number}`);
+      }
+    });
+
+    // Check for Hizb Start
+    Object.values(hizbData).forEach((h: any) => {
+        if (h.first_verse_key === currentKey && lastNotificationKey !== `hizb-${h.hizb_number}`) {
+          setOutstandingNotification({ 
+            title: 'Al-Hizb', 
+            message: `Hizb ${h.hizb_number} starts here` 
+          });
+          setLastNotificationKey(`hizb-${h.hizb_number}`);
+        }
+    });
+
+    // Check for Rub Start
+    Object.values(rubData).forEach((r: any) => {
+        if (r.first_verse_key === currentKey && lastNotificationKey !== `rub-${r.rub_number}`) {
+          setOutstandingNotification({ 
+            title: 'Rub el Hizb', 
+            message: `A new quarter started` 
+          });
+          setLastNotificationKey(`rub-${r.rub_number}`);
+        }
+    });
+  }, [audioState.currentVerse, audioState.currentSurah, juzData, hizbData, rubData, lastNotificationKey]);
+
+  // Auto-close notification
+  useEffect(() => {
+    if (outstandingNotification) {
+      const timer = setTimeout(() => setOutstandingNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [outstandingNotification]);
 
   // Notify parent of current page
   useEffect(() => {
@@ -222,17 +333,26 @@ export default function QuranReader({
   useEffect(() => {
     if (fontMode === 'qpc') {
       setLoadingQPC(true);
-      fetchSurahQPCData(surahNumber).then(data => {
+      // Fetch current and adjacent surahs for spread mode
+      const surahsToLoad = viewMode === 'spread' 
+        ? [surahNumber - 1, surahNumber, surahNumber + 1].filter(n => n >= 1 && n <= 114)
+        : [surahNumber];
+
+      Promise.all(surahsToLoad.map(n => fetchSurahQPCData(n))).then(results => {
          const map: Record<string, QPCVerseData> = {};
-         data.forEach(d => {
-             const [s, v] = d.id.split(':');
-             map[`${s}-${v}`] = d;
+         results.forEach(surahData => {
+            surahData.forEach(d => {
+                const [s, v] = d.id.split(':');
+                map[`${s}-${v}`] = d;
+            });
          });
          setQpcData(map);
          setLoadingQPC(false);
-         if (data.length > 0) {
-           const firstPage = data[0]?.page;
-           if (firstPage) setVisiblePages(new Set([firstPage]));
+         // Find initial visible page
+         const initialData = results.find((rd, idx) => surahsToLoad[idx] === surahNumber);
+         if (initialData && initialData.length > 0) {
+            const firstPage = initialData[0]?.page;
+            if (firstPage) setVisiblePages(new Set([firstPage]));
          }
       });
     } else {
@@ -240,7 +360,7 @@ export default function QuranReader({
       setVisiblePages(new Set());
       setLoadedPages(new Set());
     }
-  }, [fontMode, surahNumber]);
+  }, [fontMode, surahNumber, viewMode]);
 
   // IntersectionObserver for lazy loading fonts
   useEffect(() => {
@@ -312,8 +432,6 @@ export default function QuranReader({
     }
   }, [audioState.currentSurah, audioState.currentVerse, surahNumber]);
 
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-
   const toggleTestMode = () => {
     setIsTestMode(!isTestMode);
     setRevealedVerses(new Set());
@@ -363,6 +481,16 @@ export default function QuranReader({
 
   return (
     <div className={styles.reader}>
+      <AnimatePresence>
+        {outstandingNotification && (
+          <TransitionNotification 
+            title={outstandingNotification.title}
+            message={outstandingNotification.message}
+            onClose={() => setOutstandingNotification(null)}
+          />
+        )}
+      </AnimatePresence>
+
       <QPCFontLoader pages={activePagesArray} />
       
       {/* Share Modal */}
@@ -435,6 +563,7 @@ export default function QuranReader({
             <p className="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
           </div>
         )}
+
       </div>
 
       {/* Verses */}
@@ -446,40 +575,99 @@ export default function QuranReader({
               <div className={viewMode === 'spread' ? styles.spreadView : styles.pageView}>
                 {viewMode === 'spread' ? (
                   (() => {
-                    const pages: Record<number, QuranVerse[]> = {};
+                    const pages: Record<number, any[]> = {};
+                    
+                    // Flatten all verses from quranData to allow cross-surah spreads
+                    const allVerses = Object.keys(quranData).flatMap(sNum => 
+                      (quranData[sNum as keyof typeof quranData] as any).map((v: any) => ({
+                        ...v,
+                        chapter: parseInt(sNum)
+                      }))
+                    );
+
+                    // Find all pages that contain verses from the current surah
+                    const currentSurahPages = new Set<number>();
                     verses.forEach((v: QuranVerse) => {
-                      const page = qpcData[`${surahNumber}-${v.verse}`]?.page || 0;
-                      if (!pages[page]) pages[page] = [];
-                      pages[page].push(v);
+                      const page = qpcData[`${surahNumber}-${v.verse}`]?.page;
+                      if (page) currentSurahPages.add(page);
                     });
-                    const pageNumbers = Object.keys(pages).map(Number).sort((a, b) => a - b);
+
+                    // For each page in the current surah, find its partner in the spread
+                    const activePages = new Set<number>();
+                    currentSurahPages.forEach(p => {
+                      if (p % 2 === 1) { // Odd page (Right)
+                        activePages.add(p);
+                        activePages.add(p + 1);
+                      } else { // Even page (Left)
+                        activePages.add(p - 1);
+                        activePages.add(p);
+                      }
+                    });
+
+                    // Populate pages with verses
+                    activePages.forEach(p => {
+                      pages[p] = allVerses.filter(v => {
+                        const vKey = `${v.chapter}-${v.verse}`;
+                        return qpcData[vKey]?.page === p;
+                      });
+                    });
+
+                    const getPageInfo = (pNum: number) => {
+                        const pageVerses = pages[pNum];
+                        if (!pageVerses || pageVerses.length === 0) return { surahName: '', juzNumber: '' };
+                        const firstV = pageVerses[0];
+                        const sInfo = surahs.find(s => s.number === firstV.chapter);
+                        let jNum = '';
+                        if (juzData) {
+                            const found = Object.values(juzData).find((j: any) => {
+                                const mapping = j.verse_mapping[firstV.chapter];
+                                if (!mapping) return false;
+                                const parts = mapping.split('-');
+                                const vIndex = firstV.verse;
+                                if (parts.length === 2) {
+                                    return vIndex >= Number(parts[0]) && vIndex <= Number(parts[1]);
+                                }
+                                return vIndex === Number(parts[0]);
+                            });
+                            if (found) jNum = (found as any).juz_number;
+                        }
+                        return { surahName: sInfo ? `Surat ${sInfo.transliteration}` : '', juzNumber: jNum };
+                    };
+
+                    const sortedPages = Array.from(activePages).sort((a, b) => a - b);
                     const spreads: number[][] = [];
-                    for (let i = 0; i < pageNumbers.length; i += 2) {
-                      spreads.push([pageNumbers[i], pageNumbers[i+1]].filter(Boolean));
+                    for (let i = 0; i < sortedPages.length; i += 2) {
+                      spreads.push([sortedPages[i], sortedPages[i + 1]].filter(Boolean));
                     }
 
                     return spreads.map((spread, idx) => (
                       <div key={idx} className={styles.spreadContainer}>
-                        <div className={styles.mushafBook}>
+                        <div className={styles.mushafBook} dir="rtl">
                           <div className={styles.spineShadow}></div>
-                          {spread.map((pageNum, pIdx) => (
-                            <div 
-                              key={pageNum} 
-                              className={`${styles.mushafPage} ${pIdx === 0 ? styles.rightPage : styles.leftPage}`}
-                            >
-                              <div className={styles.pageHeader}>
-                                <span>Page {pageNum}</span>
-                              </div>
-                              <div className={styles.pageText}>
-                                {pages[pageNum].map((verse: QuranVerse) => {
-                                  const verseId = `${surahNumber}-${verse.verse}`;
+                          {spread.map((pageNum, pIdx) => {
+                            const info = getPageInfo(pageNum);
+                            return (
+                              <div 
+                                key={pageNum}
+                                data-page={pageNum}
+                                className={`${styles.mushafPage} ${pIdx === 0 ? styles.rightPage : styles.leftPage}`}
+                              >
+                                <div className={styles.pageHeader}>
+                                  <span>{info.surahName}</span>
+                                  <span>Juz' {info.juzNumber}</span>
+                                </div>
+                                <div className={styles.pageText}>
+                                  {pages[pageNum]?.map((verse: any) => {
+                                  const verseId = `${verse.chapter}-${verse.verse}`;
                                   const isBlurred = isTestMode && !revealedVerses.has(verseId);
+                                  const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse.toString();
+                                  
                                   return (
                                     <span 
                                       key={verseId}
                                       id={`verse-${verseId}`}
                                       className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
-                                        audioState.currentSurah === surahNumber && audioState.currentVerse === verse.verse ? styles.playing : ''
+                                        isPlaying ? styles.playing : ''
                                       }`}
                                       onClick={() => isTestMode && toggleVerseReveal(verseId)}
                                     >
@@ -506,105 +694,148 @@ export default function QuranReader({
                                         )}
                                       </span>
                                       {!isTestMode && (
-  <VersePopup 
-    verse={verse} 
-    verseId={verseId} 
-    isBookmarked={bookmarkedVerses.has(verseId)}
-    onCopy={copyVerse}
-    onBookmark={handleBookmark}
-    onShare={shareVerse}
-    onTafsir={setActiveTafsirVerse}
-    onMutashabihat={setActiveMutashabihatVerse}
-    onPlay={(v) => playVerseAudio(surahNumber, v.verse)}
-  />
-)}
+                                        <VersePopup 
+                                          verse={verse} 
+                                          verseId={verseId} 
+                                          isBookmarked={bookmarkedVerses.has(verseId)}
+                                          onCopy={copyVerse}
+                                          onBookmark={handleBookmark}
+                                          onShare={shareVerse}
+                                          onTafsir={setActiveTafsirVerse}
+                                          onMutashabihat={setActiveMutashabihatVerse}
+                                          onPlay={(v) => playVerseAudio(v.chapter, v.verse)}
+                                        />
+                                      )}
                                     </span>
                                   );
                                 })}
+                                </div>
+                                <div className={styles.pageFooter}>
+                                  <span>{pageNum}</span>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     ));
                   })()
                 ) : (
-                  <div className={styles.pageText}>
-                    {verses.map((verse, index) => {
-                      const verseId = `${surahNumber}-${verse.verse}`;
-                      const isBlurred = isTestMode && !revealedVerses.has(verseId);
-                      
-                      return (
-                        <Fragment key={verseId}>
-                           {/* Page Break Indicator */}
-                           {index > 0 && fontMode === 'qpc' && qpcData[verseId]?.page && qpcData[`${surahNumber}-${verses[index-1].verse}`]?.page && 
-                            qpcData[verseId].page !== qpcData[`${surahNumber}-${verses[index-1].verse}`]?.page && (
-                             <div className={styles.pageBreak}>
-                               <span>Page {qpcData[verseId].page}</span>
-                             </div>
-                           )}
-                        <span 
-                          id={`verse-${verseId}`}
-                          className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
-                            audioState.currentSurah === surahNumber && audioState.currentVerse === verse.verse ? styles.playing : ''
-                          }`}
-                          onClick={() => isTestMode && toggleVerseReveal(verseId)}
-                        >
-                          <span 
-                            className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                            style={{ fontSize: `${displayFontSize}px`, lineHeight: displayLineHeight }}
-                          >
-                            {fontMode === 'qpc' ? (
-                              (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
-                                <span className={styles.skeletonText} style={{ 
-                                  display: 'inline-block', 
-                                  width: `${50 + (verse.verse % 3) * 30}px`, 
-                                  height: '1.2em', 
-                                  verticalAlign: 'middle',
-                                  marginLeft: '4px'
-                                }}></span>
-                              ) : (
-                                qpcData[verseId].words.map(w => (
-                                    <span key={w.id} className={`qpc-word`}>{w.text}{' '}</span>
-                                ))
-                              )
-                            ) : (
-                                verse.text
-                            )}
-                          </span>
-                          
-                          {/* Hover Popup Actions */}
-                          {!isTestMode && (
-  <VersePopup 
-    verse={verse} 
-    verseId={verseId} 
-    isBookmarked={bookmarkedVerses.has(verseId)}
-    onCopy={copyVerse}
-    onBookmark={handleBookmark}
-    onShare={shareVerse}
-    onTafsir={setActiveTafsirVerse}
-    onMutashabihat={setActiveMutashabihatVerse}
-    onPlay={(v) => playVerseAudio(surahNumber, v.verse)}
-  />
-)}
+                    (() => {
+                        // Group verses by page for standard page view too
+                        const pages: Record<number, any[]> = {};
+                        const allVerses = Object.keys(quranData).flatMap(sNum => 
+                          (quranData[sNum as keyof typeof quranData] as any).map((v: any) => ({
+                            ...v,
+                            chapter: parseInt(sNum)
+                          }))
+                        );
+                        
+                        const currentSurahPages = new Set<number>();
+                        verses.forEach((v: QuranVerse) => {
+                          const page = qpcData[`${surahNumber}-${v.verse}`]?.page;
+                          if (page) currentSurahPages.add(page);
+                        });
 
-                          {fontMode !== 'qpc' && (
-                            <span className={styles.verseNumberInline}>
-                              <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                {/* Outer decorative circle */}
-                                <circle cx="18" cy="18" r="17" stroke="currentColor" strokeWidth="1.5" />
-                                <circle cx="18" cy="18" r="13" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-                                <text x="18" y="23" textAnchor="middle" fontSize="14" fontWeight="600" fill="currentColor">
-                                  {verse.verse}
-                                </text>
-                              </svg>
-                            </span>
-                          )}
-                        </span>
-                        </Fragment>
-                      );
-                    })}
-                  </div>
+                        const sortedActivePages = Array.from(currentSurahPages).sort((a, b) => a - b);
+                        sortedActivePages.forEach(p => {
+                          pages[p] = allVerses.filter(v => {
+                            const vKey = `${v.chapter}-${v.verse}`;
+                            return qpcData[vKey]?.page === p;
+                          });
+                        });
+
+                        const getPageInfo = (pNum: number) => {
+                            const pVerses = pages[pNum];
+                            if (!pVerses || pVerses.length === 0) return { sName: '', jNum: '' };
+                            const firstV = pVerses[0];
+                            const sInfo = surahs.find(s => s.number === firstV.chapter);
+                            let jNum = '';
+                            if (juzData) {
+                                const found = Object.values(juzData).find((j: any) => {
+                                    const mapping = j.verse_mapping[firstV.chapter];
+                                    if (!mapping) return false;
+                                    const parts = mapping.split('-');
+                                    const vIndex = firstV.verse;
+                                    if (parts.length === 2) {
+                                        return vIndex >= Number(parts[0]) && vIndex <= Number(parts[1]);
+                                    }
+                                    return vIndex === Number(parts[0]);
+                                });
+                                if (found) jNum = (found as any).juz_number;
+                            }
+                            return { sName: sInfo ? `Surat ${sInfo.transliteration}` : '', jNum };
+                        };
+
+                        return sortedActivePages.map(pageNum => {
+                            const info = getPageInfo(pageNum);
+                            return (
+                                <div key={pageNum} className={styles.mushafPage} style={{ marginBottom: '40px', boxShadow: 'var(--shadow-md)', borderRadius: '16px' }}>
+                                    <div className={styles.pageHeader}>
+                                        <span>{info.sName}</span>
+                                        <span>Juz' {info.jNum}</span>
+                                    </div>
+                                    <div className={styles.pageText}>
+                                        {pages[pageNum].map((verse: any) => {
+                                            const verseId = `${verse.chapter}-${verse.verse}`;
+                                            const isBlurred = isTestMode && !revealedVerses.has(verseId);
+                                            const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse.toString();
+                                            
+                                            return (
+                                                <span 
+                                                    key={verseId}
+                                                    id={`verse-${verseId}`}
+                                                    className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
+                                                        isPlaying ? styles.playing : ''
+                                                    }`}
+                                                    onClick={() => isTestMode && toggleVerseReveal(verseId)}
+                                                >
+                                                    <span 
+                                                        className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
+                                                        style={{ fontSize: `${displayFontSize}px`, lineHeight: displayLineHeight }}
+                                                    >
+                                                        {fontMode === 'qpc' ? (
+                                                            (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
+                                                                <span className={styles.skeletonText} style={{ 
+                                                                    display: 'inline-block', 
+                                                                    width: `${50 + (verse.verse % 3) * 30}px`, 
+                                                                    height: '1.2em', 
+                                                                    verticalAlign: 'middle',
+                                                                    marginLeft: '4px'
+                                                                }}></span>
+                                                            ) : (
+                                                                qpcData[verseId].words.map((w: any) => (
+                                                                    <span key={w.id} className={`qpc-word`}>{w.text}{' '}</span>
+                                                                ))
+                                                            )
+                                                        ) : (
+                                                            verse.text
+                                                        )}
+                                                    </span>
+                                                    {!isTestMode && (
+                                                        <VersePopup 
+                                                            verse={verse} 
+                                                            verseId={verseId} 
+                                                            isBookmarked={bookmarkedVerses.has(verseId)}
+                                                            onCopy={copyVerse}
+                                                            onBookmark={handleBookmark}
+                                                            onShare={shareVerse}
+                                                            onTafsir={setActiveTafsirVerse}
+                                                            onMutashabihat={setActiveMutashabihatVerse}
+                                                            onPlay={(v) => playVerseAudio(v.chapter, v.verse)}
+                                                        />
+                                                    )}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className={styles.pageFooter}>
+                                        <span>{pageNum}</span>
+                                    </div>
+                                </div>
+                            );
+                        });
+                    })()
                 )}
               </div>
             )}

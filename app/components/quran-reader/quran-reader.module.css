@@ -56,6 +56,42 @@
   margin-top: 16px;
 }
 
+.locationMarkers {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.marker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.marker:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.15);
+}
+
+.marker svg {
+  color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
 .metaItem {
   display: flex;
   align-items: center;
@@ -131,10 +167,17 @@
   direction: rtl; /* Pages from right to left */
   gap: 0;
   background: var(--card-bg);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.4),
+    /* Page stack effect - right side */
+    5px 0 0 -2px #fdf7e9, 5px 0 0 -1px rgba(0,0,0,0.1),
+    10px 0 0 -4px #fff, 10px 0 0 -3px rgba(0,0,0,0.1),
+    /* Page stack effect - left side */
+    -5px 0 0 -2px #fdf7e9, -5px 0 0 -1px rgba(0,0,0,0.1),
+    -10px 0 0 -4px #fff, -10px 0 0 -3px rgba(0,0,0,0.1);
+  border-radius: 4px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Allow stack shadows to show */
   border: 1px solid var(--card-border);
 }
 
@@ -143,14 +186,14 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 60px;
+  width: 40px;
   transform: translateX(-50%);
   background: linear-gradient(90deg, 
-    rgba(0,0,0,0.05) 0%, 
-    rgba(0,0,0,0.2) 45%, 
-    rgba(0,0,0,0.3) 50%, 
-    rgba(0,0,0,0.2) 55%, 
-    rgba(0,0,0,0.05) 100%
+    transparent 0%, 
+    rgba(0,0,0,0.05) 30%, 
+    rgba(0,0,0,0.1) 50%, 
+    rgba(0,0,0,0.05) 70%, 
+    transparent 100%
   );
   z-index: 10;
   pointer-events: none;
@@ -160,31 +203,158 @@
   padding: 50px 45px;
   min-height: 80vh;
   position: relative;
-  background: linear-gradient(to right, #fff9f0 0%, #ffffff 5%, #ffffff 95%, #fff9f0 100%);
+  background: #ffffff;
 }
 
 [data-theme='dark'] .mushafPage {
-  background: linear-gradient(to right, #1a1a1a 0%, #222222 5%, #222222 95%, #1a1a1a 100%);
+  background: #222222;
 }
 
 .rightPage {
+  background: linear-gradient(to left, #fff9f0 0%, #ffffff 8%, #ffffff 100%);
   border-right: 1px solid rgba(0,0,0,0.05);
 }
 
 .leftPage {
+  background: linear-gradient(to right, #fff9f0 0%, #ffffff 8%, #ffffff 100%);
   border-left: 1px solid rgba(0,0,0,0.05);
+}
+
+[data-theme='dark'] .rightPage {
+  background: linear-gradient(to left, #1a1a1a 0%, #222222 8%, #222222 100%);
+}
+
+[data-theme='dark'] .leftPage {
+  background: linear-gradient(to right, #1a1a1a 0%, #222222 8%, #222222 100%);
+}
+
+.outstandingNotification {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+  pointer-events: auto;
+}
+
+.notificationGlow {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: radial-gradient(circle, rgba(198, 147, 32, 0.2) 0%, transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+}
+
+.notificationContent {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(198, 147, 32, 0.3);
+  border-radius: 20px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(198, 147, 32, 0.1);
+}
+
+[data-theme='dark'] .notificationContent {
+  background: rgba(30, 30, 30, 0.85);
+  border-color: rgba(198, 147, 32, 0.4);
+}
+
+.notificationIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notificationIcon.iconJuz {
+  background: linear-gradient(135deg, #c69320 0%, #a67c1a 100%);
+  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.3);
+}
+
+.notificationIcon.iconHizb {
+  background: linear-gradient(135deg, #2087c6 0%, #1a6ba6 100%);
+}
+
+.notificationIcon.iconRub {
+  background: linear-gradient(135deg, #20c66a 0%, #1aa659 100%);
+}
+
+.notificationText h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #c69320;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notificationText p {
+  margin: 2px 0 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.notificationClose {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.notificationClose:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--foreground);
+}
+
+[data-theme='dark'] .notificationClose:hover {
+  background: rgba(255,255,255,0.05);
 }
 
 .pageHeader {
   position: absolute;
-  top: 24px;
+  top: 18px;
+  left: 25px;
+  right: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--foreground-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.pageFooter {
+  position: absolute;
+  bottom: 15px;
   left: 0;
   right: 0;
   text-align: center;
   color: var(--foreground-secondary);
   font-size: 0.85rem;
   font-weight: 600;
-  opacity: 0.6;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .pageText {
