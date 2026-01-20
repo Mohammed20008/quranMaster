@@ -5,6 +5,8 @@ import { useAudio } from '@/app/context/audio-context';
 import { surahs } from '@/data/surah-data';
 import styles from './audio-player-bar.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReciterImage from './reciter-image';
+
 
 export default function AudioPlayerBar() {
   const { state, togglePlay, seek, stop, playNextVerse, playPreviousVerse, currentReciter } = useAudio();
@@ -46,7 +48,12 @@ export default function AudioPlayerBar() {
         <div className={styles.content}>
           {/* Reciter & Surah Info */}
           <div className={styles.info}>
-            <img src={currentReciter?.imageUrl || 'https://static.quran-master.com/reciters/default.jpg'} alt="" className={styles.reciterImg} />
+            <ReciterImage 
+              src={currentReciter?.imageUrl} 
+              name={currentReciter?.name || 'Reciter'} 
+              size={40} 
+              className={styles.reciterImg} 
+            />
             <div className={styles.textInfo}>
               <span className={styles.surahName}>{surah?.transliteration} {state.currentVerse ? `:${state.currentVerse}` : ''}</span>
               <span className={styles.reciterName}>{currentReciter?.name}</span>

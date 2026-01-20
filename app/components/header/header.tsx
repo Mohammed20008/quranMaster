@@ -7,6 +7,8 @@ import { reciters, Reciter } from '@/data/reciters';
 import { useUserData } from '@/app/context/user-data-context';
 import { useAudio } from '@/app/context/audio-context';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReciterImage from '@/app/components/audio/reciter-image';
+
 
 
 export type ViewMode = 'verse' | 'page' | 'spread';
@@ -189,14 +191,17 @@ export default function Header({
           </div>
 
           <div className={styles.divider}></div>
-
           {/* Reciter Dropdown */}
           <div className={styles.reciterDropdown} ref={dropdownRef}>
             <button 
               className={styles.reciterBtn}
               onClick={() => setShowReciters(!showReciters)}
             >
-              <img src={currentReciter?.imageUrl || 'https://static.quran-master.com/reciters/default.jpg'} alt="" />
+              <ReciterImage 
+                src={currentReciter?.imageUrl} 
+                name={currentReciter?.name || 'Reciter'} 
+                size={24} 
+              />
               <span>{currentReciter?.name.split(' ').pop()}</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transform: showReciters ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -217,7 +222,11 @@ export default function Header({
                       className={`${styles.reciterItem} ${settings.selectedReciterId === reciter.id ? styles.active : ''}`}
                       onClick={() => handleReciterSelect(reciter)}
                     >
-                      <img src={reciter.imageUrl || 'https://static.quran-master.com/reciters/default.jpg'} alt={reciter.name} />
+                      <ReciterImage 
+                        src={reciter.imageUrl} 
+                        name={reciter.name} 
+                        size={32} 
+                      />
                       <div className={styles.reciterItemInfo}>
                         <span className={styles.reciterName}>{reciter.name}</span>
                         <span className={styles.reciterSubtext}>{reciter.subtext}</span>
@@ -274,6 +283,17 @@ export default function Header({
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
               </svg>
             )}
+          </button>
+
+          <div className={styles.divider}></div>
+
+          {/* Font Toggle */}
+          <button
+            className={`${styles.fontToggleBtn} ${settings.fontMode === 'qpc' ? styles.active : ''}`}
+            onClick={() => updateSettings({ fontMode: settings.fontMode === 'uthmanic' ? 'qpc' : 'uthmanic' })}
+            title="Toggle Font"
+          >
+            {settings.fontMode === 'qpc' ? 'QPC' : 'Hafs'}
           </button>
         </div>
       </div>

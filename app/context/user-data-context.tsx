@@ -22,6 +22,8 @@ export interface UserSettings {
   showTransliteration: boolean;
   theme: 'light' | 'dark';
   selectedReciterId: number;
+  fontMode: 'uthmanic' | 'qpc';
+  isTestMode: boolean;
 }
 
 export interface UserDataContextType {
@@ -50,6 +52,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   showTransliteration: true,
   theme: 'light',
   selectedReciterId: 1, // Default to Alafasy
+  fontMode: 'qpc', // Default to QPC for page structure
+  isTestMode: false,
 };
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);

@@ -18,6 +18,7 @@ import transliterationData from '../../../data/translitration/syllables-translit
 import MutashabihatView from './mutashabihat-view';
 import ShareModal from '../share/share-modal';
 import { useAudio } from '@/app/context/audio-context';
+import { useUserData } from '@/app/context/user-data-context';
 
 interface QuranReaderProps {
   surahNumber: number;
@@ -238,10 +239,15 @@ export default function QuranReader({
 
   const [toast, setToast] = useState<string | null>(null);
   const [activeTafsirVerse, setActiveTafsirVerse] = useState<string | null>(null);
-  const [isTestMode, setIsTestMode] = useState(false);
-  const [revealedVerses, setRevealedVerses] = useState<Set<string>>(new Set());
+    
+  const { settings, updateSettings } = useUserData();
+  const fontMode = settings.fontMode;
+  const isTestMode = settings.isTestMode;
   
-  const [fontMode, setFontMode] = useState<'uthmanic' | 'qpc'>('uthmanic');
+  // Use a temporary local state for revealedVerses to keep it fast, but sync with settings if needed
+  // For now, let's keep it simple and use local for session-only reveal
+  const [revealedVerses, setRevealedVerses] = useState<Set<string>>(new Set());
+
   const [qpcData, setQpcData] = useState<Record<string, QPCVerseData>>({});
   const [loadingQPC, setLoadingQPC] = useState(false);
   const [activeMutashabihatVerse, setActiveMutashabihatVerse] = useState<string | null>(null);
@@ -329,38 +335,32 @@ export default function QuranReader({
     surahName?: string;
   } | null>(null);
 
-  // QPC data loading
+  // QPC data loading (Needed for page structure even in Hafs mode)
   useEffect(() => {
-    if (fontMode === 'qpc') {
-      setLoadingQPC(true);
-      // Fetch current and adjacent surahs for spread mode
-      const surahsToLoad = viewMode === 'spread' 
-        ? [surahNumber - 1, surahNumber, surahNumber + 1].filter(n => n >= 1 && n <= 114)
-        : [surahNumber];
+    setLoadingQPC(true);
+    // Fetch current and adjacent surahs for spread mode
+    const surahsToLoad = viewMode === 'spread' 
+      ? [surahNumber - 1, surahNumber, surahNumber + 1].filter(n => n >= 1 && n <= 114)
+      : [surahNumber];
 
-      Promise.all(surahsToLoad.map(n => fetchSurahQPCData(n))).then(results => {
-         const map: Record<string, QPCVerseData> = {};
-         results.forEach(surahData => {
-            surahData.forEach(d => {
-                const [s, v] = d.id.split(':');
-                map[`${s}-${v}`] = d;
-            });
-         });
-         setQpcData(map);
-         setLoadingQPC(false);
-         // Find initial visible page
-         const initialData = results.find((rd, idx) => surahsToLoad[idx] === surahNumber);
-         if (initialData && initialData.length > 0) {
-            const firstPage = initialData[0]?.page;
-            if (firstPage) setVisiblePages(new Set([firstPage]));
-         }
-      });
-    } else {
-      setQpcData({});
-      setVisiblePages(new Set());
-      setLoadedPages(new Set());
-    }
-  }, [fontMode, surahNumber, viewMode]);
+    Promise.all(surahsToLoad.map(n => fetchSurahQPCData(n))).then(results => {
+       const map: Record<string, QPCVerseData> = {};
+       results.forEach(surahData => {
+          surahData.forEach(d => {
+              const [s, v] = d.id.split(':');
+              map[`${s}-${v}`] = d;
+          });
+       });
+       setQpcData(map);
+       setLoadingQPC(false);
+       // Find initial visible page
+       const initialData = results.find((rd, idx) => surahsToLoad[idx] === surahNumber);
+       if (initialData && initialData.length > 0) {
+          const firstPage = initialData[0]?.page;
+          if (firstPage) setVisiblePages(new Set([firstPage]));
+       }
+    });
+  }, [surahNumber, viewMode]);
 
   // IntersectionObserver for lazy loading fonts
   useEffect(() => {
@@ -433,9 +433,10 @@ export default function QuranReader({
   }, [audioState.currentSurah, audioState.currentVerse, surahNumber]);
 
   const toggleTestMode = () => {
-    setIsTestMode(!isTestMode);
+    const newMode = !isTestMode;
+    updateSettings({ isTestMode: newMode });
     setRevealedVerses(new Set());
-    setToast(!isTestMode ? 'Test Mode Enabled' : 'Test Mode Disabled');
+    setToast(newMode ? 'Test Mode Enabled' : 'Test Mode Disabled');
   };
 
   const toggleVerseReveal = (verseId: string) => {
@@ -546,13 +547,6 @@ export default function QuranReader({
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
-            </button>
-            <button
-                className={`${styles.fontToggleBtn} ${fontMode === 'qpc' ? styles.active : ''}`}
-                onClick={() => setFontMode(fontMode === 'uthmanic' ? 'qpc' : 'uthmanic')}
-                title="Toggle Font"
-            >
-                {fontMode === 'qpc' ? 'QPC' : 'Hafs'}
             </button>
           </div>
         </div>
@@ -681,7 +675,11 @@ export default function QuranReader({
                                     >
                                       <span 
                                         className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                                        style={{ fontSize: 'inherit', lineHeight: 'inherit' }}
+                                        style={{ 
+                                          fontSize: fontMode === 'qpc' ? 'inherit' : `${displayFontSize}px`, 
+                                          lineHeight: 'inherit',
+                                          fontFamily: fontMode === 'qpc' ? 'inherit' : 'var(--font-arabic)'
+                                        }}
                                       >
                                         {fontMode === 'qpc' ? (
                                           (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
@@ -698,7 +696,10 @@ export default function QuranReader({
                                             ))
                                           )
                                         ) : (
-                                            verse.text
+                                            <>
+                                              {verse.text}
+                                              <span className={styles.hafsVerseMarker}>{verse.verse}</span>
+                                            </>
                                         )}
                                       </span>
                                       {!isTestMode && (
@@ -808,7 +809,11 @@ export default function QuranReader({
                                                 >
                                                     <span 
                                                         className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                                                        style={{ fontSize: 'inherit', lineHeight: 'inherit' }}
+                                                        style={{ 
+                                                            fontSize: fontMode === 'qpc' ? 'inherit' : `${displayFontSize}px`, 
+                                                            lineHeight: 'inherit',
+                                                            fontFamily: fontMode === 'qpc' ? 'inherit' : 'var(--font-arabic)'
+                                                        }}
                                                     >
                                                         {fontMode === 'qpc' ? (
                                                             (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
@@ -825,7 +830,10 @@ export default function QuranReader({
                                                                 ))
                                                             )
                                                         ) : (
-                                                            verse.text
+                                                            <>
+                                                              {verse.text}
+                                                              <span className={styles.hafsVerseMarker}>{verse.verse}</span>
+                                                            </>
                                                         )}
                                                     </span>
                                                     {!isTestMode && (
@@ -875,13 +883,8 @@ export default function QuranReader({
                     >
                       {/* Verse Number Badge */}
                       {fontMode !== 'qpc' && (
-                        <div className={styles.verseNumber}>
-                          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <path d="M20 3L25 15L38 15L28 23L32 36L20 28L8 36L12 23L2 15L15 15L20 3Z" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="1.5"/>
-                            <text x="20" y="25" textAnchor="middle" fontSize="14" fontWeight="600" fill="currentColor">
-                              {verse.verse}
-                            </text>
-                          </svg>
+                        <div className={styles.hafsVerseMarker} style={{ position: 'absolute', top: '24px', left: '24px', margin: 0, fontSize: '1rem', width: '40px', height: '40px' }}>
+                          {verse.verse}
                         </div>
                       )}
 

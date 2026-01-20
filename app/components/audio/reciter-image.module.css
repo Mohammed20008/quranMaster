@@ -1,0 +1,15 @@
+.fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--foreground-secondary);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.fallback svg {
+  opacity: 0.7;
+}

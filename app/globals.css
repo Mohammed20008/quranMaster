@@ -162,8 +162,12 @@ main {
   font-family: var(--font-arabic);
   direction: rtl;
   text-align: right;
-  line-height: 2;
-  font-size: 1.75rem;
+  line-height: 2.2;
+  font-size: 2rem;
+  font-weight: 500;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  word-spacing: 0.12em;
 }
 
 .arabic-heading {

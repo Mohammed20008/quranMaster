@@ -156,7 +156,7 @@
 .spreadView {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 20px 0;
 }
 
 .spreadContainer {
@@ -397,9 +397,16 @@
 
 .arabicText p {
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.2rem;
   line-height: 2.5;
   color: var(--foreground);
+  font-family: var(--font-arabic);
+  text-shadow: 0 0 1px rgba(0,0,0,0.1);
+  word-spacing: 0.15em;
+}
+
+[data-theme='dark'] .arabicText p {
+  text-shadow: 0 0 1px rgba(255,255,255,0.1);
 }
 
 /* Page Break Indicator */
@@ -1494,6 +1501,37 @@
   top: 24px;
   left: 24px;
   color: var(--primary);
+  opacity: 0.8;
+}
+
+.hafsVerseMarker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary);
+  background: var(--background);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 0.45em;
+  font-weight: 700;
+  margin: 0 8px;
+  vertical-align: middle;
+  line-height: 1;
+  box-shadow: 0 0 10px rgba(198, 147, 32, 0.15);
+  position: relative;
+  z-index: 2;
+}
+
+.hafsVerseMarker::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgba(198, 147, 32, 0.1);
+  pointer-events: none;
 }
 
 @media (max-width: 1024px) {
