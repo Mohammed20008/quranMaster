@@ -3,6 +3,7 @@
 import { use, useState } from 'react';
 import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
+import { useChat } from '@/app/context/chat-context';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import BookingCalendar from '@/app/components/teacher/booking-calendar';
@@ -20,6 +21,7 @@ const AvatarDisplay = ({ avatarId, name, size }: { avatarId: string, name: strin
 export default function TeacherProfilePage({ params }: { params: Promise<{ teacherId: string }> }) {
   const { user, teacherId: loggedInTeacherId } = useAuth();
   const { getTeacher } = useTeachers();
+  const { openChat, unreadTotal } = useChat();
   const { teacherId } = use(params);
   const teacher = getTeacher(teacherId);
 
@@ -410,6 +412,7 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
               {/* CTA Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: '200px' }}>
                 {isOwner ? (
+                  <>
                   <Link
                     href="/teacher/settings"
                     style={{
@@ -433,6 +436,42 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
                   >
                     <Edit size={20} /> Manage Profile
                   </Link>
+                  <button
+                    onClick={() => openChat()}
+                    style={{
+                      background: 'white',
+                      color: '#374151',
+                      padding: '1rem 2rem',
+                      borderRadius: '0.75rem',
+                      border: '2px solid #e5e7eb',
+                      fontSize: '1.1rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      position: 'relative'
+                    }}
+                  >
+                    <MessageCircle size={20} /> Messages
+                    {unreadTotal > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: '#ef4444',
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}>{unreadTotal}</span>
+                    )}
+                  </button>
+                  </>
                 ) : (
                   <>
                     <button style={{
@@ -449,7 +488,9 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
                     }}>
                       📅 Book Trial Lesson
                     </button>
-                    <button style={{
+                    <button 
+                      onClick={() => openChat(teacher.email)}
+                      style={{
                       background: 'white',
                       color: '#374151',
                       padding: '1rem 2rem',

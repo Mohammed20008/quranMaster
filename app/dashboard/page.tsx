@@ -9,6 +9,11 @@ import { useUserData } from '@/app/hooks/use-user-data';
 import { surahs } from '@/data/surah-data';
 import styles from './dashboard.module.css';
 import Link from 'next/link';
+import { useChat } from '@/app/context/chat-context';
+import { MessageCircle, Settings } from 'lucide-react';
+import SettingsModal from '@/app/components/profile/settings-modal';
+import { useAuth } from '@/app/context/auth-context';
+import { getAvatarPreset, getAvatarStyle } from '@/app/components/avatar/avatar-utils';
 
 // Decorative Pattern
 const GeometricPattern = () => (
@@ -63,8 +68,11 @@ const DailyQuote = () => {
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
+  const { user } = useAuth();
   const router = useRouter();
   const { bookmarks, lastRead, stats, settings, updateSettings, isLoading: dataLoading } = useUserData();
+  const { unreadTotal, openChat } = useChat();
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -144,7 +152,37 @@ export default function Dashboard() {
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             <span>Read Quran</span>
+            <span>Read Quran</span>
           </button>
+          
+          <button onClick={() => openChat()} className={styles.navBtn}>
+             <MessageCircle size={18} />
+             <span>Messages</span>
+             {unreadTotal > 0 && (
+                <span style={{
+                   background: '#ef4444', 
+                   color: 'white', 
+                   fontSize: '10px', 
+                   fontWeight: 'bold', 
+                   height: '16px', 
+                   minWidth: '16px', 
+                   borderRadius: '999px', 
+                   display: 'flex', 
+                   alignItems: 'center', 
+                   justifyContent: 'center', 
+                   padding: '0 4px',
+                   marginLeft: '4px'
+                }}>
+                  {unreadTotal}
+                </span>
+             )}
+          </button>
+
+          <button onClick={() => setShowSettings(true)} className={styles.navBtn}>
+             <Settings size={18} />
+             <span>Settings</span>
+          </button>
+
           <button onClick={handleSignOut} className={`${styles.navBtn} ${styles.signOutBtn}`}>
             <span>Sign Out</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -166,17 +204,30 @@ export default function Dashboard() {
           >
             <div className={styles.userHeader}>
               <div className={styles.avatarContainer}>
-                {session.user?.image ? (
-                  <Image src={session.user.image} alt="User" fill className="object-cover" />
+                {user?.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:')) ? (
+                  <Image src={user.avatar} alt="User" fill className="object-cover" />
                 ) : (
-                  <div className={styles.avatarPlaceholder}>
-                    {session.user?.name?.[0]}
+                  <div 
+                    className={styles.avatarPlaceholder}
+                    style={{
+                        ...(() => {
+                            const preset = getAvatarPreset(user?.avatar);
+                            const style = getAvatarStyle(preset, 100, user?.name?.[0]);
+                            const { width, height, borderRadius, ...rest } = style;
+                            return rest;
+                        })(),
+                        borderRadius: '0', // Let container handle radius
+                        width: '100%',
+                        height: '100%'
+                    }}
+                  >
+                    {user?.name?.[0]?.toUpperCase()}
                   </div>
                 )}
               </div>
               <div>
                 <div className={styles.greetingBadge}>{getGreeting()}</div>
-                <h1 className={styles.userName}>{session.user?.name?.split(' ')[0]}</h1>
+                <h1 className={styles.userName}>{user?.name?.split(' ')[0] || session.user?.name?.split(' ')[0]}</h1>
                 <p className={styles.welcomeMessage}>
                   Your reading streak is on fire! 🔥 Continue your spiritual journey today.
                 </p>
@@ -570,6 +621,8 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+      
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 }

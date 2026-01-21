@@ -25,6 +25,7 @@ interface AuthContextType {
   openAuthModal: () => void;
   closeAuthModal: () => void;
   getLoginRedirectPath: (email: string) => string;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 // Admin emails - In production, this should come from a database or environment variable
@@ -39,11 +40,12 @@ const isAdminEmail = (email: string): boolean => {
 
 const isTeacherEmail = (email: string): boolean => {
   if (typeof window === 'undefined') return false;
+  if (!email || !email.trim()) return false;
   try {
     const storedTeachers = localStorage.getItem('teachers');
     if (storedTeachers) {
       const teachers = JSON.parse(storedTeachers);
-      return teachers.some((t: any) => t.email.toLowerCase() === email.toLowerCase());
+      return teachers.some((t: any) => t.email && t.email.toLowerCase() === email.toLowerCase());
     }
   } catch (e) {
     console.error('Error checking teacher status', e);
@@ -92,15 +94,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (status === 'authenticated' && session?.user) {
       const email = session.user.email || '';
       const role = isAdminEmail(email) ? 'admin' : (isTeacherEmail(email) ? 'teacher' : 'user');
+      
+      let name = session.user.name || 'User';
+      let avatar = session.user.image || undefined;
+
+      // If teacher, prefer teacher profile data
+      if (role === 'teacher') {
+        if (typeof window !== 'undefined') {
+            try {
+                const storedTeachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+                const teacherProfile = storedTeachers.find((t: any) => t.email.toLowerCase() === email.toLowerCase());
+                if (teacherProfile) {
+                    name = teacherProfile.name;
+                    avatar = teacherProfile.photo;
+                }
+            } catch (e) { console.error(e); }
+        }
+      }
+
       setUser({
-        name: session.user.name || 'User',
-        email: email,
-        avatar: session.user.image || undefined,
+        name,
+        email,
+        avatar,
         role,
       });
       if (role === 'teacher') {
-        setTeacherId(getTeacherIdByEmail(email));
-      }
+          setTeacherId(getTeacherIdByEmail(email));
+        }
+
+        // Add to global user registry for Admin
+        try {
+            const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]');
+            const existingIndex = allUsers.findIndex((u: User) => u.email === email);
+            const newUser = {
+                name: session.user.name || 'User',
+                email: email,
+                avatar: session.user.image || undefined,
+                role
+            };
+            
+            if (existingIndex >= 0) {
+                // Update existing? Optional. Let's start by ensuring existence.
+                // Maybe update if login provides newer info?
+                allUsers[existingIndex] = { ...allUsers[existingIndex], ...newUser };
+            } else {
+                allUsers.push(newUser);
+            }
+            localStorage.setItem('all_users', JSON.stringify(allUsers));
+        } catch(e) { console.error('Registry update failed', e); }
     } else if (status === 'unauthenticated') {
       // Fallback to local storage for manual auth if not in NextAuth session
       const stored = localStorage.getItem('user_session');
@@ -153,15 +194,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    // 1. Clear state locally first
     setUser(null);
-    localStorage.removeItem('user_session');
-    if (status === 'authenticated') {
-      await signOut();
+    setTeacherId(null);
+
+    // 2. Clear all persistence immediately
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem('user_session');
+        window.localStorage.removeItem('next-auth.session-token'); // Just in case
+        window.localStorage.removeItem('next-auth.callback-url');
+        window.sessionStorage.clear();
+      } catch (e) {
+        console.error('Error clearing storage:', e);
+      }
+    }
+    
+    // 3. Attempt NextAuth signout
+    try {
+      await signOut({ redirect: false, callbackUrl: '/' });
+    } catch (e) {
+      console.error('SignOut error:', e);
+    }
+
+    // 4. Force hard navigation/reload with a slight delay to ensure cookies are cleared
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+          window.location.replace('/');
+      }, 100);
     }
   };
 
   const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
+
+  const updateUser = (updates: Partial<User>) => {
+    if (!user) return;
+    
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+    localStorage.setItem('user_session', JSON.stringify(updatedUser));
+    
+    // Update registry
+    try {
+        const allUsers = JSON.parse(localStorage.getItem('all_users') || '[]');
+        const index = allUsers.findIndex((u: User) => u.email === user.email);
+        if (index >= 0) {
+            allUsers[index] = { ...allUsers[index], ...updates };
+            localStorage.setItem('all_users', JSON.stringify(allUsers));
+        }
+    } catch(e) {}
+
+    // Sync with Teacher Profile if applicable
+    if (user.role === 'teacher') {
+        try {
+            const tId = teacherId || getTeacherIdByEmail(user.email);
+            if (tId) {
+                const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+                const tIndex = teachers.findIndex((t: any) => t.id === tId);
+                if (tIndex >= 0) {
+                    if (updates.name) teachers[tIndex].name = updates.name;
+                    if (updates.avatar) teachers[tIndex].photo = updates.avatar;
+                    localStorage.setItem('teachers', JSON.stringify(teachers));
+                }
+            }
+        } catch(e) { console.error('Teacher sync failed', e); }
+    }
+  };
 
   return (
     <AuthContext.Provider 
@@ -176,7 +275,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         openAuthModal,
         closeAuthModal,
-        getLoginRedirectPath
+        getLoginRedirectPath,
+        updateUser
       }}
     >
       {children}

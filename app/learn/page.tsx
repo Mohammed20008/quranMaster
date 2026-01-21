@@ -1,257 +1,325 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { motion } from 'framer-motion';
 import styles from './learn.module.css';
 import { useTeachers } from '@/app/context/teacher-context';
 import { Teacher } from '@/types/teacher';
+import { renderAvatar, getAvatarPreset } from '@/app/components/avatar/avatar-utils';
 
 const BookingModal = dynamic(() => import('./booking-modal'), { 
   ssr: false,
   loading: () => null 
 });
 
-const tajweedRules = [
-  {
-    title: 'Noon Sakinah',
-    description: 'Rules regarding the pronunciation of Noon without a vowel.',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M12 8v8"></path>
-      </svg>
-    )
-  },
-  {
-    title: 'Meem Sakinah',
-    description: 'Rules applying to the letter Meem when it has no vowel.',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-        <path d="M12 8v8"></path>
-      </svg>
-    )
-  },
-  {
-    title: 'Madd (Elongation)',
-    description: 'The act of prolonging the sound of a vowel letter.',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M4 12h16"></path>
-        <path d="M12 4v16"></path>
-      </svg>
-    )
-  },
-  {
-    title: 'Qalb (Iqlab)',
-    description: 'Changing the sound of Noon Sakinah into a Meem.',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-    )
-  }
-];
-
-const teachers = [
-  {
-    name: 'Sheikh Abdullah',
-    specialty: 'Tajweed & Recitation',
-    rating: 4.9,
-    students: 120,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=Abdullah'
-  },
-  {
-    name: 'Ustadha Fatima',
-    specialty: 'Memorization',
-    rating: 5.0,
-    students: 95,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=Fatima'
-  },
-  {
-    name: 'Qari Ahmed',
-    specialty: 'Maqamat',
-    rating: 4.8,
-    students: 200,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=Ahmed'
-  }
-];
-
 export default function LearnPage() {
+  const { teachers: allTeachers } = useTeachers();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('all');
+  const [sortBy, setSortBy] = useState<'rating' | 'students' | 'newest'>('rating');
+
+  // Get unique subjects from all teachers
+  const subjects = useMemo(() => {
+    const subjectSet = new Set<string>();
+    allTeachers.forEach(teacher => {
+      teacher.subjects.forEach(subject => subjectSet.add(subject));
+    });
+    return Array.from(subjectSet);
+  }, [allTeachers]);
+
+  // Filter and sort teachers
+  const filteredTeachers = useMemo(() => {
+    let filtered = allTeachers.filter(teacher => {
+      const matchesSearch = teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           teacher.bio.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSubject = selectedSubject === 'all' || teacher.subjects.includes(selectedSubject);
+      return matchesSearch && matchesSubject;
+    });
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === 'rating') return b.rating - a.rating;
+      if (sortBy === 'students') return (b.students || 0) - (a.students || 0);
+      if (sortBy === 'newest') return new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime();
+      return 0;
+    });
+
+    return filtered;
+  }, [allTeachers, searchQuery, selectedSubject, sortBy]);
 
   return (
     <div className={styles.container}>
       <Link href="/" className={styles.backLink}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 12H5"></path>
           <path d="M12 19l-7-7 7-7"></path>
         </svg>
-        Back to Quran
+        Back to Home
       </Link>
 
       {/* Hero Section */}
-      <div className={styles.hero}>
-        <h1 className={styles.title}>Master the Quran</h1>
+      <motion.div 
+        className={styles.hero}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className={styles.title}>Find Your Perfect Quran Teacher</h1>
         <p className={styles.subtitle}>
-          Learn Tajweed rules, perfect your recitation, and connect with qualified teachers to guide your journey.
+          Connect with certified teachers who will guide you through Tajweed, memorization, and understanding the divine message.
         </p>
-        <div style={{ marginTop: '2rem' }}>
-          <Link href="/learn/join-teacher" className={styles.joinTeacherBtn}>
-            Apply to be a Teacher
-          </Link>
-        </div>
-      </div>
-
-      {/* Recitation Session */}
-      <div className={styles.practiceSection}>
-        <div className={styles.practiceContent}>
-          <h2 className={styles.practiceTitle}>Practice Lounge</h2>
-          <p className={styles.practiceDesc}>
-            Join a live session to practice your recitation with our real teachers. Customize your session and book now.
-          </p>
-          <button 
-            className={styles.startSessionBtn}
-            onClick={() => setIsModalOpen(true)}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            Book Session
-          </button>
-        </div>
-        <div className={styles.practiceVisual}>
-          <svg className={styles.micIcon} width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            <line x1="12" y1="19" x2="12" y2="22"></line>
-            <line x1="8" y1="22" x2="16" y2="22"></line>
-          </svg>
-        </div>
-      </div>
-
-      <BookingModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
-
-      {/* Tajweed Rules Section */}
-      <section className={styles.section}>
-        <div className={styles.sectionTitle}>
-          <svg className={styles.sectionIcon} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-          </svg>
-          <h2>Tajweed Essentials</h2>
-        </div>
-        <div className={styles.grid}>
-          {tajweedRules.map((rule, idx) => (
-            <div key={idx} className={styles.card}>
-              <div className={styles.cardIcon}>
-                {rule.icon}
-              </div>
-              <h3 className={styles.cardTitle}>{rule.title}</h3>
-              <p className={styles.cardDesc}>{rule.description}</p>
+        <div className={styles.heroStats}>
+          <div className={styles.heroStat}>
+            <div className={styles.heroStatValue}>{allTeachers.length}</div>
+            <div className={styles.heroStatLabel}>Certified Teachers</div>
+          </div>
+          <div className={styles.heroStat}>
+            <div className={styles.heroStatValue}>{allTeachers.reduce((sum, t) => sum + (t.students || 0), 0)}</div>
+            <div className={styles.heroStatLabel}>Active Students</div>
+          </div>
+          <div className={styles.heroStat}>
+            <div className={styles.heroStatValue}>
+              {allTeachers.length > 0 ? (allTeachers.reduce((sum, t) => sum + t.rating, 0) / allTeachers.length).toFixed(1) : '0'}★
             </div>
-          ))}
+            <div className={styles.heroStatLabel}>Average Rating</div>
+          </div>
         </div>
-      </section>
+      </motion.div>
 
-      {/* Find Teachers Section */}
-      <section className={styles.section}>
-        <div className={styles.sectionTitle}>
-          <svg className={styles.sectionIcon} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      {/* Apply as Teacher CTA */}
+      <motion.div 
+        className={styles.teacherCta}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className={styles.teacherCtaContent}>
+          <div className={styles.teacherCtaIcon}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <div>
+            <h3>Interested in Teaching?</h3>
+            <p>Share your knowledge and inspire students worldwide</p>
+          </div>
+        </div>
+        <Link href="/learn/join-teacher" className={styles.teacherCtaBtn}>
+          Apply as Teacher
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M12 5l7 7-7 7"></path>
+          </svg>
+        </Link>
+      </motion.div>
+
+      {/* Search and Filters */}
+      <motion.div 
+        className={styles.filters}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className={styles.searchBar}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input 
+            type="text"
+            placeholder="Search teachers by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>Subject:</label>
+          <select 
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className={styles.filterSelect}
+          >
+            <option value="all">All Subjects</option>
+            {subjects.map(subject => (
+              <option key={subject} value={subject}>{subject}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>Sort by:</label>
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className={styles.filterSelect}
+          >
+            <option value="rating">Highest Rated</option>
+            <option value="students">Most Popular</option>
+            <option value="newest">Newest</option>
+          </select>
+        </div>
+      </motion.div>
+
+      {/* Results Count */}
+      <div className={styles.resultsCount}>
+        {filteredTeachers.length === 0 ? (
+          <p>No teachers found matching your criteria</p>
+        ) : (
+          <p>Showing {filteredTeachers.length} {filteredTeachers.length === 1 ? 'teacher' : 'teachers'}</p>
+        )}
+      </div>
+
+      {/* Teachers Grid */}
+      {filteredTeachers.length === 0 ? (
+        <div className={styles.emptyState}>
+          <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          <h2>Expert Teachers</h2>
+          <h3>No Teachers Found</h3>
+          <p>Try adjusting your search or filter criteria</p>
         </div>
-        <div className={styles.grid}>
-          {teachers.map((teacher, idx) => (
-            <div key={idx} className={styles.teacherCard}>
-              <img src={teacher.avatar} alt={teacher.name} className={styles.avatar} />
-              <div className={styles.teacherInfo}>
-                <h3 className={styles.teacherName}>{teacher.name}</h3>
-                <div className={styles.teacherMeta}>
-                  <span>{teacher.specialty}</span>
-                  <div className={styles.rating}>
-                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                    <span>{teacher.rating}</span>
-                  </div>
+      ) : (
+        <>
+          {/* Featured Teachers Section */}
+          {searchQuery === '' && selectedSubject === 'all' && sortBy === 'rating' && (
+            <motion.div 
+              className={styles.featuredSection}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className={styles.featuredHeader}>
+                <div className={styles.featuredBadge}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Featured Teachers
                 </div>
-                <button className={styles.connectBtn}>Connect</button>
+                <h2>Top Rated Educators</h2>
+                <p>Our highest-rated teachers with exceptional student feedback</p>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* New Teachers Section */}
-      <NewTeachersSection />
-      
-    </div>
-  );
-}
-
-function NewTeachersSection() {
-  const { teachers } = useTeachers();
-  const [newTeachers, setNewTeachers] = useState<Teacher[]>([]);
-
-  useEffect(() => {
-    // Sort by join date (newest first) and take top 3
-    // In a real app, date parsing needs to be robust. 
-    // Assuming joinedAt is ISO string.
-    const sorted = [...teachers].sort((a, b) => 
-      new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()
-    ).slice(0, 3);
-    setNewTeachers(sorted);
-  }, [teachers]);
-
-  if (newTeachers.length === 0) return null;
-
-  return (
-      <section className={styles.section}>
-        <div className={styles.sectionTitle}>
-          <div style={{ background: '#dcfce7', padding: '8px', borderRadius: '50%', color: '#166534' }}>
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-               <path d="M12 2v20M2 12h20"/>
-             </svg>
-          </div>
-          <h2>New Teachers to Try</h2>
-        </div>
-        <div className={styles.grid}>
-          {newTeachers.map((teacher) => (
-            <div key={teacher.id} className={styles.teacherCard} style={{ border: '2px solid #dcfce7' }}>
-              <div style={{ position: 'relative' }}>
-                 <img src={teacher.photo} alt={teacher.name} className={styles.avatar} />
-                 <span style={{ position: 'absolute', top: 0, right: 0, background: '#166534', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>NEW</span>
+              
+              <div className={styles.featuredGrid}>
+                {filteredTeachers.slice(0, 3).map((teacher, idx) => (
+                  <Link key={teacher.id} href={teacher.profileUrl} className={styles.featuredCard}>
+                    <div className={styles.featuredRank}>#{idx + 1}</div>
+                    <div className={styles.featuredAvatar}>
+                      {teacher.photo && teacher.photo.startsWith('http') ? (
+                        <img src={teacher.photo} alt={teacher.name} className={styles.featuredAvatarImg} />
+                      ) : (
+                        renderAvatar(getAvatarPreset(teacher.photo || teacher.avatarId), teacher.name, 80)
+                      )}
+                      {teacher.verified && (
+                        <div className={styles.featuredVerified}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <h3>{teacher.name}</h3>
+                    <div className={styles.featuredRating}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                      {teacher.rating.toFixed(1)} • {teacher.students || 0} students
+                    </div>
+                  </Link>
+                ))}
               </div>
-              <div className={styles.teacherInfo}>
-                <h3 className={styles.teacherName}>{teacher.name}</h3>
-                <div className={styles.teacherMeta}>
-                  <span>{teacher.subjects[0] || 'Quran Teacher'}</span>
-                  <div className={styles.rating}>
-                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                    <span>{teacher.rating.toFixed(1)}</span>
+            </motion.div>
+          )}
+
+          {/* All Teachers Grid */}
+          <div className={styles.teachersGrid}>
+            {filteredTeachers.map((teacher, idx) => (
+              <motion.div 
+                key={teacher.id}
+                className={styles.teacherCard}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+              >
+                <Link href={teacher.profileUrl} className={styles.teacherCardLink}>
+                  {/* Avatar */}
+                  <div className={styles.teacherAvatar}>
+                    {teacher.photo && teacher.photo.startsWith('http') ? (
+                      <img src={teacher.photo} alt={teacher.name} className={styles.avatarImage} />
+                    ) : (
+                      <div className={styles.avatarWrapper}>
+                        {renderAvatar(getAvatarPreset(teacher.photo || teacher.avatarId), teacher.name, 100)}
+                      </div>
+                    )}
+                    {teacher.verified && (
+                      <div className={styles.verifiedBadge} title="Verified Teacher">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <Link href={teacher.profileUrl} className={styles.connectBtn} style={{ textAlign: 'center', textDecoration: 'none' }}>
-                  View Profile
+
+                  {/* Content */}
+                  <div className={styles.teacherCardContent}>
+                    <h3 className={styles.teacherName}>{teacher.name}</h3>
+                    
+                    <div className={styles.teacherMeta}>
+                      <div className={styles.teacherRating}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        <span>{teacher.rating.toFixed(1)}</span>
+                      </div>
+                      <div className={styles.teacherStudents}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>{teacher.students || 0} students</span>
+                      </div>
+                    </div>
+
+                    <p className={styles.teacherBio} title={teacher.bio}>
+                      {teacher.bio.length > 100 ? teacher.bio.substring(0, 100) + '...' : teacher.bio}
+                    </p>
+
+                    <div className={styles.teacherSubjects}>
+                      {teacher.subjects.slice(0, 3).map((subject, i) => (
+                        <span key={i} className={styles.subjectTag}>{subject}</span>
+                      ))}
+                      {teacher.subjects.length > 3 && (
+                        <span className={styles.subjectTag}>+{teacher.subjects.length - 3}</span>
+                      )}
+                    </div>
+
+                    <div className={styles.cardFooter}>
+                      <span className={styles.viewProfile}>
+                        View Profile 
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M5 12h14M12 5l7 7-7 7"></path>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
                 </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+              </motion.div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <BookingModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+    </div>
   );
 }

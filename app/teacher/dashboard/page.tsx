@@ -4,9 +4,12 @@ import { useAuth } from '@/app/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useChat } from '@/app/context/chat-context';
+import { MessageCircle } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const { user, isAuthenticated } = useAuth();
+  const { unreadTotal, openChat } = useChat();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -21,13 +24,22 @@ export default function TeacherDashboard() {
     if (!isLoading) {
       if (!isAuthenticated) {
         router.push('/');
-      } else if (user?.role !== 'teacher' && user?.role !== 'admin') {
-         // If user is not teacher or admin, redirect (optional)
-         // For now we allow access if they somehow got here, or show a message
-         console.log('User role:', user?.role);
+        return;
+      }
+      
+      if (user?.role !== 'teacher' && user?.role !== 'admin') {
+         // If user is not teacher or admin, redirect
+         router.push('/dashboard');
       }
     }
   }, [isLoading, isAuthenticated, user, router]);
+
+  // Check auth immediately
+  useEffect(() => {
+      if (!isAuthenticated && !isLoading) {
+          router.push('/');
+      }
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -51,6 +63,18 @@ export default function TeacherDashboard() {
             </div>
             
             <div className="flex items-center gap-4">
+                <button 
+                    onClick={() => openChat()} 
+                    className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                    title="Messages"
+                >
+                    <MessageCircle size={20} />
+                     {unreadTotal > 0 && (
+                        <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-[10px] font-bold text-white flex items-center justify-center rounded-full animate-pulse">
+                            {unreadTotal}
+                        </span>
+                    )}
+                </button>
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b4941f] flex items-center justify-center text-white font-bold">
                         {user?.name?.[0]}

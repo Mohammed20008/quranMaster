@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 
 import { Providers } from './providers';
 import AuthModal from './components/auth/auth-modal';
+import ChatModal from './components/chat/chat-modal';
 import AIChatButton from './components/ai/ai-chat-button';
 import ThemeToggle from './components/ui/theme-toggle';
 
@@ -54,6 +55,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <AuthModal />
+          <ChatModal />
           <AIChatButton />
           <ThemeToggle />
           <Toaster position="top-center" richColors closeButton /> 

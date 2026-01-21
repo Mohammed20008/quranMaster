@@ -6,6 +6,7 @@ import { UserDataProvider } from './context/user-data-context';
 import { ArticleProvider } from './context/article-context';
 import { MessagesProvider } from './context/messages-context';
 import { TeacherProvider } from './context/teacher-context';
+import { ChatProvider } from './context/chat-context';
 import { AudioProvider } from './context/audio-context';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -17,7 +18,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <AuthProvider>
               <MessagesProvider>
                 <TeacherProvider>
-                  {children}
+                  <ChatProvider>
+                    {children}
+                  </ChatProvider>
                 </TeacherProvider>
               </MessagesProvider>
             </AuthProvider>

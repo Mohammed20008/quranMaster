@@ -238,6 +238,191 @@ const Articles = () => {
     );
 }
 
+const LearningPlatform = () => {
+    const { isAuthenticated, openAuthModal } = useAuth();
+
+    return (
+        <section className={styles.learningPlatform}>
+            <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Transform Your Quran Journey</h2>
+                <p className={styles.sectionDesc}>
+                    Join thousands of students learning with certified teachers or become a teacher yourself
+                </p>
+            </div>
+            
+            <div className={styles.platformCards}>
+                {/* Student Enrollment Card */}
+                <motion.div 
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className={styles.platformCard}
+                >
+                    <div className={styles.cardImageSection}>
+                        <img 
+                            src="/child-enjoy.jpg" 
+                            alt="Child learning Quran joyfully" 
+                            className={styles.cardImage}
+                        />
+                        <div className={styles.cardImageOverlay}>
+                            <div className={styles.cardBadge}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                                </svg>
+                                <span>For Students</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className={styles.cardContent}>
+                        <h3 className={styles.cardTitle}>Start Learning with Expert Teachers</h3>
+                        <p className={styles.cardDescription}>
+                            Connect with certified Quran teachers who will guide you through Tajweed, memorization, and understanding the divine message.
+                        </p>
+                        
+                        <ul className={styles.benefitsList}>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>50+ Certified Teachers</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>Flexible Schedule</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>Progress Tracking</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>One-on-One Sessions</span>
+                            </li>
+                        </ul>
+                        
+                        <div className={styles.cardStats}>
+                            <div className={styles.stat}>
+                                <div className={styles.statValue}>2,500+</div>
+                                <div className={styles.statLabel}>Active Students</div>
+                            </div>
+                            <div className={styles.stat}>
+                                <div className={styles.statValue}>4.9★</div>
+                                <div className={styles.statLabel}>Avg Rating</div>
+                            </div>
+                            <div className={styles.stat}>
+                                <div className={styles.statValue}>10k+</div>
+                                <div className={styles.statLabel}>Sessions Completed</div>
+                            </div>
+                        </div>
+                        
+                        <Link href="/learn" className={styles.cardCta}>
+                            <span>Explore Teachers</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"></path>
+                            </svg>
+                        </Link>
+                    </div>
+                </motion.div>
+                
+                {/* Teacher Recruitment Card */}
+                <motion.div 
+                    initial={{ opacity: 0, x: 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className={`${styles.platformCard} ${styles.teacherCard}`}
+                >
+                    <div className={styles.cardImageSection}>
+                        <div className={styles.teacherCardBg}>
+                            <svg className={styles.teacherIcon} width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                            </svg>
+                        </div>
+                        <div className={styles.cardImageOverlay}>
+                            <div className={`${styles.cardBadge} ${styles.goldBadge}`}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span>For Teachers</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className={styles.cardContent}>
+                        <h3 className={styles.cardTitle}>Share Your Knowledge, Inspire Hearts</h3>
+                        <p className={styles.cardDescription}>
+                            Join our platform as a certified teacher and make a lasting impact by teaching Quran to students worldwide.
+                        </p>
+                        
+                        <ul className={styles.benefitsList}>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>Set Your Own Schedule</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>Competitive Earnings</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>Global Student Reach</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span>Full Platform Support</span>
+                            </li>
+                        </ul>
+                        
+                        <div className={styles.requirementsList}>
+                            <h4>Requirements:</h4>
+                            <div className={styles.requirements}>
+                                <span className={styles.requirement}>Ijazah Certificate</span>
+                                <span className={styles.requirement}>Teaching Experience</span>
+                                <span className={styles.requirement}>Fluent Arabic</span>
+                            </div>
+                        </div>
+                        
+                        <Link href="/learn/join-teacher" className={`${styles.cardCta} ${styles.goldCta}`}>
+                            <span>Apply as Teacher</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"></path>
+                            </svg>
+                        </Link>
+                    </div>
+                </motion.div>
+            </div>
+        </section>
+    );
+};
+
 const Features = () => {
     const features = [
         {
@@ -311,6 +496,7 @@ export default function LandingPage() {
             <main>
                 <Hero />
                 <Features />
+                <LearningPlatform />
                 <Articles />
             </main>
             

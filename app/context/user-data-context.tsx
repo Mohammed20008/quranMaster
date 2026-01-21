@@ -153,8 +153,19 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
 
   const updateSettings = (newSettings: Partial<UserSettings>) => {
     setSettings(prev => {
+      // Check if any value actually changed
+      const hasChanges = (Object.keys(newSettings) as Array<keyof UserSettings>).some(
+        key => prev[key] !== newSettings[key]
+      );
+      
+      if (!hasChanges) return prev;
+
       const updated = { ...prev, ...newSettings };
-      localStorage.setItem('userSettings', JSON.stringify(updated));
+      try {
+        localStorage.setItem('userSettings', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save settings', e);
+      }
       return updated;
     });
   };

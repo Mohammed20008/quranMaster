@@ -7,7 +7,9 @@ import { surahs } from '@/data/surah-data';
 import { getVerse } from '@/data/quran-verses';
 import styles from './left-menu.module.css';
 import { useAuth } from '@/app/context/auth-context';
-import { User, Settings, LogOut } from 'lucide-react';
+import { useChat } from '@/app/context/chat-context';
+import { User, Settings, LogOut, MessageCircle } from 'lucide-react';
+import { renderAvatar, getAvatarPreset } from '@/app/components/avatar/avatar-utils';
 
 
 interface LeftMenuProps {
@@ -46,6 +48,7 @@ export default function LeftMenu({
   const [activeSection, setActiveSection] = useState<MenuSection | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, isAdmin, openAuthModal, logout } = useAuth();
+  const { unreadTotal, openChat } = useChat();
   const secondarySidebarRef = useRef<HTMLDivElement>(null);
   const primarySidebarRef = useRef<HTMLDivElement>(null);
   
@@ -262,6 +265,17 @@ export default function LeftMenu({
           </Link>
 
           <button 
+            className={styles.primaryNavItem}
+            onClick={() => openChat()}
+            title="Messages"
+          >
+            <MessageCircle size={22} />
+            {unreadTotal > 0 && (
+              <span className={styles.badge}>{unreadTotal}</span>
+            )}
+          </button>
+
+          <button 
             className={`${styles.primaryNavItem} ${activeSection === 'settings' ? styles.active : ''}`}
             onClick={() => handleSectionClick('settings')}
             title="Settings"
@@ -283,10 +297,10 @@ export default function LeftMenu({
               title={user ? "Go to Dashboard" : "Sign In"}
             >
               {user ? (
-                user.avatar ? (
+                 (user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:'))) ? (
                   <img src={user.avatar} alt={user.name} className={styles.avatar} />
                 ) : (
-                  <div className={styles.authInitials}>{user.name[0]}</div>
+                  renderAvatar(getAvatarPreset(user.avatar), user.name, 32, styles.avatar)
                 )
               ) : (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

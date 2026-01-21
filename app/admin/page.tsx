@@ -26,8 +26,17 @@ const mockStatsData = {
 export default function AdminDashboard() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { articles, deleteArticle } = useArticles();
+
   const router = useRouter();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [userCount, setUserCount] = useState(mockStatsData.users);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const users = JSON.parse(localStorage.getItem('all_users') || '[]');
+        if (users.length > 0) setUserCount(users.length);
+    }
+  }, []);
 
   // Check authentication and admin role
   useEffect(() => {
@@ -172,9 +181,11 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <div className={styles.statContent}>
-                <span className={styles.statValue}>{mockStatsData.users}</span>
+                <span className={styles.statValue}>{userCount}</span>
                 <span className={styles.statLabel}>Users</span>
-                <span className={styles.statChange}>Active Now</span>
+                <span className={styles.statChange}>
+                  <Link href="/admin/users" style={{color: 'inherit', textDecoration: 'none'}}>Manage Users</Link>
+                </span>
               </div>
             </motion.div>
 

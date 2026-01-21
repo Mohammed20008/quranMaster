@@ -9,6 +9,7 @@ interface TeacherContextType {
   submitApplication: (application: Omit<TeacherApplication, 'id' | 'status' | 'submittedAt'>) => void;
   approveApplication: (applicationId: string, adminNotes?: string) => void;
   rejectApplication: (applicationId: string, adminNotes: string) => void;
+  removeTeacher: (teacherId: string) => void;
   getApplication: (id: string) => TeacherApplication | undefined;
   getTeacher: (id: string) => Teacher | undefined;
   getTeacherByEmail: (email: string) => Teacher | undefined;
@@ -31,7 +32,21 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
     }
     
     if (storedTeachers) {
-      setTeachers(JSON.parse(storedTeachers));
+      try {
+        const parsed = JSON.parse(storedTeachers);
+        // Deduplicate by email
+        const uniqueTeachers = parsed.reduce((acc: Teacher[], current: Teacher) => {
+          const x = acc.find(item => item.email.toLowerCase() === current.email.toLowerCase());
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, []);
+        setTeachers(uniqueTeachers);
+      } catch (e) {
+        console.error('Error loading teachers', e);
+      }
     }
   }, []);
 
@@ -88,6 +103,10 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
       availability: application.teachingInfo.availability,
       ijazah: application.qualifications.ijazah,
       joinedAt: new Date().toISOString(),
+      verified: true, // Approved teachers are verified
+      students: 0, // Initial student count
+      totalStudents: 0,
+      status: 'approved',
     };
 
     setTeachers(prev => [newTeacher, ...prev]);
@@ -108,6 +127,18 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const removeTeacher = (teacherId: string) => {
+    setTeachers(prev => prev.filter(t => t.id !== teacherId));
+    
+    // Also find associated application and set it to rejected or removed status so they can re-apply if needed
+    // Or just leave application distinct. If we remove teacher, allow re-application?
+    // User said "their email should be treated as any normal user", which means getTeacherByEmail should return undefined.
+    // Removing from `teachers` array accomplishes this.
+    // We might also want to update the application status to allow re-application logic in join-teacher page
+    // The join-teacher page checks getTeacherByEmail. If not found, it allows application.
+    // So simply removing from 'teachers' list is sufficient for "treated as normal user".
+  };
+
   const getApplication = (id: string) => {
     return applications.find(app => app.id === id);
   };
@@ -120,7 +151,7 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
   };
 
   const getTeacherByEmail = (email: string) => {
-    return teachers.find(teacher => teacher.email === email);
+    return teachers.find(teacher => teacher.email.toLowerCase() === email.toLowerCase());
   };
 
   const updateTeacher = (id: string, updates: Partial<Teacher>) => {
@@ -137,6 +168,7 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
         submitApplication,
         approveApplication,
         rejectApplication,
+        removeTeacher,
         getApplication,
         getTeacher,
         getTeacherByEmail,

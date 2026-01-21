@@ -4,7 +4,7 @@ export interface TeacherApplication {
     name: string;
     email: string;
     phone: string;
-    photo?: string;
+    photo: string; // Required - removed optional
   };
   qualifications: {
     degrees: string[];
@@ -50,6 +50,9 @@ export interface Teacher {
   teachingStyle?: string[]; // e.g. "Patient", "Structured", "Conversational"
   totalStudents?: number;
   totalSessions?: number;
+  verified?: boolean; // Whether the teacher has been verified by the platform
+  students?: number; // Alias for totalStudents for backward compatibility
+  status?: 'pending' | 'approved' | 'rejected'; // Track application/approval status
 }
 
 export interface TeacherSession {
