@@ -1,115 +1,186 @@
-/* Learn Page Styles */
+/* Learn Page Styles - Premium Design */
 
 .container {
   min-height: 100vh;
-  background: var(--background);
-  padding-bottom: 4rem;
+  background: radial-gradient(circle at top right, rgba(198, 147, 32, 0.05), transparent 60%),
+              radial-gradient(circle at bottom left, rgba(198, 147, 32, 0.03), transparent 60%),
+              var(--background);
+  padding-bottom: 6rem;
 }
 
 .backLink {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
   margin: 1.5rem;
-  color: var(--foreground);
+  color: var(--foreground-secondary);
   text-decoration: none;
   font-weight: 600;
-  transition: all 0.2s;
-  border-radius: 12px;
+  transition: all 0.3s ease;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0,0,0,0.05);
+  backdrop-filter: blur(10px);
 }
 
 .backLink:hover {
   background: rgba(198, 147, 32, 0.1);
   color: var(--primary);
+  transform: translateX(-2px);
+  border-color: rgba(198, 147, 32, 0.2);
 }
 
 /* Hero Section */
 .hero {
   text-align: center;
-  padding: 3rem 1.5rem 2rem;
-  max-width: 900px;
+  padding: 5rem 1.5rem 3rem;
+  max-width: 1000px;
   margin: 0 auto;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(198, 147, 32, 0.1) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #c69320 0%, #b8860b 100%);
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground-secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 1rem;
-  line-height: 1.2;
+  margin-bottom: 1.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.title span {
+  display: block;
+  font-size: 0.6em;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+  -webkit-text-fill-color: initial;
 }
 
 @media (min-width: 768px) {
   .title {
-    font-size: 3rem;
+    font-size: 4rem;
   }
 }
 
 .subtitle {
-  font-size: 1.125rem;
+  font-size: 1.2rem;
   color: var(--foreground-secondary);
-  line-height: 1.7;
-  max-width: 600px;
-  margin: 0 auto 2rem;
+  line-height: 1.6;
+  max-width: 650px;
+  margin: 0 auto 3rem;
 }
 
 .heroStats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  max-width: 600px;
+  gap: 1.5rem;
+  max-width: 700px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(198, 147, 32, 0.05);
-  border-radius: 20px;
-  border: 1px solid rgba(198, 147, 32, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 640px) {
   .heroStats {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 1.5rem;
   }
 }
 
 .heroStat {
   text-align: center;
+  position: relative;
+}
+
+.heroStat:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -0.75rem;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border), transparent);
+}
+
+@media (max-width: 640px) {
+  .heroStat:not(:last-child)::after {
+    display: none;
+  }
 }
 
 .heroStatValue {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 800;
-  color: var(--primary);
+  background: linear-gradient(135deg, #c69320 0%, #eab308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0.25rem;
 }
 
 .heroStatLabel {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--foreground-secondary);
   font-weight: 600;
 }
 
 /* Teacher CTA */
 .teacherCta {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 0 1.5rem;
 }
 
 .teacherCta > div:first-child {
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.1), rgba(198, 147, 32, 0.05));
-  border: 2px solid rgba(198, 147, 32, 0.2);
-  border-radius: 20px;
-  padding: 2rem;
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.98));
+  border: 1px solid rgba(198, 147, 32, 0.3);
+  border-radius: 24px;
+  padding: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  flex-wrap: wrap;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.teacherCta > div:first-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at top right, rgba(198, 147, 32, 0.2), transparent 70%);
+  pointer-events: none;
 }
 
 .teacherCtaContent {
@@ -117,77 +188,94 @@
   align-items: center;
   gap: 1.5rem;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .teacherCtaIcon {
-  width: 64px;
-  height: 64px;
-  background: var(--primary-gradient);
-  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #c69320 0%, #b8860b 100%);
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 10px 20px rgba(198, 147, 32, 0.3);
 }
 
 .teacherCtaContent h3 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--foreground);
-  margin-bottom: 0.25rem;
+  color: white;
+  margin-bottom: 0.5rem;
 }
 
 .teacherCtaContent p {
-  font-size: 0.95rem;
-  color: var(--foreground-secondary);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .teacherCtaBtn {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--primary-gradient);
-  color: white;
+  background: white;
+  color: #1a1a1a;
   padding: 1rem 2rem;
-  border-radius: 12px;
+  border-radius: 14px;
   font-weight: 700;
   text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(198, 147, 32, 0.3);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
 }
 
 .teacherCtaBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(198, 147, 32, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
 }
 
 /* Filters */
 .filters {
   max-width: 1200px;
-  margin: 3rem auto 2rem;
-  padding: 0 1.5rem;
+  margin: 4rem auto 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
   align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
 }
 
 .searchBar {
-  flex: 1;
-  min-width: 250px;
+  flex: 2;
+  min-width: 300px;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem 1.25rem;
+  border-radius: 14px;
+  padding: 0.85rem 1.25rem;
+  transition: all 0.2s;
+}
+
+.searchBar:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(198, 147, 32, 0.1);
 }
 
 .searchBar svg {
-  color: var(--foreground-secondary);
+  color: var(--primary);
   flex-shrink: 0;
 }
 
@@ -201,14 +289,12 @@
   font-family: inherit;
 }
 
-.searchInput::placeholder {
-  color: var(--foreground-secondary);
-}
-
 .filterGroup {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 200px;
 }
 
 .filterLabel {
@@ -219,36 +305,50 @@
 }
 
 .filterSelect {
+  width: 100%;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
   font-size: 0.95rem;
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
 }
 
 .filterSelect:hover {
   border-color: var(--primary);
-}
-
-.filterSelect:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(198, 147, 32, 0.1);
+  background-color: rgba(198, 147, 32, 0.02);
 }
 
 /* Results Count */
 .resultsCount {
   max-width: 1200px;
-  margin: 0 auto 1.5rem;
-  padding: 0 1.5rem;
+  margin: 0 auto 2rem;
+  padding: 0 2rem;
   font-size: 0.95rem;
   color: var(--foreground-secondary);
   font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resultsCount::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-left: 1rem;
+  opacity: 0.5;
 }
 
 /* Teachers Grid */
@@ -273,20 +373,23 @@
   }
 }
 
-/* Teacher Card */
+/* Teacher Card - Premium Glass */
 .teacherCard {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .teacherCard:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px);
   border-color: var(--primary);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
 .teacherCardLink {
@@ -297,27 +400,34 @@
   color: inherit;
 }
 
+/* Avatar Frame */
 .teacherAvatar {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 2rem auto 0;
-  border-radius: 50%;
-  border: 4px solid var(--primary);
-  overflow: hidden;
-  box-shadow: 0 8px 20px rgba(198, 147, 32, 0.2);
+  width: 100%;
+  height: 140px;
+  margin-bottom: 2.5rem;
+  background: linear-gradient(to bottom, rgba(198, 147, 32, 0.05) 0%, transparent 100%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 }
 
-.avatarImage {
-  width: 100%;
-  height: 100%;
+.avatarImage, .avatarWrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid var(--card-bg);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   object-fit: cover;
+  background: var(--card-bg);
+  transform: translateY(50%); /* Push halfway out of the background header */
 }
 
 .verifiedBadge {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: -40px; /* Adjust based on avatar transform */
+  left: 50%;
+  margin-left: 25px; /* Offset to bottom right of avatar */
   width: 32px;
   height: 32px;
   background: var(--primary);
@@ -327,52 +437,64 @@
   justify-content: center;
   color: white;
   border: 3px solid var(--card-bg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 2;
 }
 
 .teacherCardContent {
-  padding: 1.5rem;
+  padding: 1rem 1.75rem 1.75rem;
   display: flex;
   flex-direction: column;
   flex: 1;
   text-align: center;
+  padding-top: 3.5rem; /* Make room for the avatar overlay */
 }
 
 .teacherName {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--foreground);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .teacherMeta {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
   font-size: 0.9rem;
   color: var(--foreground-secondary);
 }
 
-.teacherRating,
+.teacherRating {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 0.25rem 0.6rem;
+  border-radius: 50px;
+  color: #b45309;
+  font-weight: 600;
+}
+
 .teacherStudents {
   display: flex;
   align-items: center;
   gap: 0.35rem;
 }
 
-.teacherRating svg {
-  color: #fbbf24;
-}
-
 .teacherBio {
   font-size: 0.95rem;
   color: var(--foreground-secondary);
   line-height: 1.6;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   flex: 1;
-  text-align: left;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .teacherSubjects {
@@ -380,269 +502,57 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .subjectTag {
   display: inline-block;
-  padding: 0.35rem 0.75rem;
-  background: rgba(198, 147, 32, 0.1);
-  color: var(--primary);
+  padding: 0.4rem 0.85rem;
+  background: var(--background);
+  color: var(--foreground-secondary);
   border-radius: 50px;
   font-size: 0.8rem;
   font-weight: 600;
-  border: 1px solid rgba(198, 147, 32, 0.2);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.teacherCard:hover .subjectTag {
+  background: rgba(198, 147, 32, 0.05);
+  border-color: rgba(198, 147, 32, 0.2);
+  color: var(--primary);
 }
 
 .cardFooter {
-  padding-top: 1rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border);
 }
 
 .viewProfile {
-  color: var(--primary);
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: 600;
   font-size: 0.95rem;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  border: 1px solid transparent;
 }
 
 .teacherCard:hover .viewProfile {
-  transform: translateX(4px);
-  display: inline-block;
-}
-
-/* Empty State */
-.emptyState {
-  text-align: center;
-  padding: 4rem 1.5rem;
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.emptyState svg {
-  color: var(--foreground-secondary);
-  opacity: 0.3;
-  margin-bottom: 1.5rem;
-}
-
-.emptyState h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--foreground);
-  margin-bottom: 0.5rem;
-}
-
-.emptyState p {
-  font-size: 1rem;
-  color: var(--foreground-secondary);
-}
-
-/* Dark Mode */
-:global(.dark) .heroStats,
-:global(.dark) .searchBar,
-:global(.dark) .filterSelect,
-:global(.dark) .teacherCard {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-:global(.dark) .teacherCta > div:first-child {
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.15), rgba(198, 147, 32, 0.08));
-  border-color: rgba(198, 147, 32, 0.3);
-}
-
-:global(.dark) .subjectTag {
-  background: rgba(198, 147, 32, 0.15);
-  border-color: rgba(198, 147, 32, 0.3);
-}
-/* Featured Teachers Section - Premium */
-.featuredSection {
-  max-width: 1200px;
-  margin: 0 auto 4rem;
-  padding: 0 1.5rem;
-}
-
-.featuredHeader {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.featuredBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, #c69320, #b8860b);
-  color: white;
-  padding: 0.5rem 1.25rem;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 15px rgba(198, 147, 32, 0.3);
-}
-
-.featuredHeader h2 {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--foreground);
-  margin-bottom: 0.75rem;
-}
-
-.featuredHeader p {
-  font-size: 1.05rem;
-  color: var(--foreground-secondary);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.featuredGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-}
-
-@media (min-width: 768px) {
-  .featuredGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.featuredCard {
-  position: relative;
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.05), rgba(198, 147, 32, 0.02));
-  border: 2px solid rgba(198, 147, 32, 0.2);
-  border-radius: 24px;
-  padding: 2.5rem 2rem;
-  text-align: center;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.featuredCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #c69320, #b8860b);
-}
-
-.featuredCard:hover {
-  transform: translateY(-8px);
-  border-color: var(--primary);
-  box-shadow: 0 20px 40px rgba(198, 147, 32, 0.2);
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.1), rgba(198, 147, 32, 0.05));
-}
-
-.featuredRank {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #c69320, #b8860b);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 800;
-  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.4);
-}
-
-.featuredAvatar {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 1.5rem;
-  border-radius: 50%;
-  border: 4px solid var(--primary);
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(198, 147, 32, 0.3);
-}
-
-.featuredAvatarImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.featuredVerified {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  width: 36px;
-  height: 36px;
   background: var(--primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   color: white;
-  border: 4px solid var(--background);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.featuredCard h3 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--foreground);
-  margin-bottom: 0.75rem;
-}
-
-.featuredRating {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--foreground-secondary);
-}
-
-.featuredRating svg {
-  color: #fbbf24;
-}
-
-/* Avatar Wrapper Enhancement */
-.avatarWrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.avatarWrapper > div {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* Enhanced View Profile Button */
-.viewProfile {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 0.95rem;
-  transition: all 0.3s;
+  transform: translateY(2px);
+  box-shadow: 0 8px 20px rgba(198, 147, 32, 0.25);
 }
 
 .viewProfile svg {
+  margin-left: 0.5rem;
   transition: transform 0.3s;
 }
 
@@ -650,41 +560,174 @@
   transform: translateX(4px);
 }
 
-/* Premium Border Animations */
-@keyframes borderShine {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Featured Section - Premium Horizontal Layout */
+.featuredSection {
+  max-width: 1200px;
+  margin: 0 auto 5rem;
+  padding: 0 1.5rem;
 }
 
-.teacherCard:hover {
-  animation: none;
+.featuredHeader {
+  text-align: center;
+  margin-bottom: 3.5rem;
 }
 
-/* Dark Mode Enhanced */
-:global(.dark) .featuredCard {
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.1), rgba(198, 147, 32, 0.05));
+.featuredBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #c69320, #eab308);
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 20px rgba(198, 147, 32, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.featuredGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+}
+
+@media (max-width: 1024px) {
+  .featuredGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .featuredGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.featuredCard {
+  position: relative;
+  background: linear-gradient(145deg, var(--card-bg), rgba(255,255,255,0.5));
+  border: 1px solid rgba(198, 147, 32, 0.2);
+  border-radius: 32px;
+  padding: 3rem 2rem 2rem;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 10px 30px rgba(198, 147, 32, 0.05);
+}
+
+.featuredCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #c69320, transparent);
+  border-radius: 0 0 10px 10px;
+}
+
+.featuredCard:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(198, 147, 32, 0.15);
+  border-color: rgba(198, 147, 32, 0.4);
+}
+
+.featuredRank {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #c69320, #b8860b);
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(198, 147, 32, 0.3);
+  z-index: 2;
+}
+
+.featuredAvatar {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  padding: 5px;
+  background: linear-gradient(135deg, #c69320, transparent);
+}
+
+.featuredAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid var(--card-bg);
+}
+
+.featuredVerified {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 32px;
+  height: 32px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 6rem 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  border: 1px dashed var(--border);
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+/* Dark Mode Overrides */
+:global(.dark) .backLink {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .filters {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(.dark) .subjectTag {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .teacherCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(.dark) .teacherCard:hover {
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(198, 147, 32, 0.3);
 }
 
-:global(.dark) .featuredCard:hover {
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.15), rgba(198, 147, 32, 0.08));
+:global(.dark) .featuredCard {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.2));
 }
 
-/* Responsive Featured Section */
-@media (max-width: 768px) {
-  .featuredRank {
-    width: 40px;
-    height: 40px;
-    font-size: 1.1rem;
-  }
-  
-  .featuredAvatar {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .featuredCard {
-    padding: 2rem 1.5rem;
-  }
+:global(.dark) .avatarImage,
+:global(.dark) .avatarWrapper {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
 }

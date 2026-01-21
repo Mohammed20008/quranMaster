@@ -210,10 +210,10 @@ export default function LearnPage() {
                   <Link key={teacher.id} href={teacher.profileUrl} className={styles.featuredCard}>
                     <div className={styles.featuredRank}>#{idx + 1}</div>
                     <div className={styles.featuredAvatar}>
-                      {teacher.photo && teacher.photo.startsWith('http') ? (
+                      {teacher.photo ? (
                         <img src={teacher.photo} alt={teacher.name} className={styles.featuredAvatarImg} />
                       ) : (
-                        renderAvatar(getAvatarPreset(teacher.photo || teacher.avatarId), teacher.name, 80)
+                        renderAvatar(getAvatarPreset(teacher.avatarId), teacher.name, 80)
                       )}
                       {teacher.verified && (
                         <div className={styles.featuredVerified}>
@@ -249,11 +249,11 @@ export default function LearnPage() {
                 <Link href={teacher.profileUrl} className={styles.teacherCardLink}>
                   {/* Avatar */}
                   <div className={styles.teacherAvatar}>
-                    {teacher.photo && teacher.photo.startsWith('http') ? (
+                    {teacher.photo ? (
                       <img src={teacher.photo} alt={teacher.name} className={styles.avatarImage} />
                     ) : (
                       <div className={styles.avatarWrapper}>
-                        {renderAvatar(getAvatarPreset(teacher.photo || teacher.avatarId), teacher.name, 100)}
+                        {renderAvatar(getAvatarPreset(teacher.avatarId), teacher.name, 100)}
                       </div>
                     )}
                     {teacher.verified && (
