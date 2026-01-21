@@ -68,26 +68,7 @@ export default function SideControls({ onFontSizeChange, currentFontSize }: Side
   return (
     <div className={styles.container}>
       {/* Font Size Control */}
-      <div className={styles.controlGroup}>
-        <h3 className={styles.groupTitle}>Font Size</h3>
-        <div className={styles.row}>
-          <div className={styles.iconBtn} title="Font Size">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 7V4h16v3M9 20h6M12 4v16" />
-            </svg>
-          </div>
-          <div className={styles.sliderContainer}>
-            <input 
-              type="range" 
-              min="20" 
-              max="100" 
-              value={currentFontSize} 
-              onChange={handleFontSizeChange}
-              className={styles.rangeInput}
-            />
-          </div>
-        </div>
-      </div>
+
 
       {/* Auto Scroll Control */}
       <div className={styles.controlGroup}>

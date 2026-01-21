@@ -230,7 +230,7 @@ export default function QuranReader({
   const verses = getVersesBySurah(surahNumber);
 
   // Target specific line counts for Mushaf modes
-  const displayFontSize = viewMode === 'spread' ? fontSize * 1.15 : (viewMode === 'page' ? fontSize * 1.1 : fontSize);
+  const displayFontSize = viewMode === 'spread' ? fontSize * 0.581 : (viewMode === 'page' ? fontSize * 1.1 : fontSize);
   const displayLineHeight = viewMode === 'spread' ? 1.65 : (viewMode === 'page' ? 1.85 : 2.2);
 
   if (!surah) {
@@ -512,51 +512,50 @@ export default function QuranReader({
 
       {/* Surah Header */}
       <div className={styles.surahHeader}>
-        <div className={styles.surahHeaderContent}>
-          <div className={styles.surahTitle}>
-            <h1 className="arabic-heading">{surah.name}</h1>
-            <div className={styles.surahSubtitle}>
-              <span className={styles.surahTransliteration}>{surah.transliteration}</span>
-              <span className={styles.separator}>•</span>
-              <span className={styles.surahTranslation}>{surah.translation}</span>
-            </div>
-          </div>
-          <div className={styles.surahMeta}>
-            <div className={styles.metaItem}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-              <span>{surah.totalVerses} Verses</span>
-            </div>
-            <div className={styles.metaItem}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span>{surah.revelationType}</span>
-            </div>
-            {/* Test Mode Button */}
-            <button 
-              className={`${styles.testBtn} ${!isTestMode ? styles.pulsate : ''} ${isTestMode ? styles.active : ''}`}
-              onClick={toggleTestMode}
-              title={isTestMode ? "Exit Test Mode" : "Start Memorization Test"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-            </button>
+        
+        {/* New Image-based Header Frame */}
+        <div className={styles.surahFrameContainer}>
+          <img 
+            src="/surah-header.png" 
+            alt="Surah Header" 
+            className={styles.surahFrameImg}
+          />
+          <div className={styles.surahFrameContent}>
+            <h1 className={styles.surahFrameTitle}>{surah.name}</h1>
           </div>
         </div>
 
-        {/* Bismillah (except for Surah 1 and 9) */}
-        {surahNumber !== 1 && surahNumber !== 9 && (
-          <div className={styles.bismillah}>
-            <p className="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
+        {/* Meta Info & Actions */}
+        <div className={styles.surahMeta} style={{ marginTop: '0', marginBottom: '24px' }}>
+          <div className={styles.metaItem}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>{surah.totalVerses} Verses</span>
           </div>
-        )}
+          <div className={styles.metaItem}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>{surah.revelationType}</span>
+          </div>
+          {/* Test Mode Button */}
+          <button 
+            className={`${styles.testBtn} ${!isTestMode ? styles.pulsate : ''} ${isTestMode ? styles.active : ''}`}
+            onClick={toggleTestMode}
+            title={isTestMode ? "Exit Test Mode" : "Start Memorization Test"}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
+        </div>
+
+
 
       </div>
 
@@ -634,12 +633,39 @@ export default function QuranReader({
                       spreads.push([sortedPages[i], sortedPages[i + 1]].filter(Boolean));
                     }
 
+                    // Helper to render Surah Header
+                    const renderSurahHeader = (sNum: number) => {
+                      const s = surahs.find(x => x.number === sNum);
+                      if (!s) return null;
+                      
+                      const surahName = s.name.startsWith('سورة') ? s.name : `سورة ${s.name}`;
+
+                      return (
+                        <div className={styles.surahHeaderInPage} key={`header-${sNum}`}>
+                          <div className={styles.surahFrameContainer}>
+                            <img 
+                              src="/surah-header.png" 
+                              alt="Surah Header" 
+                              className={styles.surahFrameImg}
+                            />
+                            <div className={styles.surahFrameContent}>
+                              <h1 className={styles.surahFrameTitle}>{surahName}</h1>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    };
+
                     return spreads.map((spread, idx) => (
                       <div key={idx} className={styles.spreadContainer}>
                         <div className={styles.mushafBook} dir="rtl">
                           <div className={styles.spineShadow}></div>
                           {spread.map((pageNum, pIdx) => {
                             const info = getPageInfo(pageNum);
+                            // Get unique surahs on this page to potentially render headers
+                            const pageVerses = pages[pageNum] || [];
+                            const surahsOnPage = Array.from(new Set(pageVerses.map(v => v.chapter)));
+                            
                             return (
                               <div 
                                 key={pageNum}
@@ -659,63 +685,68 @@ export default function QuranReader({
                                     lineHeight: displayLineHeight
                                   } as React.CSSProperties}
                                 >
-                                  {pages[pageNum]?.map((verse: any) => {
+                                  {pageVerses.map((verse: any, vIndex: number) => {
                                   const verseId = `${verse.chapter}-${verse.verse}`;
                                   const isBlurred = isTestMode && !revealedVerses.has(verseId);
                                   const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse.toString();
                                   
+                                  // Check if this verse is the start of a surah (verse 1)
+                                  const isSurahStart = verse.verse === 1;
+                                  
                                   return (
-                                    <span 
-                                      key={verseId}
-                                      id={`verse-${verseId}`}
-                                      className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
-                                        isPlaying ? styles.playing : ''
-                                      }`}
-                                      onClick={() => isTestMode && toggleVerseReveal(verseId)}
-                                    >
+                                    <Fragment key={verseId}>
+                                      {isSurahStart && renderSurahHeader(verse.chapter)}
                                       <span 
-                                        className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
-                                        style={{ 
-                                          fontSize: fontMode === 'qpc' ? 'inherit' : `${displayFontSize}px`, 
-                                          lineHeight: 'inherit',
-                                          fontFamily: fontMode === 'qpc' ? 'inherit' : 'var(--font-arabic)'
-                                        }}
+                                        id={`verse-${verseId}`}
+                                        className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
+                                          isPlaying ? styles.playing : ''
+                                        }`}
+                                        onClick={() => isTestMode && toggleVerseReveal(verseId)}
                                       >
-                                        {fontMode === 'qpc' ? (
-                                          (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
-                                            <span className={styles.skeletonText} style={{ 
-                                              display: 'inline-block', 
-                                              width: `${50 + (verse.verse % 3) * 30}px`, 
-                                              height: '1.2em', 
-                                              verticalAlign: 'middle',
-                                              marginLeft: '4px'
-                                            }}></span>
+                                        <span 
+                                          className={fontMode === 'qpc' ? `qpc-page-${qpcData[verseId]?.page || 0}` : "arabic-text"} 
+                                          style={{ 
+                                            fontSize: fontMode === 'qpc' ? 'inherit' : `${displayFontSize}px`, 
+                                            lineHeight: 'inherit',
+                                            fontFamily: fontMode === 'qpc' ? 'inherit' : "'Uthmanic Hafs', var(--font-arabic)"
+                                          }}
+                                        >
+                                          {fontMode === 'qpc' ? (
+                                            (!qpcData[verseId] || loadingQPC || !fontsLoaded) ? (
+                                              <span className={styles.skeletonText} style={{ 
+                                                display: 'inline-block', 
+                                                width: `${50 + (verse.verse % 3) * 30}px`, 
+                                                height: '1.2em', 
+                                                verticalAlign: 'middle',
+                                                marginLeft: '4px'
+                                              }}></span>
+                                            ) : (
+                                              qpcData[verseId].words.map((w: any) => (
+                                                  <span key={w.id} className={`qpc-word`}>{w.text}{' '}</span>
+                                              ))
+                                            )
                                           ) : (
-                                            qpcData[verseId].words.map((w: any) => (
-                                                <span key={w.id} className={`qpc-word`}>{w.text}{' '}</span>
-                                            ))
-                                          )
-                                        ) : (
-                                            <>
-                                              {verse.text}
-                                              <span className={styles.hafsVerseMarker}>{verse.verse}</span>
-                                            </>
+                                              <>
+                                                {verse.text}
+                                                <span className={styles.hafsVerseMarker}>{verse.verse}</span>
+                                              </>
+                                          )}
+                                        </span>
+                                        {!isTestMode && (
+                                          <VersePopup 
+                                            verse={verse} 
+                                            verseId={verseId} 
+                                            isBookmarked={bookmarkedVerses.has(verseId)}
+                                            onCopy={copyVerse}
+                                            onBookmark={handleBookmark}
+                                            onShare={shareVerse}
+                                            onTafsir={setActiveTafsirVerse}
+                                            onMutashabihat={setActiveMutashabihatVerse}
+                                            onPlay={(v) => playVerseAudio(v.chapter, v.verse)}
+                                          />
                                         )}
                                       </span>
-                                      {!isTestMode && (
-                                        <VersePopup 
-                                          verse={verse} 
-                                          verseId={verseId} 
-                                          isBookmarked={bookmarkedVerses.has(verseId)}
-                                          onCopy={copyVerse}
-                                          onBookmark={handleBookmark}
-                                          onShare={shareVerse}
-                                          onTafsir={setActiveTafsirVerse}
-                                          onMutashabihat={setActiveMutashabihatVerse}
-                                          onPlay={(v) => playVerseAudio(v.chapter, v.verse)}
-                                        />
-                                      )}
-                                    </span>
+                                    </Fragment>
                                   );
                                 })}
                                 </div>
@@ -812,7 +843,7 @@ export default function QuranReader({
                                                         style={{ 
                                                             fontSize: fontMode === 'qpc' ? 'inherit' : `${displayFontSize}px`, 
                                                             lineHeight: 'inherit',
-                                                            fontFamily: fontMode === 'qpc' ? 'inherit' : 'var(--font-arabic)'
+                                                            fontFamily: fontMode === 'qpc' ? 'inherit' : "'Uthmanic Hafs', var(--font-arabic)"
                                                         }}
                                                     >
                                                         {fontMode === 'qpc' ? (
@@ -904,7 +935,8 @@ export default function QuranReader({
                               lineHeight: '2',
                               marginBottom: '0',
                               textAlign: 'right',
-                              direction: 'rtl'
+                              direction: 'rtl',
+                              fontFamily: fontMode === 'qpc' ? 'inherit' : "'Uthmanic Hafs', var(--font-arabic)"
                             }}
                           >
                             {fontMode === 'qpc' && qpcData[verseId] ? (

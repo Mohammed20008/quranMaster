@@ -7,6 +7,7 @@ import Link from 'next/link';
 import moment from 'moment-hijri';
 import { 
   HIJRI_MONTHS, 
+  HIJRI_MONTHS_AR,
   ISLAMIC_EVENTS, 
   IslamicEvent, 
   isSunnahFastingDay, 
@@ -23,16 +24,19 @@ export default function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<{ day: number; events: UserEvent[] } | null>(null);
   const [customEvents, setCustomEvents] = useState<UserEvent[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activePopup, setActivePopup] = useState<number | null>(null);
 
   // Hijri Date of the *current view's* month
   const hijriYear = currentDate.iYear();
   const hijriMonthIndex = currentDate.iMonth(); // 0-indexed
   const hijriMonthName = HIJRI_MONTHS[hijriMonthIndex];
+  const isHijri = true; // Main calendar page currently defaults to Hijri view
   
   // Calculate grid
-  const startOfMonth = moment(currentDate).startOf('iMonth');
+  const startOfMonth = isHijri ? moment(currentDate).startOf('iMonth') : moment(currentDate).startOf('month');
   const daysInMonth = currentDate.iDaysInMonth();
   const startDayOfWeek = startOfMonth.day(); // 0 (Sun) - 6 (Sat)
+  const calendarStartOffset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Start from Monday
 
   // Today for highlighting
   const today = moment();
@@ -107,13 +111,13 @@ export default function CalendarPage() {
   };
 
   useEffect(() => {
-    // Select today by default if in current month
+    // Select today by default in the sidebar, but DON'T show the popup
     if (isCurrentMonth) {
         setSelectedDay({ day: today.iDate(), events: getEventsForDay(today.iDate()) });
     } else {
         setSelectedDay({ day: 1, events: getEventsForDay(1) });
     }
-  }, [currentDate, customEvents.length]); // Re-run if customEvents length changes to update view
+  }, [currentDate, customEvents.length]);
 
   return (
     <div className={styles.container}>
@@ -139,72 +143,163 @@ export default function CalendarPage() {
             </svg>
           </Link>
           <div>
-            <h1>Global Islamic Calendar</h1>
+            <h1 className="arabic-text" style={{ fontSize: '2.5rem', lineHeight: '1.2' }}>التقويم الهجري العالمي</h1>
             <p>Unified Hijri Calendar & Spiritual Guide</p>
           </div>
         </div>
       </header>
 
       <main className={styles.main}>
-        <div className={styles.calendarWrapper}>
+        <div className={styles.calendarContainer}>
             {/* Top Stats/Events */}
             <section className={styles.eventsSection}>
-                <EventCountdown />
+                <EventCountdown customEvents={customEvents} />
             </section>
 
-            {/* Main Calendar Grid */}
-            <section className={styles.calendarSection}>
-                <div className="flex justify-between items-center mb-10">
-                    <button onClick={prevMonth} className="p-3 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/20">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-                    </button>
-                    <div className="text-center">
-                        <h2 className="text-3xl font-black text-white">{hijriMonthName}</h2>
-                        <span className="text-sm font-bold text-[#d4af37] tracking-widest uppercase">{hijriYear} AH</span>
+            {/* Main Calendar Grid Picker-Style */}
+            <section className={styles.pickerSide}>
+                <div className="mb-6">
+                    <h2 className={styles.pickerMonth}>
+                        {HIJRI_MONTHS_AR[hijriMonthIndex]}
+                    </h2>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs font-bold text-gray-500 tracking-[0.2em] uppercase">
+                            {hijriYear} AH
+                        </span>
+                        <div className="h-[1px] w-12 bg-[#d4af37]/40"></div>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            {currentDate.format('MMMM YYYY')}
+                        </span>
                     </div>
-                    <button onClick={nextMonth} className="p-3 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/20">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
-                    </button>
                 </div>
 
-                <div className={styles.calendarGrid}>
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                        <div key={d} className={styles.dayHeader}>{d}</div>
-                    ))}
+                <div className={styles.calendarWrapper}>
+                    <button onClick={prevMonth} className={styles.sideArrow} title="Previous Month">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
 
-                    {/* Empty cells for padding */}
-                    {Array.from({ length: startDayOfWeek }).map((_, i) => (
-                        <div key={`empty-${i}`} className="aspect-square opacity-0"></div>
-                    ))}
+                    <motion.div 
+                        className={styles.calendarGridWrapper}
+                        key={`${currentDate.format('YYYY-MM')}`}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        onDragEnd={(e, info) => {
+                            if (info.offset.x > 100) prevMonth();
+                            else if (info.offset.x < -100) nextMonth();
+                        }}
+                    >
+                        <div className="grid grid-cols-7 gap-3">
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+                                <div key={d} className={styles.pickerDayHeader}>{d}</div>
+                            ))}
 
-                    {Array.from({ length: daysInMonth }).map((_, i) => {
-                        const day = i + 1;
-                        const events = getEventsForDay(day);
-                        const gregDate = moment(startOfMonth).add(i, 'days');
-                        const isToday = isCurrentMonth && today.iDate() === day;
-                        const isSelected = selectedDay?.day === day;
-                        const fasting = isSunnahFastingDay(day, gregDate, hijriMonthIndex + 1);
+                            {(() => {
+                                const cells = [];
+                                const startDate = moment(startOfMonth).subtract(calendarStartOffset, 'days');
+                                
+                                // Determine if we need 5 or 6 rows (35 or 42 cells)
+                                const endOfMonth = isHijri ? moment(startOfMonth).endOf('iMonth') : moment(startOfMonth).endOf('month');
+                                const totalCells = startDate.diff(endOfMonth, 'days') * -1 > 34 ? 42 : 35;
+                                
+                                for (let i = 0; i < totalCells; i++) {
+                                    const date = moment(startDate).add(i, 'days');
+                                    const day = date.iDate();
+                                    const inMonth = date.iMonth() === hijriMonthIndex && date.iYear() === hijriYear;
+                                    const events = getEventsForDay(inMonth ? day : -1);
+                                    const isDayToday = today.isSame(date, 'day');
+                                    const isSelected = selectedDay?.day === day && inMonth; 
+                                    const fasting = isSunnahFastingDay(day, date, date.iMonth() + 1);
 
-                        return (
-                            <motion.div
-                                key={day}
-                                onClick={() => setSelectedDay({ day, events })}
-                                className={`${styles.dayCell} ${isToday ? styles.today : ''} ${isSelected ? styles.selected : ''}`}
-                                whileHover={{ scale: 1.05, y: -5 }}
-                                transition={{ type: 'spring', stiffness: 300 }}
-                            >
-                                {fasting.isFasting && (
-                                    <div className={styles.fastingBadge}>{fasting.reason === 'White Day' ? '⚪' : '🥙'}</div>
-                                )}
-                                <span className={styles.dayNumber}>{day}</span>
-                                <div className={styles.eventDots}>
-                                    {events.map((e, idx) => (
-                                        <div key={idx} className={styles.eventDot} style={{ backgroundColor: e.color }} title={e.name} />
-                                    ))}
-                                </div>
-                            </motion.div>
-                        );
-                    })}
+                                     cells.push(
+                                        <div key={i} className="relative group">
+                                            <motion.button
+                                                onClick={() => {
+                                                    if (inMonth) {
+                                                        setSelectedDay({ day, events });
+                                                        setActivePopup(day === activePopup ? null : day);
+                                                    }
+                                                }}
+                                                className={`
+                                                    ${styles.dayBtn} 
+                                                    ${inMonth ? styles.dayCurrent : styles.dayOther} 
+                                                    ${isDayToday ? styles.dayToday : ''} 
+                                                    ${isSelected ? styles.daySelected : ''}
+                                                    ${inMonth && !isSelected ? styles.dayHover : ''}
+                                                `}
+                                            >
+                                                <span className="relative z-10">{inMonth ? day : (isHijri ? date.iDate() : date.date())}</span>
+                                                
+                                                 {inMonth && events.length > 0 && (
+                                                    <div className={styles.eventDots}>
+                                                        {events.slice(0, 3).map((e, idx) => (
+                                                            <div key={idx} className={styles.eventDot} style={{ backgroundColor: e.color }} title={e.name} />
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {isDayToday && inMonth && !isSelected && (
+                                                    <div className="absolute bottom-1 w-1 h-1 bg-[#d4af37] rounded-full"></div>
+                                                )}
+                                            </motion.button>
+
+                                             {/* Vertical Quick Action Popup */}
+                                            <AnimatePresence>
+                                                {activePopup === day && inMonth && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 15, scale: 0.8 }}
+                                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-8 z-50 pointer-events-auto"
+                                                    >
+                                                        <div className="relative group/popup">
+                                                            {/* Glow effect behind popup */}
+                                                            <div className="absolute -inset-1 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] rounded-2xl blur opacity-20 group-hover/popup:opacity-40 transition-opacity"></div>
+                                                            
+                                                            <div className="relative bg-[#1a1a1a]/98 backdrop-blur-3xl border border-[#d4af37]/60 rounded-2xl p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col gap-1 min-w-[180px]">
+                                                                <button 
+                                                                    onClick={(e) => { 
+                                                                        e.stopPropagation(); 
+                                                                        setIsModalOpen(true);
+                                                                        setActivePopup(null);
+                                                                    }}
+                                                                    className="flex items-center justify-between gap-4 px-4 py-3 bg-gradient-to-br from-[#d4af37]/10 to-transparent hover:from-[#d4af37]/25 hover:to-[#d4af37]/5 rounded-xl transition-all group/btn"
+                                                                >
+                                                                    <div className="flex flex-col items-start">
+                                                                        <span className="text-[10px] font-black text-[#d4af37] uppercase tracking-[0.2em] leading-none mb-1">Add Event</span>
+                                                                        <span className="text-[12px] font-bold text-white/90">Quick Action</span>
+                                                                    </div>
+                                                                    <div className="w-8 h-8 rounded-lg bg-[#d4af37] flex items-center justify-center shadow-[0_4px_12px_rgba(212,175,55,0.3)] group-hover/btn:scale-110 group-hover/btn:rotate-90 transition-all duration-300">
+                                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="4"><path d="M12 5v14M5 12h14"/></svg>
+                                                                    </div>
+                                                                </button>
+                                                                
+                                                                <div className="h-[1px] bg-white/5 mx-2"></div>
+                                                                
+                                                                <div className="px-4 py-2 flex items-center justify-between">
+                                                                    <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest">{date.format('dddd')}</span>
+                                                                    <span className="text-[10px] text-[#d4af37] font-bold">{date.format('MMM D')}</span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {/* Arrow */}
+                                                            <div className="w-4 h-4 bg-[#1a1a1a] border-r border-b border-[#d4af37]/60 rotate-45 absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-lg"></div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    );
+                                }
+                                return cells;
+                            })()}
+                        </div>
+                    </motion.div>
+
+                    <button onClick={nextMonth} className={styles.sideArrow} title="Next Month">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
                 </div>
             </section>
         </div>
@@ -223,7 +318,7 @@ export default function CalendarPage() {
                         <div className={styles.sideCard}>
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h3 className="!m-0 text-white font-black">{selectedDay.day} {hijriMonthName}</h3>
+                                    <h3 className="!m-0 text-white font-black">{selectedDay.day} {HIJRI_MONTHS_AR[hijriMonthIndex]}</h3>
                                     <p className="text-sm text-gray-500 mt-1">
                                         {moment(startOfMonth).add(selectedDay.day - 1, 'days').format('dddd, D MMMM YYYY')}
                                     </p>

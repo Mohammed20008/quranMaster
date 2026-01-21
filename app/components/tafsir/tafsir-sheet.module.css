@@ -40,11 +40,9 @@
 }
 
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .sheet {
-    background-color: #1a1a1a;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-  }
+[data-theme="dark"] .sheet {
+  background-color: #1a1a1a;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .header {
@@ -57,10 +55,8 @@
   z-index: 10;
 }
 
-@media (prefers-color-scheme: dark) {
-  .header {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-  }
+[data-theme="dark"] .header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .title {
@@ -69,10 +65,8 @@
   color: #333;
 }
 
-@media (prefers-color-scheme: dark) {
-  .title {
-    color: #fff;
-  }
+[data-theme="dark"] .title {
+  color: #fff;
 }
 
 .closeBtn {
@@ -92,13 +86,11 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  .closeBtn {
-    color: #aaa;
-  }
-  .closeBtn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+[data-theme="dark"] .closeBtn {
+  color: #aaa;
+}
+[data-theme="dark"] .closeBtn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .tabs {
@@ -108,10 +100,8 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  .tabs {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-  }
+[data-theme="dark"] .tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .tab {
@@ -126,10 +116,8 @@
   transition: color 0.2s;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tab {
-    color: #888;
-  }
+[data-theme="dark"] .tab {
+  color: #888;
 }
 
 .tab.active {
@@ -194,18 +182,16 @@
     color: #975a16;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tafsirText {
-    color: #e0e0e0;
-  }
-  
-  .tafsirText .blue {
-    color: #81e6d9;
-  }
+[data-theme="dark"] .tafsirText {
+  color: #e0e0e0;
+}
 
-  .tafsirText .brown {
-     color: #f6ad55;
-  }
+[data-theme="dark"] .tafsirText .blue {
+  color: #81e6d9;
+}
+
+[data-theme="dark"] .tafsirText .brown {
+   color: #f6ad55;
 }
 
 .loading {
@@ -216,10 +202,8 @@
   color: #666;
 }
 
-@media (prefers-color-scheme: dark) {
-  .loading {
-    color: #aaa;
-  }
+[data-theme="dark"] .loading {
+  color: #aaa;
 }
 
 .emptyState {

@@ -79,12 +79,6 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
 
       const savedSettings = localStorage.getItem('userSettings');
       if (savedSettings) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) });
-      else {
-          // Check system preference if no settings saved
-          if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              setSettings(prev => ({ ...prev, theme: 'dark' }));
-          }
-      }
     } catch (e) {
       console.error('Failed to load user data', e);
     } finally {

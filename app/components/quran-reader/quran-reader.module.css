@@ -129,7 +129,7 @@
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  padding: 40px;
+  padding: 20px;
   animation: fadeInUp 0.4s ease-out;
 }
 
@@ -141,15 +141,68 @@
   font-size: inherit;
   padding: 0;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+}
+
+/* Surah Frame Header */
+.surahFrameContainer {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto 0px;
+}
+
+.surahFrameImg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 5px;
+}
+
+[data-theme='dark'] .surahFrameImg {
+  filter: invert(1);
+}
+
+.surahFrameContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15%;
+}
+
+.surahFrameTitle {
+  font-family: var(--font-arabic);
+  font-size: 1.3rem;
+  color: #000;
+  margin: 0;
+  line-height: 1;
+  text-align: center;
+  padding-top: 5px;
+}
+
+[data-theme='dark'] .surahFrameTitle {
+  color: #fff;
 }
 
 .mushafPage .pageText {
-  line-height: 1.8;
+  width: 100%;
+  max-width: 600px;
+  /* Fixed height for exactly 15 lines */
+  height: 600px;
+  min-height: 700px;
+  max-height: 700px;
+  display: block;
   text-align: justify;
-  text-align-last: center;
+  text-align-last: justify;
+  direction: rtl;
   margin-top: 20px;
+  padding: 0;
+  overflow: hidden; /* Ensure exactly 15 lines */
+  line-height: 2.5; /* Spacing for ~15 lines */
+  /* Content will compress to fit */
+  transform: scaleY(1);
+  transform-origin: top;
 }
 
 /* Spread View - Two Page Layout */
@@ -203,18 +256,29 @@
 }
 
 .mushafPage {
-  padding: 40px 45px;
-  min-height: 80vh;
+  padding: 50px 33px;
+  height: 750px; /* Fixed height to ensure symmetry */
   position: relative;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
 }
 
 .pageView .mushafPage {
   max-width: 700px;
   margin: 0 auto;
+  height: auto !important;
+  min-height: 750px;
+}
+
+/* Fix text container in Page View */
+.pageView .mushafPage .pageText {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
 [data-theme='dark'] .mushafPage {
@@ -1536,7 +1600,7 @@
 
 @media (max-width: 1024px) {
   .spreadView {
-    padding: 20px 0;
+    padding:20px 0;
   }
   
   .mushafBook {

@@ -37,10 +37,8 @@
   align-items: center;
 }
 
-@media (prefers-color-scheme: dark) {
-  .navbar {
-    background: rgba(5, 5, 5, 0.8);
-  }
+[data-theme="dark"] .navbar {
+  background: rgba(5, 5, 5, 0.8);
 }
 
 .navContent {

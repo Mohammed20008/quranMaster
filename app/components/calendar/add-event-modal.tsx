@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UserEvent } from '@/types/calendar';
 // @ts-ignore
 import moment from 'moment-hijri';
-import { HIJRI_MONTHS } from '@/app/lib/islamic-dates';
+import { HIJRI_MONTHS, HIJRI_MONTHS_AR } from '@/app/lib/islamic-dates';
+import styles from './add-event-modal.module.css';
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -39,7 +40,23 @@ export default function AddEventModal({
       setPickerDate(moment(initial));
       setSelectedInPicker(moment(initial));
     }
-  }, [isOpen]);
+  }, [isOpen, initialSelectedDate]);
+
+  // Keyboard navigation for months
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        prevMonth();
+      } else if (e.key === 'ArrowRight') {
+        nextMonth();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, pickerDate]); // Re-bind on pickerDate change to ensure handlers use latest state
 
   if (!isOpen) return null;
 
@@ -63,143 +80,182 @@ export default function AddEventModal({
     onClose();
   };
 
+  const isHijri = type === 'hijri';
   const hijriMonthName = HIJRI_MONTHS[pickerDate.iMonth()];
   const hijriYear = pickerDate.iYear();
-  const daysInMonth = pickerDate.iDaysInMonth();
-  const startOfMonth = moment(pickerDate).startOf('iMonth');
-  const startDayOfWeek = startOfMonth.day();
+  
+  // Gregorian info for the header if needed
+  const gregMonthName = pickerDate.format('MMMM');
+  const gregYear = pickerDate.year();
 
-  const prevMonth = () => setPickerDate(moment(pickerDate).subtract(1, 'iMonth'));
-  const nextMonth = () => setPickerDate(moment(pickerDate).add(1, 'iMonth'));
+  const startOfMonth = isHijri ? moment(pickerDate).startOf('iMonth') : moment(pickerDate).startOf('month');
+  const startDayOfWeek = startOfMonth.day(); // 0 (Sun) to 6 (Sat)
+  
+  // Adjust to start from Monday (1)
+  // 0 -> 6, 1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 6 -> 5
+  const calendarStartOffset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+  const prevMonth = () => setPickerDate(moment(pickerDate).subtract(1, isHijri ? 'iMonth' : 'month'));
+  const nextMonth = () => setPickerDate(moment(pickerDate).add(1, isHijri ? 'iMonth' : 'month'));
+
+  const now = moment();
+  const isToday = (date: any) => now.isSame(date, 'day');
+  const isThisMonth = (date: any) => isHijri ? date.iMonth() === pickerDate.iMonth() && date.iYear() === pickerDate.iYear() : date.month() === pickerDate.month() && date.year() === pickerDate.year();
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
+      <div className={styles.modalBackdrop} onClick={onClose}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-5xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col lg:flex-row min-h-[650px]"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className={styles.modalContainer}
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Left Side: Calendar Picker */}
-          <div className="flex-[1.1] p-12 bg-white/[0.01] border-r border-white/5 flex flex-col justify-between">
-            <div>
-                <div className="mb-12 flex justify-between items-end">
-                    <div>
-                    <h2 className="text-6xl font-black text-white tracking-tighter leading-none">{hijriMonthName.substring(0, 3)}</h2>
-                    <div className="flex items-center gap-3 mt-3">
-                        <span className="text-xs font-bold text-gray-500 tracking-[0.3em] uppercase">{hijriYear} AH</span>
-                        <div className="h-[1px] w-10 bg-[#d4af37]"></div>
-                    </div>
-                    </div>
-                    <div className="flex gap-2 mb-2">
-                        <button onClick={prevMonth} className="p-3 hover:bg-white/5 rounded-full transition-colors border border-white/5 group">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:scale-110 transition-transform"><path d="M15 18l-6-6 6-6"/></svg>
-                        </button>
-                        <button onClick={nextMonth} className="p-3 hover:bg-white/5 rounded-full transition-colors border border-white/5 group">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:scale-110 transition-transform"><path d="M9 18l6-6-6-6"/></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-7 gap-y-6 text-center">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => (
-                        <div key={`${d}-${i}`} className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4">{d}</div>
-                    ))}
-                    
-                    {(() => {
-                        const cells = [];
-                        const firstDayPrevMonth = moment(startOfMonth).subtract(startDayOfWeek === 0 ? 6 : startDayOfWeek - 1, 'days');
-                        
-                        for (let i = 0; i < 42; i++) {
-                            const date = moment(firstDayPrevMonth).add(i, 'days');
-                            const isCurrentMonth = date.iMonth() === pickerDate.iMonth();
-                            const day = date.iDate();
-                            const isSelected = selectedInPicker.iDate() === day && selectedInPicker.iMonth() === date.iMonth() && selectedInPicker.iYear() === date.iYear();
-                            
-                            cells.push(
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => setSelectedInPicker(moment(date))}
-                                    className={`relative aspect-square text-lg font-bold transition-all flex items-center justify-center ${
-                                        isCurrentMonth ? 'text-white' : 'text-gray-800'
-                                    } ${isSelected ? 'z-10' : 'hover:text-[#d4af37]'}`}
-                                >
-                                    {isSelected && (
-                                        <motion.div 
-                                            layoutId="picker-select" 
-                                            className="absolute inset-1 border border-[#d4af37]/40 bg-[#d4af37]/5 rounded-xl"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                        />
-                                    )}
-                                    <span className="relative z-10">{day < 10 ? `0${day}` : day}</span>
-                                </button>
-                            );
-                        }
-                        return cells;
-                    })()}
-                </div>
-            </div>
-
-            <div className="mt-12 flex items-center gap-8 p-8 bg-white/[0.02] rounded-[2rem] border border-white/5">
-                <div className="flex-1">
-                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Selected Date</div>
-                    <div className="text-xl font-black text-white leading-none">{selectedInPicker.format('iD iMMMM iYYYY')}</div>
-                </div>
-                <div className="h-10 w-[1px] bg-white/10"></div>
-                <div className="flex-1">
-                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Gregorian</div>
-                    <div className="text-sm font-bold text-gray-400 leading-none">{selectedInPicker.format('MMMM D, YYYY')}</div>
-                </div>
-            </div>
+          {/* Header matched to Mutashabihat */}
+          <div className={styles.modalHeader}>
+            <h3>Create Spiritual Event</h3>
+            <button onClick={onClose} className={styles.closeButton}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
 
-          {/* Right Side: Form */}
-          <div className="flex-1 p-16 flex flex-col justify-between bg-black/40">
-            <div>
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-black text-white tracking-tight">Create Event</h2>
-                <button onClick={onClose} className="p-2 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-xl">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </button>
+          <div className={styles.modalContent}>
+            <div className={styles.splitLayout}>
+              {/* Left Side: Calendar Picker Side */}
+              <div className={styles.pickerSide}>
+                <div className="mb-6">
+                    <h4 className={styles.pickerMonth}>
+                        {isHijri ? HIJRI_MONTHS_AR[pickerDate.iMonth()] : gregMonthName}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] font-bold text-gray-500 tracking-[0.2em] uppercase">
+                        {isHijri ? `${hijriYear} AH` : gregYear}
+                      </span>
+                      <div className="h-[1px] w-8 bg-[#d4af37]/40"></div>
+                      {isToday(pickerDate) && (
+                        <span className="text-[9px] font-black text-[#d4af37] uppercase tracking-tighter">Current Month</span>
+                      )}
+                    </div>
+                </div>
+
+                <div className={styles.calendarWrapper}>
+                    <button onClick={prevMonth} className={styles.sideArrow} title="Previous Month (Left Arrow)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+
+                    <motion.div 
+                        className={styles.calendarGridWrapper}
+                        key={`${pickerDate.format('YYYY-MM')}-${type}`}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        onDragEnd={(e, info) => {
+                            if (info.offset.x > 100) prevMonth();
+                            else if (info.offset.x < -100) nextMonth();
+                        }}
+                    >
+                        <div className="grid grid-cols-7 gap-y-1 text-center">
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => (
+                                <div key={`${d}-${i}`} className={styles.pickerDayHeader}>{d}</div>
+                            ))}
+                            
+                            {(() => {
+                                const cells = [];
+                                // Start from the first cell of the grid
+                                const startDate = moment(startOfMonth).subtract(calendarStartOffset, 'days');
+                                
+                                // Determine if we need 5 or 6 rows (35 or 42 cells)
+                                // If 35 days from startDate covers the end of the month, use 35.
+                                const endOfMonth = isHijri ? moment(startOfMonth).endOf('iMonth') : moment(startOfMonth).endOf('month');
+                                const totalCellsNeeded = startDate.diff(endOfMonth, 'days') * -1 > 34 ? 42 : 35;
+
+                                for (let i = 0; i < totalCellsNeeded; i++) {
+                                    const date = moment(startDate).add(i, 'days');
+                                    const inMonth = isThisMonth(date);
+                                    const dayDisplay = isHijri ? date.iDate() : date.date();
+                                    const isSelected = selectedInPicker.isSame(date, 'day');
+                                    const isDayToday = isToday(date);
+                                    
+                                    cells.push(
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => setSelectedInPicker(moment(date))}
+                                            className={`
+                                                ${styles.dayBtn} 
+                                                ${inMonth ? styles.dayCurrent : styles.dayOther} 
+                                                ${isSelected ? styles.daySelected : ''}
+                                                ${isDayToday ? styles.dayToday : ''}
+                                                ${!isSelected ? styles.dayHover : ''}
+                                            `}
+                                        >
+                                            <span className="relative z-10">{dayDisplay}</span>
+                                            {isDayToday && !isSelected && (
+                                              <div className="absolute bottom-1 w-1 h-1 bg-[#d4af37] rounded-full"></div>
+                                            )}
+                                        </button>
+                                    );
+                                }
+                                return cells;
+                            })()}
+                        </div>
+                    </motion.div>
+
+                    <button onClick={nextMonth} className={styles.sideArrow} title="Next Month (Right Arrow)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+
+                <div className={styles.pickerFooter}>
+                    <div className={styles.footerRow}>
+                        <span className={styles.footerLabel}>Selected Hijri</span>
+                        <span className={styles.footerValue}>{selectedInPicker.format('iD iMMMM iYYYY')}</span>
+                    </div>
+                    <div className={styles.footerRow}>
+                        <span className={styles.footerLabel}>Gregorian</span>
+                        <span className={styles.footerValueSub}>{selectedInPicker.format('MMMM D, YYYY')}</span>
+                    </div>
+                </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Event Name</label>
+              {/* Right Side: Form Side */}
+              <div className={styles.formSide}>
+                <div className={styles.formSection}>
+                  <label className={styles.label}>Event Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. My Special Anniversary"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white text-lg font-medium focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/50 transition-all placeholder:text-gray-700"
+                    placeholder="e.g. Khatm-ul-Quran"
+                    className={styles.inputField}
                     autoFocus
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Journal Note</label>
+                <div className={styles.formSection}>
+                  <label className={styles.label}>Description</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Capture your thoughts..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#d4af37] transition-all h-32 resize-none placeholder:text-gray-700"
+                    placeholder="Notes about this event..."
+                    className={`${styles.inputField} h-24 resize-none`}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Lock to</label>
-                    <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className={styles.formSection}>
+                    <label className={styles.label}>System</label>
+                    <div className="flex gap-1 p-1 bg-black/5 dark:bg-black/20 rounded-xl border border-white/5">
                       <button
                         type="button"
                         onClick={() => setType('hijri')}
-                        className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${
-                          type === 'hijri' ? 'bg-[#d4af37] text-black shadow-lg shadow-[#d4af37]/20' : 'text-gray-500 hover:text-gray-300'
+                        className={`flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all ${
+                          type === 'hijri' ? 'bg-[#d4af37] text-black shadow-lg' : 'text-gray-500 hover:text-gray-400'
                         }`}
                       >
                         Hijri
@@ -207,25 +263,25 @@ export default function AddEventModal({
                       <button
                         type="button"
                         onClick={() => setType('gregorian')}
-                        className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${
-                          type === 'gregorian' ? 'bg-[#d4af37] text-black shadow-lg shadow-[#d4af37]/20' : 'text-gray-500 hover:text-gray-300'
+                        className={`flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all ${
+                          type === 'gregorian' ? 'bg-[#d4af37] text-black shadow-lg' : 'text-gray-500 hover:text-gray-400'
                         }`}
                       >
-                        Gregorian
+                        Greg
                       </button>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Theme</label>
-                    <div className="flex items-center justify-between h-[54px] px-2 bg-white/5 rounded-2xl border border-white/5">
+                  <div className={styles.formSection}>
+                    <label className={styles.label}>Theme</label>
+                    <div className="flex items-center justify-between px-1">
                       {['#d4af37', '#ff4d4d', '#4dff88', '#4dadff', '#ff4dff'].map((c) => (
                         <button
                           key={c}
                           type="button"
                           onClick={() => setColor(c)}
-                          className={`w-6 h-6 rounded-full transition-all border-2 ${
-                            color === c ? 'border-white scale-125' : 'border-transparent opacity-50'
+                          className={`w-4 h-4 rounded-full transition-all border-2 ${
+                            color === c ? 'border-primary-light scale-125' : 'border-transparent opacity-50 hover:opacity-100'
                           }`}
                           style={{ backgroundColor: c }}
                         />
@@ -233,16 +289,14 @@ export default function AddEventModal({
                     </div>
                   </div>
                 </div>
-              </form>
-            </div>
 
-            <div className="pt-8">
-              <button
-                onClick={handleSubmit}
-                className="w-full bg-gradient-to-r from-[#d4af37] via-[#f4d03f] to-[#d4af37] text-black font-black py-5 rounded-[1.5rem] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_10px_30px_rgba(212,175,55,0.3)] text-lg"
-              >
-                Register Event
-              </button>
+                <button
+                    onClick={handleSubmit}
+                    className={styles.submitButton}
+                >
+                    Register Spiritually
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>

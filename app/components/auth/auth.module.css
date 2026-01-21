@@ -53,7 +53,7 @@
 }
 
 .kufiText {
-  font-family: 'Scheherazade New', serif;
+  font-family: var(--font-arabic);
   font-size: 3rem;
   line-height: 1.6;
   margin-bottom: 2rem;

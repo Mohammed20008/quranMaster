@@ -46,21 +46,21 @@
   
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-arabic: 'Uthmanic Hafs', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+  --font-arabic: 'Amiri', 'Uthmanic Hafs', 'Scheherazade New', 'Traditional Arabic', serif;
   --font-hadith: 'Amiri', serif;
-  --font-arabic-alt: 'Cairo', 'Amiri', sans-serif;
+  --font-arabic-alt: 'Amiri', 'Cairo', sans-serif;
 }
 
-/* Dark theme via system preference */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+
+/* Manual theme control only */
+[data-theme="dark"] {
     /* Dark Theme: Deep Black & Gold */
     --background: #050505;
     --background-secondary: #0A0A0A;
     --foreground: #FFFFFF;
     --foreground-secondary: #A1A1AA;
     
-    --primary: #D4AF37; /* Brighter gold for dark mode */
+    --primary: #D4AF37;
     --primary-light: #F3E5AB;
     --primary-dark: #B59410;
     --primary-gradient: linear-gradient(135deg, #D4AF37 0%, #AA8929 100%);
@@ -80,7 +80,6 @@
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
-  }
 }
 
 /* Dark theme via manual toggle */

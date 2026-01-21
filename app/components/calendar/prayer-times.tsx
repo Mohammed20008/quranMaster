@@ -16,24 +16,51 @@ interface PrayerTimes {
 export default function PrayerTimesCard() {
   const [timings, setTimings] = useState<PrayerTimes | null>(null);
   const [loading, setLoading] = useState(true);
-  const [city, setCity] = useState('London'); // Default
+  const [city, setCity] = useState('London');
+  const [locationName, setLocationName] = useState('London, UK');
 
   useEffect(() => {
-    async function fetchPrayerTimes() {
+    async function fetchByCoords(lat: number, lng: number) {
+        try {
+            const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=2`);
+            const data = await res.json();
+            setTimings(data.data.timings);
+            setLocationName(data.data.meta.timezone); // Use timezone as a rough location indicator
+        } catch (error) {
+            console.error('Failed to fetch prayer times by coords', error);
+            fetchByCity('London');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function fetchByCity(cityName: string) {
       try {
-        // In a real app, we'd use geolocation
-        const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=UK&method=2`);
+        const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${cityName}&country=UK&method=2`);
         const data = await res.json();
         setTimings(data.data.timings);
+        setLocationName(`${cityName}, UK`);
       } catch (error) {
-        console.error('Failed to fetch prayer times', error);
+        console.error('Failed to fetch prayer times by city', error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchPrayerTimes();
-  }, [city]);
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                fetchByCoords(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                console.warn('Geolocation error:', error.message);
+                fetchByCity('London');
+            }
+        );
+    } else {
+        fetchByCity('London');
+    }
+  }, []);
 
   if (loading) return <div className={styles.sideCard}>Loading prayer times...</div>;
   if (!timings) return null;
@@ -63,7 +90,7 @@ export default function PrayerTimesCard() {
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-gray-500 mt-4 text-center">Location: {city}, UK</p>
+      <p className="text-[10px] text-gray-500 mt-4 text-center">Location: {locationName}</p>
     </div>
   );
 }

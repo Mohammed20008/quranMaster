@@ -90,8 +90,20 @@ export function daysUntilHijriDate(month: number, day: number): number {
   let targetDate = moment(`${currentYear}/${month}/${day}`, 'iYYYY/iM/iD');
   
   // If the date has passed this year, use next year
-  if (targetDate.isBefore(now)) {
+  if (targetDate.isBefore(now, 'day')) {
     targetDate = moment(`${currentYear + 1}/${month}/${day}`, 'iYYYY/iM/iD');
+  }
+  
+  return targetDate.diff(now, 'days');
+}
+
+// Calculate days until a specific Gregorian date (annual)
+export function daysUntilGregorianDate(month: number, day: number): number {
+  const now = moment();
+  let targetDate = moment().month(month - 1).date(day);
+  
+  if (targetDate.isBefore(now, 'day')) {
+    targetDate.add(1, 'year');
   }
   
   return targetDate.diff(now, 'days');
@@ -120,7 +132,7 @@ export function getUpcomingEvents(): Array<IslamicEvent & { daysUntil: number; d
     const currentYear = now.iYear();
     let eventDate = moment(`${currentYear}/${event.hijriMonth}/${event.hijriDay}`, 'iYYYY/iM/iD');
     
-    if (eventDate.isBefore(now)) {
+    if (eventDate.isBefore(now, 'day')) {
       eventDate = moment(`${currentYear + 1}/${event.hijriMonth}/${event.hijriDay}`, 'iYYYY/iM/iD');
     }
     
@@ -163,6 +175,21 @@ export const HIJRI_MONTHS = [
   'Shawwal',
   'Dhu al-Qi\'dah',
   'Dhu al-Hijjah',
+];
+
+export const HIJRI_MONTHS_AR = [
+  'محرّم',
+  'صفر',
+  'ربيع الأول',
+  'ربيع الثاني',
+  'جمادى الأولى',
+  'جمادى الآخرة',
+  'رجب',
+  'شعبان',
+  'رمضان',
+  'شوّال',
+  'ذو القعدة',
+  'ذو الحجة',
 ];
 
 // Check if a Hijri day is a Sunnah fasting day
