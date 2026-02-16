@@ -16,8 +16,8 @@ export interface NotificationResult {
   whatsappSent: boolean;
   errors: string[];
   details: {
-    email?: any;
-    whatsapp?: any;
+    email?: unknown;
+    whatsapp?: unknown;
   };
 }
 
@@ -58,8 +58,9 @@ export async function sendTeacherNotification(
       result.errors.push(`Email error: ${emailData.error || 'Unknown error'}`);
       result.details.email = emailData;
     }
-  } catch (error: any) {
-    result.errors.push(`Email exception: ${error.message}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    result.errors.push(`Email exception: ${errorMessage}`);
   }
 
   // Send WhatsApp Notification (if phone number provided)
@@ -91,8 +92,9 @@ export async function sendTeacherNotification(
         }
         result.details.whatsapp = whatsappData;
       }
-    } catch (error: any) {
-      result.errors.push(`WhatsApp exception: ${error.message}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      result.errors.push(`WhatsApp exception: ${errorMessage}`);
     }
   } else {
     // Phone number not provided

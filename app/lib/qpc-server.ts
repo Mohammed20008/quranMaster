@@ -2,7 +2,16 @@ import fs from 'fs';
 import path from 'path';
 
 // Cache in memory
-let qpcData: Record<string, any> | null = null;
+// Cache in memory
+interface QPCItem {
+  id: number;
+  surah: number;
+  ayah: number;
+  word: string;
+  text: string;
+}
+
+let qpcData: Record<string, QPCItem> | null = null;
 let pageMapping: Record<string, number> | null = null;
 
 const DATA_DIR = path.join(process.cwd(), 'data/qpc_data');
@@ -13,7 +22,7 @@ function getQPCData() {
     const filePath = path.join(DATA_DIR, 'qpc-v1-glyph-codes-wbw.json', 'qpc-v1-glyph-codes-wbw.json');
     try {
       const fileContent = fs.readFileSync(filePath, 'utf-8');
-      qpcData = JSON.parse(fileContent);
+      qpcData = JSON.parse(fileContent) as Record<string, QPCItem>;
     } catch (e) {
       console.error('Failed to load QPC data:', e);
       return {};

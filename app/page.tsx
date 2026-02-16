@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import { useAuth } from '@/app/context/auth-context';
@@ -24,7 +25,7 @@ const GeometricPattern = () => (
 );
 
 const Navbar = () => {
-    const { isAuthenticated, user, openAuthModal, isAdmin } = useAuth();
+    const { isAuthenticated, openAuthModal, isAdmin } = useAuth();
 
     return (
         <nav className={styles.navbar}>
@@ -148,7 +149,15 @@ const Hero = () => {
     );
 };
 
-const FeatureCard = ({ title, desc, icon, link, delay }: any) => (
+interface FeatureCardProps {
+    title: string;
+    desc: string;
+    icon: React.ReactNode;
+    link: string;
+    delay: number;
+}
+
+const FeatureCard = ({ title, desc, icon, link, delay }: FeatureCardProps) => (
     <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -239,7 +248,6 @@ const Articles = () => {
 }
 
 const LearningPlatform = () => {
-    const { isAuthenticated, openAuthModal } = useAuth();
 
     return (
         <section className={styles.learningPlatform}>
@@ -259,10 +267,12 @@ const LearningPlatform = () => {
                     className={styles.platformCard}
                 >
                     <div className={styles.cardImageSection}>
-                        <img 
+                        <Image 
                             src="/child-enjoy.jpg" 
                             alt="Child learning Quran joyfully" 
                             className={styles.cardImage}
+                            width={600}
+                            height={400}
                         />
                         <div className={styles.cardImageOverlay}>
                             <div className={styles.cardBadge}>
