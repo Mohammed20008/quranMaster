@@ -12,7 +12,6 @@ import {
 import styles from './event-countdown.module.css';
 import { useEffect, useState } from 'react';
 import { UserEvent } from '@/types/calendar';
-// @ts-ignore
 import moment from 'moment-hijri';
 
 interface EventCountdownProps {

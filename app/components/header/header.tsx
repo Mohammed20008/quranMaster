@@ -7,7 +7,7 @@ import { reciters, Reciter } from '@/data/reciters';
 import { useUserData } from '@/app/context/user-data-context';
 import { useAudio } from '@/app/context/audio-context';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReciterImage from '@/app/components/audio/reciter-image';
+
 
 
 
@@ -197,11 +197,7 @@ export default function Header({
               className={styles.reciterBtn}
               onClick={() => setShowReciters(!showReciters)}
             >
-              <ReciterImage 
-                src={currentReciter?.imageUrl} 
-                name={currentReciter?.name || 'Reciter'} 
-                size={24} 
-              />
+
               <span>{currentReciter?.name.split(' ').pop()}</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transform: showReciters ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                 <path d="M6 9l6 6 6-6"/>
@@ -222,11 +218,7 @@ export default function Header({
                       className={`${styles.reciterItem} ${settings.selectedReciterId === reciter.id ? styles.active : ''}`}
                       onClick={() => handleReciterSelect(reciter)}
                     >
-                      <ReciterImage 
-                        src={reciter.imageUrl} 
-                        name={reciter.name} 
-                        size={32} 
-                      />
+
                       <div className={styles.reciterItemInfo}>
                         <span className={styles.reciterName}>{reciter.name}</span>
                         <span className={styles.reciterSubtext}>{reciter.subtext}</span>

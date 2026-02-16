@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAudio } from '@/app/context/audio-context';
 import { surahs } from '@/data/surah-data';
-import ReciterImage from './reciter-image';
+
 import styles from './audio-player-bar.module.css';
 
 const formatTime = (seconds: number) => {
@@ -97,12 +97,7 @@ export default function AudioPlayerBar() {
         <div className={styles.content}>
           {/* Surah & Reciter Info */}
           <div className={styles.info}>
-            <ReciterImage 
-              src={currentReciter?.imageUrl} 
-              name={currentReciter?.name || 'Reciter'} 
-              size={48}
-              className={styles.reciterImg}
-            />
+
             <div className={styles.textInfo}>
               <span className={styles.surahName}>
                 {surah ? `${surah.transliteration} (${surah.number})` : 'Surah'}

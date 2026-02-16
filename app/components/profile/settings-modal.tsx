@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/app/context/auth-context';
 import { X, Camera, User, BadgeCheck, Upload, Save } from 'lucide-react';
@@ -119,9 +120,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               {/* Left Col: Avatar */}
               <div className="flex flex-col items-center">
                  <div className="relative group cursor-pointer mb-6">
-                   <div className="w-40 h-40 rounded-full ring-4 ring-offset-4 ring-[#d4af37] dark:ring-offset-slate-900 overflow-hidden shadow-xl transition-transform duration-300 hover:scale-[1.02]">
+                   <div className="w-40 h-40 rounded-full ring-4 ring-offset-4 ring-[#d4af37] dark:ring-offset-slate-900 overflow-hidden shadow-xl transition-transform duration-300 hover:scale-[1.02] relative">
                       {customImage ? (
-                        <img src={customImage} alt="Avatar" className="w-full h-full object-cover" />
+                        <NextImage src={customImage} alt="Avatar" fill className="object-cover" unoptimized />
                       ) : (
                         renderAvatar(AVATAR_PRESETS.find(p => p.id === selectedPreset) || AVATAR_PRESETS[0], name, 160, "w-full h-full")
                       )}

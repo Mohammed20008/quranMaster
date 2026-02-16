@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { surahs } from '@/data/surah-data';
@@ -298,7 +299,7 @@ export default function LeftMenu({
             >
               {user ? (
                  (user.avatar && (user.avatar.startsWith('http') || user.avatar.startsWith('data:'))) ? (
-                  <img src={user.avatar} alt={user.name} className={styles.avatar} />
+                  <NextImage src={user.avatar} alt={user.name} width={32} height={32} className={styles.avatar} unoptimized />
                 ) : (
                   renderAvatar(getAvatarPreset(user.avatar), user.name, 32, styles.avatar)
                 )

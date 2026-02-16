@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import NextImage from 'next/image';
 import styles from './reciter-image.module.css';
 
 interface ReciterImageProps {
@@ -29,14 +30,15 @@ export default function ReciterImage({ src, name, size = 32, className }: Recite
   }
 
   return (
-    <img 
-      src={src} 
-      alt={name} 
-      className={className} 
-      width={size}
-      height={size}
-      onError={() => setError(true)}
-      style={{ width: size, height: size, objectFit: 'cover', borderRadius: '50%' }}
-    />
+    <div className={className} style={{ width: size, height: size, position: 'relative', overflow: 'hidden', borderRadius: '50%' }}>
+      <NextImage 
+        src={src} 
+        alt={name} 
+        fill
+        sizes={`${size}px`}
+        onError={() => setError(true)}
+        style={{ objectFit: 'cover' }}
+      />
+    </div>
   );
 }

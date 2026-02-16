@@ -8,7 +8,7 @@ interface SideControlsProps {
   currentFontSize: number;
 }
 
-export default function SideControls({ onFontSizeChange }: { onFontSizeChange: (size: number) => void }) {
+export default function SideControls({ onFontSizeChange, currentFontSize }: SideControlsProps) {
   const [isAutoScroll, setIsAutoScroll] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1); // 1 to 10
 
@@ -61,8 +61,27 @@ export default function SideControls({ onFontSizeChange }: { onFontSizeChange: (
   return (
     <div className={styles.container}>
       {/* Font Size Control */}
-
-
+      <div className={styles.controlGroup}>
+        <h3 className={styles.groupTitle}>Font Size</h3>
+        <div className={styles.row}>
+          <div className={styles.iconBtn} title="Font Size">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 4h14M12 4v16M9 20h6" />
+            </svg>
+          </div>
+          <div className={styles.sliderContainer}>
+            <input 
+              type="range" 
+              min="16" 
+              max="48" 
+              value={currentFontSize} 
+              onChange={(e) => onFontSizeChange(Number(e.target.value))}
+              className={styles.rangeInput}
+            />
+            <span className={styles.speedValue}>{currentFontSize}px</span>
+          </div>
+        </div>
+      </div>
       {/* Auto Scroll Control */}
       <div className={styles.controlGroup}>
         <h3 className={styles.groupTitle}>Auto Scroll</h3>

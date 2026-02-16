@@ -29,15 +29,19 @@ export default function AddEventModal({
   const [color, setColor] = useState('#d4af37');
   const [type, setType] = useState<'hijri' | 'gregorian'>('hijri');
   
-  // Internal calendar state for the picker
   const [pickerDate, setPickerDate] = useState(moment());
   const [selectedInPicker, setSelectedInPicker] = useState(moment());
 
   const isHijri = type === 'hijri';
   const hijriYear = pickerDate.iYear();
 
-  const prevMonth = useCallback(() => setPickerDate(moment(pickerDate).subtract(1, isHijri ? 'iMonth' : 'month')), [pickerDate, isHijri]);
-  const nextMonth = useCallback(() => setPickerDate(moment(pickerDate).add(1, isHijri ? 'iMonth' : 'month')), [pickerDate, isHijri]);
+  const prevMonth = useCallback(() => {
+    setPickerDate(moment(pickerDate).subtract(1, isHijri ? 'iMonth' : 'month'));
+  }, [pickerDate, isHijri]);
+
+  const nextMonth = useCallback(() => {
+    setPickerDate(moment(pickerDate).add(1, isHijri ? 'iMonth' : 'month'));
+  }, [pickerDate, isHijri]);
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +51,6 @@ export default function AddEventModal({
     }
   }, [isOpen, initialSelectedDate]);
 
-  // Keyboard navigation for months
   useEffect(() => {
     if (!isOpen) return;
 
@@ -61,7 +64,7 @@ export default function AddEventModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, nextMonth, prevMonth]); // Re-bind on pickerDate change to ensure handlers use latest state
+  }, [isOpen, nextMonth, prevMonth]);
 
   if (!isOpen) return null;
 
@@ -85,20 +88,18 @@ export default function AddEventModal({
     onClose();
   };
 
-  // Gregorian info for the header if needed
   const gregMonthName = pickerDate.format('MMMM');
   const gregYear = pickerDate.year();
 
   const startOfMonth = isHijri ? moment(pickerDate).startOf('iMonth') : moment(pickerDate).startOf('month');
-  const startDayOfWeek = startOfMonth.day(); // 0 (Sun) to 6 (Sat)
-  
-  // Adjust to start from Monday (1)
-  // 0 -> 6, 1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 6 -> 5
+  const startDayOfWeek = startOfMonth.day();
   const calendarStartOffset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
   const now = moment();
   const isToday = (date: any) => now.isSame(date, 'day');
-  const isThisMonth = (date: any) => isHijri ? date.iMonth() === pickerDate.iMonth() && date.iYear() === pickerDate.iYear() : date.month() === pickerDate.month() && date.year() === pickerDate.year();
+  const isThisMonth = (date: any) => isHijri 
+    ? date.iMonth() === pickerDate.iMonth() && date.iYear() === pickerDate.iYear() 
+    : date.month() === pickerDate.month() && date.year() === pickerDate.year();
 
   return (
     <AnimatePresence>
@@ -110,7 +111,6 @@ export default function AddEventModal({
           className={styles.modalContainer}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header matched to Mutashabihat */}
           <div className={styles.modalHeader}>
             <h3>Create Spiritual Event</h3>
             <button onClick={onClose} className={styles.closeButton}>
@@ -123,7 +123,6 @@ export default function AddEventModal({
 
           <div className={styles.modalContent}>
             <div className={styles.splitLayout}>
-              {/* Left Side: Calendar Picker Side */}
               <div className={styles.pickerSide}>
                 <div className="mb-6">
                     <h4 className={styles.pickerMonth}>
@@ -152,7 +151,7 @@ export default function AddEventModal({
                         animate={{ opacity: 1, x: 0 }}
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
-                        onDragEnd={(e, info) => {
+                        onDragEnd={(_, info) => {
                             if (info.offset.x > 100) prevMonth();
                             else if (info.offset.x < -100) nextMonth();
                         }}
@@ -164,11 +163,7 @@ export default function AddEventModal({
                             
                             {(() => {
                                 const cells: React.ReactNode[] = [];
-                                // Start from the first cell of the grid
                                 const startDate = moment(startOfMonth).subtract(calendarStartOffset, 'days');
-                                
-                                // Determine if we need 5 or 6 rows (35 or 42 cells)
-                                // If 35 days from startDate covers the end of the month, use 35.
                                 const endOfMonth = isHijri ? moment(startOfMonth).endOf('iMonth') : moment(startOfMonth).endOf('month');
                                 const totalCellsNeeded = startDate.diff(endOfMonth, 'days') * -1 > 34 ? 42 : 35;
 
@@ -221,7 +216,6 @@ export default function AddEventModal({
                 </div>
               </div>
 
-              {/* Right Side: Form Side */}
               <div className={styles.formSide}>
                 <div className={styles.formSection}>
                   <label className={styles.label}>Event Name</label>

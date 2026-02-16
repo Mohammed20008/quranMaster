@@ -6,7 +6,6 @@ export interface Reciter {
   everyAyahKey?: string; // Key for everyayah.com (verse-level)
   serverKey?: string; // Key for mp3quran.net if different
   isSurahBySurah: boolean;
-  imageUrl?: string;
 }
 
 export const reciters: Reciter[] = [
@@ -16,7 +15,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server8.mp3quran.net/afs/',
     everyAyahKey: 'Alafasy_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Мишари_Рашид.jpg',
     isSurahBySurah: true,
   },
   {
@@ -25,7 +23,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server11.mp3quran.net/sds/',
     everyAyahKey: 'Abdurrahmaan_As-Sudais_192kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/75/Sheikh_Abdur_Rahman_Al-Sudais.jpg',
     isSurahBySurah: true,
   },
   {
@@ -34,7 +31,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server10.mp3quran.net/minsh/',
     everyAyahKey: 'Minshawy_Murattal_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Mohamed_Siddiq_El-Minshawi.jpg',
     isSurahBySurah: true,
   },
   {
@@ -43,7 +39,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server9.mp3quran.net/hthf/',
     everyAyahKey: 'Hudhaify_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/df/Ali_Bin_Abdur_Rahman_Al_Hudhaify.png',
     isSurahBySurah: true,
   },
   {
@@ -52,7 +47,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server7.mp3quran.net/s_gmd/',
     everyAyahKey: 'Ghamadi_40kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Saad_al_Ghamdi.jpg',
     isSurahBySurah: true,
   },
   {
@@ -61,7 +55,6 @@ export const reciters: Reciter[] = [
     subtext: 'Mujawwad',
     baseUrl: 'https://server7.mp3quran.net/basit_mjwd/',
     everyAyahKey: 'AbdulSamad_64kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Abdul_Basit_Abdul_Samad.jpg',
     isSurahBySurah: true,
   },
   {
@@ -70,7 +63,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server13.mp3quran.net/husr/',
     everyAyahKey: 'Husary_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Mahmoud_Khalil_Al-Hussary.jpg',
     isSurahBySurah: true,
   },
   {
@@ -79,7 +71,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server11.mp3quran.net/yasser/',
     everyAyahKey: 'Yasser_Ad-Dussary_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/be/Yasser_Al-Dosari.jpg',
     isSurahBySurah: true,
   },
   {
@@ -88,7 +79,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server7.mp3quran.net/shur/',
     everyAyahKey: 'Saood_ash-Shuraym_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Saud_Shuraim_doing_the_Khutbah.png',
     isSurahBySurah: true,
   },
   {
@@ -97,7 +87,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server12.mp3quran.net/maher/',
     everyAyahKey: 'MaherAlMuaiqly128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b2/Maher_Al_Mueaqly.png',
     isSurahBySurah: true,
   },
   {
@@ -106,7 +95,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server10.mp3quran.net/ajm/',
     everyAyahKey: 'Ahmed_ibn_Ali_al-Ajamy_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Ahmad_bin_Ali_Al-Ajmi.png',
     isSurahBySurah: true,
   },
   {
@@ -115,7 +103,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server11.mp3quran.net/shatri/',
     everyAyahKey: 'Abu_Bakr_Ash-Shaatree_128kbps',
-    imageUrl: undefined,
     isSurahBySurah: true,
   },
   {
@@ -124,7 +111,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server8.mp3quran.net/frs_a/',
     everyAyahKey: 'Fares_Abbad_64kbps',
-    imageUrl: undefined,
     isSurahBySurah: true,
   },
   {
@@ -133,7 +119,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server6.mp3quran.net/kurdi/',
     everyAyahKey: 'Raad_Al_Kurdi_128kbps',
-    imageUrl: undefined,
     isSurahBySurah: true,
   },
   {
@@ -142,7 +127,6 @@ export const reciters: Reciter[] = [
     subtext: 'Murattal',
     baseUrl: 'https://server11.mp3quran.net/hazza/',
     everyAyahKey: 'Hazza_Al_Balushi_128kbps',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/22/A._Al-Balooshi.jpg',
     isSurahBySurah: true,
   }
 ];

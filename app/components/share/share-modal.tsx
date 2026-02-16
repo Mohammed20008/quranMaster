@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng, toBlob } from 'html-to-image';
 import {
@@ -228,7 +229,7 @@ export default function ShareModal({
                            className={`${styles.bgThumb} ${editorState.bgImage === img ? styles.bgThumbActive : ''}`}
                            onClick={() => setEditorState({...editorState, bgImage: img})}
                          >
-                           <img src={img} alt="bg" />
+                           <NextImage src={img} alt="bg" width={60} height={40} className="object-cover" />
                          </div>
                        ))}
                      </div>
@@ -334,10 +335,12 @@ export default function ShareModal({
                       }}
                     >
                         <div className={styles.shareCardBackground}>
-                           <img 
+                           <NextImage 
                             src={editorState.bgImage} 
                             alt="Background" 
+                            fill
                             className={styles.shareCardBgImage}
+                            unoptimized
                           />
                         </div>
                         <div 

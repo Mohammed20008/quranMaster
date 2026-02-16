@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 const AVATARS = [
   'https://api.dicebear.com/7.x/micah/svg?seed=Abdullah',
   'https://api.dicebear.com/7.x/micah/svg?seed=Fatima',

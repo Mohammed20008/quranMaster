@@ -19,14 +19,14 @@ const TIME_SLOTS = [
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 15, availability }: BookingCalendarProps) {
+export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 15 }: BookingCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Generate next 14 days
-  const generateDates = () => {
-    const dates = [];
+  const generateDates = (): Date[] => {
+    const dates: Date[] = [];
     const today = new Date();
     for (let i = 0; i < 14; i++) {
       const date = new Date(today);
