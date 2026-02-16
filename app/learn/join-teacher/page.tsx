@@ -48,7 +48,7 @@ export default function JoinTeacherPage() {
     }
   }, [user]);
 
-  const updateField = (section: string, field: string, value: any) => {
+  const updateField = (section: string, field: string, value: string | number | boolean | string[] | undefined) => {
     setFormData(prev => ({
       ...prev,
       [section]: { ...(prev as any)[section], [field]: value }
@@ -214,8 +214,9 @@ export default function JoinTeacherPage() {
       await submitApplication(formData);
       // Success - show success message and redirect
       router.push('/learn?application=success');
-    } catch (error: any) {
-      setErrors({ submit: error.message || 'Failed to submit application. Please try again.' });
+    } catch (error) {
+      const err = error as any;
+      setErrors({ submit: err.message || 'Failed to submit application. Please try again.' });
       setIsSubmitting(false);
     }
   };

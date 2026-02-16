@@ -12,8 +12,6 @@ interface BookingModalProps {
 type Step = 'preferences' | 'payment' | 'confirmation';
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
-  if (!isOpen) return null;
-
   const [step, setStep] = useState<Step>('preferences');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +32,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         if (gender && ageGroup) {
           setFormData(prev => ({ ...prev, gender, ageGroup }));
         }
-      } catch (e) {
+      } catch {
         console.error('Failed to parse preferences');
       }
     }
@@ -49,7 +47,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-      const interval: any = setInterval(function() {
+      const interval: NodeJS.Timeout = setInterval(function() {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
@@ -122,6 +120,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     
     return `https://wa.me/201097677202?text=${encodeURIComponent(message)}`;
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay}>

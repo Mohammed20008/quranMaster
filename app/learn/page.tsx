@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import styles from './learn.module.css';
 import { useTeachers } from '@/app/context/teacher-context';
-import { Teacher } from '@/types/teacher';
 import { renderAvatar, getAvatarPreset } from '@/app/components/avatar/avatar-utils';
 
 const BookingModal = dynamic(() => import('./booking-modal'), { 
@@ -32,7 +31,7 @@ export default function LearnPage() {
 
   // Filter and sort teachers
   const filteredTeachers = useMemo(() => {
-    let filtered = allTeachers.filter(teacher => {
+    const filtered = allTeachers.filter(teacher => {
       const matchesSearch = teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            teacher.bio.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSubject = selectedSubject === 'all' || teacher.subjects.includes(selectedSubject);
@@ -154,7 +153,7 @@ export default function LearnPage() {
           <label className={styles.filterLabel}>Sort by:</label>
           <select 
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as 'rating' | 'students' | 'newest')}
             className={styles.filterSelect}
           >
             <option value="rating">Highest Rated</option>

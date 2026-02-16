@@ -7,7 +7,7 @@ import { TeacherRejectionEmail } from '@/app/emails/teacher-rejection';
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Configuration
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'QuranMaster <onboarding@resend.dev>'; // Update with your verified domain
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@quranmaster.com';
 
@@ -86,11 +86,12 @@ export async function sendEmail(
       success: true,
       messageId: data.data?.id || 'unknown',
     };
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('❌ Email service error:', error);
     return {
       success: false,
-      error: error?.message || 'Unknown email error',
+      error: err.message || 'Unknown email error',
     };
   }
 }

@@ -1,4 +1,3 @@
-// @ts-ignore
 import moment from 'moment-hijri';
 import type { Moment } from 'moment-hijri';
 
@@ -100,7 +99,7 @@ export function daysUntilHijriDate(month: number, day: number): number {
 // Calculate days until a specific Gregorian date (annual)
 export function daysUntilGregorianDate(month: number, day: number): number {
   const now = moment();
-  let targetDate = moment().month(month - 1).date(day);
+  const targetDate = moment().month(month - 1).date(day);
   
   if (targetDate.isBefore(now, 'day')) {
     targetDate.add(1, 'year');

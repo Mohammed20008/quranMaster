@@ -61,10 +61,11 @@ Remember: You're here to educate, inspire, and support Muslims in their faith jo
 /**
  * Classify error and return appropriate error type
  */
-function classifyError(error: any): AIErrorType {
-  const errorMessage = error?.message?.toLowerCase() || '';
-  const errorCode = error?.code || error?.status;
-  const errorType = error?.type?.toLowerCase() || '';
+function classifyError(error: unknown): AIErrorType {
+  const err = error as any;
+  const errorMessage = err?.message?.toLowerCase() || '';
+  const errorCode = err?.code || err?.status;
+  const errorType = err?.type?.toLowerCase() || '';
 
   console.log('🔍 Error Classification Debug:', {
     message: errorMessage,
@@ -118,7 +119,7 @@ function classifyError(error: any): AIErrorType {
 /**
  * Get user-friendly error message based on error type
  */
-function getUserFriendlyError(errorType: AIErrorType, errorDetails?: string): string {
+function getUserFriendlyError(errorType: AIErrorType): string {
   switch (errorType) {
     case AIErrorType.API_KEY_INVALID:
       return '🔑 The AI service is not properly configured. Please contact the administrator to update the API key.';
@@ -149,7 +150,7 @@ export async function generateAIResponse(
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
 ): Promise<AIResponse> {
   const maxRetries = 3;
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -188,14 +189,15 @@ export async function generateAIResponse(
         message: aiMessage,
       };
 
-    } catch (error: any) {
+    } catch (error) {
       lastError = error;
       const errorType = classifyError(error);
+      const err = error as any;
 
       console.error(`❌ AI Error (Attempt ${attempt}/${maxRetries}):`, {
         errorType,
-        message: error?.message,
-        status: error?.status,
+        message: err?.message,
+        status: err?.status,
       });
 
       // Don't retry for certain error types
@@ -221,18 +223,18 @@ export async function generateAIResponse(
 
   // All retries failed
   const errorType = classifyError(lastError);
-  const userFriendlyMessage = getUserFriendlyError(errorType, lastError?.message);
+  const userFriendlyMessage = getUserFriendlyError(errorType);
 
   console.error('💥 All retry attempts failed:', {
     errorType,
-    originalError: lastError?.message,
+    originalError: (lastError as any)?.message,
   });
 
   return {
     success: false,
     message: userFriendlyMessage,
     errorType,
-    errorDetails: process.env.NODE_ENV === 'development' ? lastError?.message : undefined,
+    errorDetails: process.env.NODE_ENV === 'development' ? (lastError as any)?.message : undefined,
   };
 }
 
@@ -264,12 +266,13 @@ export async function generateStreamingResponse(
     });
 
     return stream;
-  } catch (error: any) {
+  } catch (error) {
     const errorType = classifyError(error);
+    const err = error as any;
     console.error('❌ AI Streaming Error:', {
       errorType,
-      status: error?.status,
-      message: error?.message,
+      status: err?.status,
+      message: err?.message,
     });
     throw error;
   }
