@@ -565,53 +565,52 @@ export default function QuranReader({
       )}
 
       {/* Surah Header */}
-      <div className={styles.surahHeader}>
-        
-        {/* New Image-based Header Frame */}
-        <div className={styles.surahFrameContainer}>
-          <img 
-            src="/surah-header.png" 
-            alt="Surah Header" 
-            className={styles.surahFrameImg}
-          />
-          <div className={styles.surahFrameContent}>
-            <h1 className={styles.surahFrameTitle}>{surah.name}</h1>
+      {viewMode !== 'spread' && (
+        <div className={styles.surahHeader}>
+          
+          {/* New Image-based Header Frame */}
+          <div className={styles.surahFrameContainer}>
+            <img 
+              src="/surah-header.png" 
+              alt="Surah Header" 
+              className={styles.surahFrameImg}
+            />
+            <div className={styles.surahFrameContent}>
+              <h1 className={styles.surahFrameTitle}>{surah.name}</h1>
+            </div>
+          </div>
+
+          {/* Meta Info & Actions */}
+          <div className={styles.surahMeta} style={{ marginTop: '0', marginBottom: '24px' }}>
+            <div className={styles.metaItem}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>{surah.totalVerses} Verses</span>
+            </div>
+            <div className={styles.metaItem}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>{surah.revelationType}</span>
+            </div>
+            {/* Test Mode Button */}
+            <button 
+              className={`${styles.testBtn} ${!isTestMode ? styles.pulsate : ''} ${isTestMode ? styles.active : ''}`}
+              onClick={toggleTestMode}
+              title={isTestMode ? "Exit Test Mode" : "Start Memorization Test"}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <circle cx="12" cy="17" r="1" fill="currentColor"></circle>
+              </svg>
+            </button>
           </div>
         </div>
-
-        {/* Meta Info & Actions */}
-        <div className={styles.surahMeta} style={{ marginTop: '0', marginBottom: '24px' }}>
-          <div className={styles.metaItem}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            <span>{surah.totalVerses} Verses</span>
-          </div>
-          <div className={styles.metaItem}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span>{surah.revelationType}</span>
-          </div>
-          {/* Test Mode Button */}
-          <button 
-            className={`${styles.testBtn} ${!isTestMode ? styles.pulsate : ''} ${isTestMode ? styles.active : ''}`}
-            onClick={toggleTestMode}
-            title={isTestMode ? "Exit Test Mode" : "Start Memorization Test"}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-          </button>
-        </div>
-
-
-
-      </div>
+      )}
 
       {/* Verses */}
       <div className={styles.verses}>

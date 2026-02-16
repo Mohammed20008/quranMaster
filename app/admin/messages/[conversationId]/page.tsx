@@ -3,13 +3,14 @@
 import { useAuth } from '@/app/context/auth-context';
 import { useMessages } from '@/app/context/messages-context';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, use } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import MessageBubble from '@/app/components/ai/message-bubble';
 import styles from '../../admin.module.css';
 
-export default function MessageThreadPage({ params }: { params: { conversationId: string } }) {
+export default function MessageThreadPage({ params }: { params: Promise<{ conversationId: string }> }) {
+  const { conversationId } = use(params);
   const { isAuthenticated, isAdmin, user } = useAuth();
   const { getConversation, addAdminReply, markAsResponded, closeConversation } = useMessages();
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function MessageThreadPage({ params }: { params: { conversationId
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const conversation = getConversation(params.conversationId);
+  const conversation = getConversation(conversationId);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -74,8 +75,8 @@ export default function MessageThreadPage({ params }: { params: { conversationId
     setReply('');
 
     try {
-      addAdminReply(params.conversationId, replyText);
-      markAsResponded(params.conversationId);
+      addAdminReply(conversationId, replyText);
+      markAsResponded(conversationId);
     } catch (error) {
       console.error('Failed to send reply:', error);
     } finally {
@@ -85,7 +86,7 @@ export default function MessageThreadPage({ params }: { params: { conversationId
 
   const handleClose = () => {
     if (confirm('Are you sure you want to close this conversation?')) {
-      closeConversation(params.conversationId);
+      closeConversation(conversationId);
       router.push('/admin/messages');
     }
   };
