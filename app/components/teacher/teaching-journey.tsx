@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Award, Users, Star } from 'lucide-react';
 
 interface TimelineItemProps {
-  icon: any;
+  icon: React.ElementType;
   date: string;
   title: string;
   description: string;
