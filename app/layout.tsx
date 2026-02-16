@@ -12,6 +12,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { Amiri, Scheherazade_New, Inter, Cairo } from 'next/font/google';
+
+const amiri = Amiri({
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  subsets: ['arabic'],
+  display: 'swap',
+});
+
+const scheherazade = Scheherazade_New({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['arabic'],
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  display: 'swap',
+});
+
 import { Providers } from './providers';
 import AuthModal from './components/auth/auth-modal';
 import ChatModal from './components/chat/chat-modal';
@@ -32,24 +57,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link 
-          rel="preconnect" 
-          href="https://fonts.googleapis.com" 
-        />
-        <link 
-          rel="preconnect" 
-          href="https://fonts.gstatic.com" 
-          crossOrigin="anonymous" 
-        />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Scheherazade+New:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" 
-          rel="stylesheet" 
-          crossOrigin="anonymous"
-        />
-      </head>
+      <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${amiri.className} ${scheherazade.className} ${inter.className} ${cairo.className} antialiased`}
         suppressHydrationWarning
       >
         <Providers>

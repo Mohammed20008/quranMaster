@@ -47,7 +47,7 @@ export default function ChatModal() {
       // Always scroll to bottom when messages update in active view
       scrollToBottom();
     }
-  }, [activeConversationId, allMessages, isOpen]);
+  }, [activeConversationId, allMessages, isOpen, markAsRead, user?.email]);
 
   // Filter conversations
   const filteredConversations = conversations

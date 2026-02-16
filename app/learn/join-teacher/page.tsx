@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/auth-context';
@@ -290,9 +291,11 @@ export default function JoinTeacherPage() {
                 <div className={styles.imageUploadSection}>
                   {(imagePreview || formData.personalInfo.photo) ? (
                     <div className={styles.imagePreviewContainer}>
-                      <img 
+                      <Image 
                         src={imagePreview || formData.personalInfo.photo} 
                         alt="Profile preview" 
+                        width={200}
+                        height={200}
                         className={styles.imagePreview} 
                       />
                       <button 

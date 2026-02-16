@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import styles from './learn.module.css';
@@ -210,7 +211,7 @@ export default function LearnPage() {
                     <div className={styles.featuredRank}>#{idx + 1}</div>
                     <div className={styles.featuredAvatar}>
                       {teacher.photo ? (
-                        <img src={teacher.photo} alt={teacher.name} className={styles.featuredAvatarImg} />
+                        <Image src={teacher.photo} alt={teacher.name} width={80} height={80} className={styles.featuredAvatarImg} />
                       ) : (
                         renderAvatar(getAvatarPreset(teacher.avatarId), teacher.name, 80)
                       )}
@@ -249,7 +250,7 @@ export default function LearnPage() {
                   {/* Avatar */}
                   <div className={styles.teacherAvatar}>
                     {teacher.photo ? (
-                      <img src={teacher.photo} alt={teacher.name} className={styles.avatarImage} />
+                      <Image src={teacher.photo} alt={teacher.name} width={100} height={100} className={styles.avatarImage} />
                     ) : (
                       <div className={styles.avatarWrapper}>
                         {renderAvatar(getAvatarPreset(teacher.avatarId), teacher.name, 100)}

@@ -214,12 +214,8 @@ export default function Dashboard() {
                         ...(() => {
                             const preset = getAvatarPreset(user?.avatar);
                             const style = getAvatarStyle(preset, 100);
-                            const { 
-                                width: _width, 
-                                height: _height, 
-                                borderRadius: _borderRadius, 
-                                ...rest 
-                            } = style;
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            const { width: _w, height: _h, borderRadius: _br, ...rest } = style;
                             return rest;
                         })(),
                         borderRadius: '0', // Let container handle radius

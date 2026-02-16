@@ -56,7 +56,7 @@ const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, 
       const currentRanges = phraseData.ayah[normalizedKey];
       
       // Extract arabic content with QPC font - ensure it always renders
-      let arabicContent = null;
+      let arabicContent: React.ReactNode = null;
       if (verseWords && currentRanges && currentRanges.length > 0 && versePage) {
         const range = currentRanges[0];
         const start = range[0];
@@ -81,8 +81,8 @@ const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, 
         data: phraseData,
         arabicContent
       };
-    }).filter((p: null) => p !== null);
-  }, [verseKey, phraseIds, verseWords, normalizedKey, versePage]);
+    }).filter((p): p is NonNullable<typeof p> => p !== null);
+  }, [phraseIds, verseWords, normalizedKey, versePage]);
 
   // Get all unique pages for font loading
   const activePages = useMemo(() => {
@@ -154,6 +154,7 @@ const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, 
     if (versePhrases.length > 0) {
       loadAllVerses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [versePhrases]);
 
   const getSurahName = (surahNum: number) => {
