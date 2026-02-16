@@ -106,12 +106,6 @@ export default function Header({
           <div className={styles.surahBadge}>
             <span className={styles.surahNumber}>{surah.number}</span>
           </div>
-          <div className={styles.surahNames}>
-            <h2 className="arabic-heading">{surah.name}</h2>
-            <p className={styles.surahMeta}>
-              {surah.transliteration} • {surah.translation}
-            </p>
-          </div>
         </div>
 
         {/* Center Section - Navigation Controls */}
@@ -128,8 +122,8 @@ export default function Header({
           </button>
 
           <div className={styles.surahSelector}>
-            <span className={styles.currentSurah}>
-              Surah {currentSurah} of 114
+            <span className={`${styles.currentSurah} arabic-font`} style={{ fontSize: '1.25rem' }}>
+              {surah.name}
             </span>
           </div>
 

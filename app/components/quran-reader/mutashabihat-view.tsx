@@ -41,7 +41,7 @@ interface MutashabihatViewProps {
 const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, verseWords, versePage }) => {
   // Normalize verse key to match JSON format (surah:verse)
   const normalizedKey = verseKey.replace('-', ':');
-  const phraseIds = phraseVerses[normalizedKey] || [];
+  const phraseIds = useMemo(() => phraseVerses[normalizedKey] || [], [normalizedKey]);
   
   // State for QPC data
   const [qpcDataCache, setQpcDataCache] = useState<Record<string, QPCVerseData>>({});
