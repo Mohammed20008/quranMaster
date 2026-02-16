@@ -71,9 +71,7 @@ function QuranContent() {
     updateSettings({ viewMode: mode });
   };
 
-  const handleFontSizeChange = (size: number) => {
-    updateSettings({ fontSize: size });
-  };
+
 
   return (
     <div className="app-container">
@@ -106,10 +104,7 @@ function QuranContent() {
         />
 
         {/* Quran Reader */}
-        <SideControls 
-          onFontSizeChange={handleFontSizeChange} 
-          currentFontSize={settings.fontSize}
-        />
+        <SideControls />
 
         <QuranReader
           surahNumber={currentSurah}

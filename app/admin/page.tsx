@@ -8,8 +8,7 @@ import {
   Users, 
   UserCheck, 
   MessageSquare, 
-  BookOpen, 
-  LayoutDashboard, 
+  BookOpen,
   ArrowLeft,
   Settings,
   Bell,
@@ -20,7 +19,6 @@ import styles from './admin.module.css';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, Search, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Search, Clock } from 'lucide-react';
 import styles from '../learn/learn.module.css'; // Reusing learn styles or could use admin styles
 
 export default function ArticlesPage() {
