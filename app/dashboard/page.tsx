@@ -45,6 +45,7 @@ const DailyQuote = () => {
 
     useEffect(() => {
         setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -212,8 +213,13 @@ export default function Dashboard() {
                     style={{
                         ...(() => {
                             const preset = getAvatarPreset(user?.avatar);
-                            const style = getAvatarStyle(preset, 100, user?.name?.[0]);
-                            const { width, height, borderRadius, ...rest } = style;
+                            const style = getAvatarStyle(preset, 100);
+                            const { 
+                                width: _width, 
+                                height: _height, 
+                                borderRadius: _borderRadius, 
+                                ...rest 
+                            } = style;
                             return rest;
                         })(),
                         borderRadius: '0', // Let container handle radius

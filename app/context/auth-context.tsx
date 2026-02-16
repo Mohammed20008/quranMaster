@@ -243,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             allUsers[index] = { ...allUsers[index], ...updates };
             localStorage.setItem('all_users', JSON.stringify(allUsers));
         }
-    } catch(e) {}
+    } catch { }
 
     // Sync with Teacher Profile if applicable
     if (user.role === 'teacher') {

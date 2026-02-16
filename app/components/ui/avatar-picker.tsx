@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 const AVATARS = [
   'https://api.dicebear.com/7.x/micah/svg?seed=Abdullah',
@@ -51,11 +52,12 @@ export default function AvatarPicker({ currentAvatar, onSelect, isOpen, onClose 
                   : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
               }`}
             >
-              <img 
+              <Image 
                 src={avatar} 
                 alt="Avatar option" 
                 className="w-full h-full object-cover"
-                loading="lazy"
+                width={80}
+                height={80}
               />
               {currentAvatar === avatar && (
                 <div className="absolute inset-0 bg-[#d4af37]/20 flex items-center justify-center">

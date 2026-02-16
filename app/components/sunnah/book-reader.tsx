@@ -65,7 +65,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
           setError(data.error || "Could not load hadiths.");
           setHadiths([]);
         }
-      } catch (e) {
+      } catch {
         setHadiths([]);
         setError("Failed to fetch hadiths.");
       } finally {

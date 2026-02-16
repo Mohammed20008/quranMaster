@@ -43,7 +43,7 @@ const MOCK_TESTIMONIALS = [
   },
 ];
 
-export default function TestimonialsCarousel({ teacherId }: TestimonialsCarouselProps) {
+export default function TestimonialsCarousel({ }: TestimonialsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);

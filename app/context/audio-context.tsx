@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback } from 'react';
 import { Reciter, reciters } from '@/data/reciters';
 import { useUserData } from './user-data-context';
 import { fetchSurahQPCData } from '@/app/actions/get-qpc-data';
@@ -63,7 +63,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const playSurah = (surahNumber: number) => {
+  const playSurah = useCallback((surahNumber: number) => {
     if (!currentReciter || !audioRef.current) return;
     const surahStr = surahNumber.toString().padStart(3, '0');
     const url = `${currentReciter.baseUrl}${surahStr}.mp3`;
@@ -76,9 +76,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       playbackMode: 'surah',
       isPlaying: true
     }));
-  };
+  }, [currentReciter]);
 
-  const playVerse = (surahNumber: number, verseNumber: number) => {
+  const playVerse = useCallback((surahNumber: number, verseNumber: number) => {
     if (!currentReciter || !audioRef.current) return;
     const everyAyahKey = currentReciter.everyAyahKey || 'Alafasy_128kbps';
     const surahStr = surahNumber.toString().padStart(3, '0');
@@ -93,7 +93,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       playbackMode: 'verse',
       isPlaying: true
     }));
-  };
+  }, [currentReciter]);
 
   const stop = () => {
     if (!audioRef.current) return;
@@ -108,7 +108,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const playNextVerse = () => {
+  const playNextVerse = useCallback(() => {
     const currentState = stateRef.current;
     if (currentState.currentSurah) {
         const surah = surahs.find((s: any) => s.number === currentState.currentSurah);
@@ -122,7 +122,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             stop();
         }
     }
-  };
+  }, [playVerse]);
 
   const playPreviousVerse = () => {
     const currentState = stateRef.current;
@@ -139,14 +139,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const playNextSurah = () => {
+  const playNextSurah = useCallback(() => {
     const currentState = stateRef.current;
     if (currentState.currentSurah && currentState.currentSurah < 114) {
         playSurah(currentState.currentSurah + 1);
     } else {
         setState(prev => ({ ...prev, isPlaying: false }));
     }
-  };
+  }, [playSurah]);
 
   const playPage = async (surahNumber: number, pageNumber: number) => {
     if (!currentReciter || !audioRef.current) return;
@@ -181,7 +181,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const preloaderRef = useRef<HTMLAudioElement | null>(null);
   
-  const preloadNextVerse = () => {
+  const preloadNextVerse = useCallback(() => {
     const currentState = stateRef.current;
     if (currentState.currentSurah && currentState.playbackMode === 'verse' && currentReciter) {
         const surah = surahs.find((s: any) => s.number === currentState.currentSurah);
@@ -210,7 +210,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             preloaderRef.current.load();
         }
     }
-  };
+  }, [currentReciter]);
 
   useEffect(() => {
     const audio = new Audio();
@@ -273,7 +273,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current = null;
       preloaderRef.current = null;
     };
-  }, []);
+  }, [playNextSurah, playNextVerse, preloadNextVerse]);
 
   return (
     <AudioContext.Provider value={{ 

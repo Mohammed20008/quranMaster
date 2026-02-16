@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './tafsir-sheet.module.css';
 import { getTafsir } from '../../actions/get-tafsir';
 
@@ -37,10 +37,10 @@ export default function TafsirSheet({ verseKey, onClose }: TafsirSheetProps) {
   }, [verseKey]);
 
   // Handle closing with animation
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     setIsOpen(false);
     setTimeout(onClose, 300);
-  };
+  }, [onClose]);
   
   // Close on Escape key
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function TafsirSheet({ verseKey, onClose }: TafsirSheetProps) {
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
+  }, [handleClose]);
 
   if (!verseKey && !isOpen) return null;
 
