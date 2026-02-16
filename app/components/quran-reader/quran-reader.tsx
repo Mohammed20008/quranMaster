@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, Fragment } from 'react';
+import Image from 'next/image';
 import { surahs } from '@/data/surah-data';
 import { getVersesBySurah, QuranVerse } from '@/data/quran-verses';
 import { ViewMode } from '../header/header';
@@ -511,10 +512,6 @@ export default function QuranReader({
     }
   };
 
-  const playVerse = (verse: QuranVerse) => {
-    setToast(`Playing verse ${verse.verse}...`);
-  };
-
   const shareVerse = (verse: QuranVerse) => {
     const englishText = (translationData as any)[`${surahNumber}:${verse.verse}`]?.t || "";
     setShareVerseData({
@@ -533,6 +530,10 @@ export default function QuranReader({
       Object.values(qpcData).forEach(v => { if(v.page) p.add(v.page); });
       return Array.from(p).sort();
   }, [qpcData]);
+
+  if (!surah) {
+    return <div className={styles.error}>Surah not found</div>;
+  }
 
   return (
     <div className={styles.reader}>
@@ -570,10 +571,13 @@ export default function QuranReader({
           
           {/* New Image-based Header Frame */}
           <div className={styles.surahFrameContainer}>
-            <img 
+            <Image 
               src="/surah-header.png" 
               alt="Surah Header" 
               className={styles.surahFrameImg}
+              width={800}
+              height={160}
+              priority
             />
             <div className={styles.surahFrameContent}>
               <h1 className={styles.surahFrameTitle}>{surah.name}</h1>
@@ -707,10 +711,12 @@ export default function QuranReader({
                       return (
                         <div className={styles.surahHeaderInPage} key={`header-${sNum}`}>
                           <div className={styles.surahFrameContainer}>
-                            <img 
+                            <Image 
                               src="/surah-header.png" 
                               alt="Surah Header" 
                               className={styles.surahFrameImg}
+                              width={600}
+                              height={120}
                             />
                             <div className={styles.surahFrameContent}>
                               <h1 className={styles.surahFrameTitle}>{surahName}</h1>
@@ -728,7 +734,6 @@ export default function QuranReader({
                             const info = getPageInfo(pageNum);
                             // Get unique surahs on this page to potentially render headers
                             const pageVerses = pages[pageNum] || [];
-                            const surahsOnPage = Array.from(new Set(pageVerses.map(v => v.chapter)));
                             
                             return (
                               <div 
@@ -738,7 +743,7 @@ export default function QuranReader({
                               >
                                 <div className={styles.pageHeader}>
                                   <span>{info.surahName}</span>
-                                  <span>Juz' {info.juzNumber}</span>
+                                  <span>Juz&apos; {info.juzNumber}</span>
                                 </div>
                                 <div 
                                   className={styles.pageText}
@@ -749,7 +754,7 @@ export default function QuranReader({
                                     lineHeight: displayLineHeight
                                   } as React.CSSProperties}
                                 >
-                                  {pageVerses.map((verse: any, vIndex: number) => {
+                                  {pageVerses.map((verse: any) => {
                                   const verseId = `${verse.chapter}-${verse.verse}`;
                                   const isBlurred = isTestMode && !revealedVerses.has(verseId);
                                   const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse.toString();
@@ -882,7 +887,7 @@ export default function QuranReader({
                                 <div key={pageNum} className={styles.mushafPage} style={{ marginBottom: '40px', boxShadow: 'var(--shadow-md)', borderRadius: '16px' }}>
                                     <div className={styles.pageHeader}>
                                         <span>{info.sName}</span>
-                                        <span>Juz' {info.jNum}</span>
+                                        <span>Juz&apos; {info.jNum}</span>
                                     </div>
                                     <div 
                                         className={styles.pageText}
@@ -1146,7 +1151,7 @@ export default function QuranReader({
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
             </svg>
             <h3>No Verses Found</h3>
-            <p>This Surah doesn't have any verses in the database.</p>
+            <p>This Surah doesn&apos;t have any verses in the database.</p>
           </div>
         )}
       </div>
