@@ -1,6 +1,6 @@
 // @ts-ignore
 import moment from 'moment-hijri';
-import type { Moment } from 'moment';
+import type { Moment } from 'moment-hijri';
 
 export interface IslamicEvent {
   name: string;

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     if (emailType === 'approved') {
       subject = '🎉 Congratulations! Your QuranMaster Teacher Application is Approved';
-      emailHtml = render(
+      emailHtml = await render(
         TeacherApprovedEmail({
           teacherName,
           loginUrl,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       );
     } else {
       subject = 'Update on Your QuranMaster Teacher Application';
-      emailHtml = render(
+      emailHtml = await render(
         TeacherRejectedEmail({
           teacherName,
           reapplyUrl,
@@ -64,16 +64,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email using Resend
-    const data = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'QuranMaster <no-reply@quranmaster.com>',
       to: [to],
       subject,
       html: emailHtml,
     });
 
+    if (error) {
+      throw new Error(error.message);
+    }
+
     return NextResponse.json({
       success: true,
-      messageId: data.id,
+      messageId: data?.id,
       message: `${emailType === 'approved' ? 'Approval' : 'Rejection'} email sent successfully to ${to}`,
     });
 
@@ -105,7 +109,7 @@ export async function GET(request: NextRequest) {
     let emailHtml: string;
 
     if (type === 'approved') {
-      emailHtml = render(
+      emailHtml = await render(
         TeacherApprovedEmail({
           teacherName: 'Ahmad Abdullah',
           loginUrl: `${baseUrl}/login`,
@@ -113,7 +117,7 @@ export async function GET(request: NextRequest) {
         })
       );
     } else {
-      emailHtml = render(
+      emailHtml = await render(
         TeacherRejectedEmail({
           teacherName: 'Ahmad Abdullah',
           reapplyUrl: `${baseUrl}/learn/join-teacher`,

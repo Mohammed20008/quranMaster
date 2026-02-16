@@ -405,14 +405,56 @@
 }
 
 /* Responsive */
-/* Responsive */
+@media (max-width: 1200px) {
+  .container {
+    padding: 14px 20px;
+    gap: 16px;
+  }
+
+  .reciterBtn {
+    min-width: 140px;
+  }
+}
+
 @media (max-width: 1024px) {
+  .container {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
   .viewModeBtn span {
     display: none;
   }
   
   .viewModeBtn {
     padding: 8px 10px;
+  }
+  
+  .surahNames h2 {
+    font-size: 1.25rem;
+  }
+  
+  .reciterBtn {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 900px) {
+  .surahBadge {
+    width: 40px;
+    height: 40px;
+  }
+
+  .surahNumber {
+    font-size: 1.1rem;
+  }
+  
+  .surahNames h2 {
+    font-size: 1.1rem;
+  }
+  
+  .surahMeta {
+    font-size: 0.8rem;
   }
 }
 
@@ -534,6 +576,37 @@
   }
 }
 
+@media (max-width: 640px) {
+  .container {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  
+  .surahInfo {
+    gap: 8px;
+  }
+  
+  .controls {
+    gap: 4px;
+  }
+  
+  .options {
+    gap: 4px;
+  }
+  
+  .navBtn,
+  .iconBtn,
+  .reciterBtn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .reciterBtn img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 @media (max-width: 480px) {
   /* Ultra compact for very small screens */
   .surahBadge {
@@ -550,5 +623,51 @@
   
   .fontToggleBtn {
     display: none; /* Hide font toggle on very small screens */
+  }
+  
+  /* Keep only essential controls */
+  .viewModeToggle {
+    display: none;
+  }
+  
+  .controls {
+    gap: 3px;
+  }
+  
+  .navBtn,
+  .iconBtn,
+  .reciterBtn {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .navBtn svg,
+  .iconBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  /* For very small devices */
+  .container {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  
+  .surahNames h2 {
+    font-size: 0.85rem;
+  }
+  
+  .navBtn,
+  .iconBtn,
+  .reciterBtn {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .reciterBtn img {
+    width: 16px;
+    height: 16px;
   }
 }

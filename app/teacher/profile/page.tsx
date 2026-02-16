@@ -5,6 +5,7 @@ import { useTeachers } from '@/app/context/teacher-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Teacher } from '@/types/teacher';
 
 // Note: Ensure @/components/ui/avatar-picker is removed if unused elsewhere or keep the import if used in other files
@@ -149,9 +150,11 @@ export default function TeacherProfileSettings() {
                       {/* Photo Section */}
                       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 pb-10 border-b border-gray-100">
                         <div className="relative group shrink-0">
-                          <img 
+                          <Image 
                             src={imagePreview || avatar || profile.photo} 
                             alt={profile.name} 
+                            width={128}
+                            height={128}
                             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md group-hover:shadow-lg transition-all"
                           />
                           <label 

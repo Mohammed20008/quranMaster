@@ -6,6 +6,7 @@ import { useTeachers } from '@/app/context/teacher-context';
 import { useChat } from '@/app/context/chat-context';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import BookingCalendar from '@/app/components/teacher/booking-calendar';
 import TestimonialsCarousel from '@/app/components/teacher/testimonials-carousel';
 import { getAvatarPreset, renderAvatar } from '@/app/components/avatar/avatar-utils';
@@ -20,7 +21,7 @@ const AvatarDisplay = ({ avatarId, name, size }: { avatarId: string, name: strin
 };
 
 export default function TeacherProfilePage({ params }: { params: Promise<{ teacherId: string }> }) {
-  const { user, teacherId: loggedInTeacherId } = useAuth();
+  const { teacherId: loggedInTeacherId } = useAuth();
   const { getTeacher } = useTeachers();
   const { openChat, unreadTotal } = useChat();
   const { teacherId } = use(params);
@@ -137,9 +138,11 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
             {/* Avatar */}
             <div className={styles.avatarSection}>
               {teacher.photo && !teacher.avatarId ? (
-                <img
+                <Image
                   src={teacher.photo}
                   alt={teacher.name}
+                  width={150}
+                  height={150}
                   className={styles.profileAvatar}
                 />
               ) : teacher.avatarId ? (

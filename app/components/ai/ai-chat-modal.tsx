@@ -130,7 +130,7 @@ export default function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
       conversationId: conversationIdRef.current || '',
       sender: m.role === 'user' ? 'user' : 'ai',
       content: content,
-      timestamp: m.createdAt instanceof Date ? m.createdAt.toISOString() : new Date().toISOString(),
+      timestamp: new Date().toISOString(),
       isRead: true
     };
   });

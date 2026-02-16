@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Settings, Layout, DollarSign } from 'lucide-react';
+import { User, Layout, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type TabId = 'profile' | 'style' | 'account';
