@@ -3,11 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './side-controls.module.css';
 
-interface SideControlsProps {
-  // Add props here if needed in the future
-}
-
-export default function SideControls({ }: SideControlsProps) {
+export default function SideControls() {
   const [isAutoScroll, setIsAutoScroll] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1); // 1 to 10
 
