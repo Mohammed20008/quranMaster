@@ -93,9 +93,8 @@ function CollapsibleSection({ title, children, defaultOpen = false }: { title: s
 
 export default function SunnahBookInterface({
   initialHadiths,
-  totalCount,
   chapterList,
-  currentChapter: initialChapterId,
+  currentChapter: initialChapterId, // Renamed to avoid conflict with state variable
   category,
   book,
   meta
@@ -161,7 +160,7 @@ export default function SunnahBookInterface({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [pendingScrollId, loading, hadiths]);
+  }, [pendingScrollId, loading, hadiths.length]); // Added hadiths.length to dependencies
 
   // Filter chapters
   const filteredChapters = chapterList.filter(c => 
@@ -230,7 +229,7 @@ export default function SunnahBookInterface({
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, category, book]);
+  }, [searchQuery, category, book]); // Added category and book to dependencies
 
   // Editor Functions
   const openShareModal = (hadith: Hadith) => {
@@ -300,7 +299,7 @@ export default function SunnahBookInterface({
                     <div className={styles.spinner}></div>
                   </div>
                 ) : searchResults.length > 0 ? (
-                  searchResults.map((hadith, idx) => (
+                  searchResults.map((hadith) => (
                     <div 
                       key={hadith.id} 
                       className={styles.searchResultCard}
@@ -451,7 +450,7 @@ export default function SunnahBookInterface({
                exit={{ opacity: 0 }}
                transition={{ duration: 0.3 }}
              >
-                {hadiths.slice(0, displayLimit).map((hadith, index) => (
+                {hadiths.slice(0, displayLimit).map((hadith) => (
                   <div key={hadith.id} id={`hadith-${hadith.id}`} className={styles.hadithCard}>
                     <div className={styles.hadithMeta}>
                        <div className={styles.hadithBadges}>

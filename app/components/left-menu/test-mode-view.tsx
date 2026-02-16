@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Surah } from '@/types/quran';
 import { getVersesBySurah, QuranVerse } from '@/data/quran-verses';
 import styles from './test-mode.module.css';
@@ -41,6 +41,22 @@ export default function TestModeView({ surahs }: TestModeViewProps) {
     surahs.find(s => s.number === config.surahNumber) || surahs[0]
   , [config.surahNumber, surahs]);
 
+  const handleGrade = useCallback((grade: 'missed' | 'hard' | 'perfect') => {
+    if (grade === 'perfect') {
+      setResults(prev => ({ ...prev, correct: prev.correct + 1, perfect: prev.perfect + 1 }));
+    } else if (grade === 'hard') {
+      setResults(prev => ({ ...prev, correct: prev.correct + 1 }));
+    }
+    
+    // Next question
+    if (currentIndex < testVerses.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setIsRevealed(false);
+    } else {
+      setView('results');
+    }
+  }, [currentIndex, testVerses]);
+
   // Handle Surah Selection change to update range defaults
   const handleSurahChange = (surahId: number) => {
     const surah = surahs.find(s => s.number === surahId);
@@ -70,21 +86,6 @@ export default function TestModeView({ surahs }: TestModeViewProps) {
     setView('active');
   };
 
-  const handleGrade = (grade: 'missed' | 'hard' | 'perfect') => {
-    if (grade === 'perfect') {
-      setResults(prev => ({ ...prev, correct: prev.correct + 1, perfect: prev.perfect + 1 }));
-    } else if (grade === 'hard') {
-      setResults(prev => ({ ...prev, correct: prev.correct + 1 }));
-    }
-    
-    // Next question
-    if (currentIndex < testVerses.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setIsRevealed(false);
-    } else {
-      setView('results');
-    }
-  };
 
   const restart = () => {
     setView('intro');
@@ -117,7 +118,7 @@ export default function TestModeView({ surahs }: TestModeViewProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [view, isRevealed, currentIndex]);
+  }, [view, isRevealed, currentIndex, handleGrade]);
 
   // Renders
   if (view === 'intro') {

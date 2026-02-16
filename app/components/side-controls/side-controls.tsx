@@ -8,7 +8,7 @@ interface SideControlsProps {
   currentFontSize: number;
 }
 
-export default function SideControls({ onFontSizeChange, currentFontSize }: SideControlsProps) {
+export default function SideControls({ onFontSizeChange }: { onFontSizeChange: (size: number) => void }) {
   const [isAutoScroll, setIsAutoScroll] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1); // 1 to 10
 
@@ -35,9 +35,6 @@ export default function SideControls({ onFontSizeChange, currentFontSize }: Side
       scrollAccumulator += pixelsToScroll;
 
       // Allow sub-pixel scrolling if browser supports it, otherwise keep accumulating
-      // We pass the full accumulator to scrollBy, then subtract what we *intended* to scroll.
-      // Ideally, we'd subtract only what actually scrolled, but we can't easily know that.
-      // A safe hybrid: scroll only if > 0.5 to avoid micro-jitters, but pass float.
       if (scrollAccumulator >= 0.5) {
         window.scrollBy({ top: scrollAccumulator, behavior: 'auto' });
         scrollAccumulator = 0;
@@ -56,10 +53,6 @@ export default function SideControls({ onFontSizeChange, currentFontSize }: Side
       }
     };
   }, [isAutoScroll, scrollSpeed]);
-
-  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFontSizeChange(Number(e.target.value));
-  };
 
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setScrollSpeed(Number(e.target.value));

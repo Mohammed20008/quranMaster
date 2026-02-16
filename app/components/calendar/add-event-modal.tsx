@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserEvent } from '@/types/calendar';
-// @ts-ignore
 import moment from 'moment-hijri';
-import { HIJRI_MONTHS, HIJRI_MONTHS_AR } from '@/app/lib/islamic-dates';
+import { HIJRI_MONTHS_AR } from '@/app/lib/islamic-dates';
 import styles from './add-event-modal.module.css';
 
 interface AddEventModalProps {
@@ -34,6 +33,12 @@ export default function AddEventModal({
   const [pickerDate, setPickerDate] = useState(moment());
   const [selectedInPicker, setSelectedInPicker] = useState(moment());
 
+  const isHijri = type === 'hijri';
+  const hijriYear = pickerDate.iYear();
+
+  const prevMonth = useCallback(() => setPickerDate(moment(pickerDate).subtract(1, isHijri ? 'iMonth' : 'month')), [pickerDate, isHijri]);
+  const nextMonth = useCallback(() => setPickerDate(moment(pickerDate).add(1, isHijri ? 'iMonth' : 'month')), [pickerDate, isHijri]);
+
   useEffect(() => {
     if (isOpen) {
       const initial = moment().iYear(initialSelectedDate.hijriYear).iMonth(initialSelectedDate.hijriMonth - 1).iDate(initialSelectedDate.hijriDay);
@@ -56,7 +61,7 @@ export default function AddEventModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, pickerDate]); // Re-bind on pickerDate change to ensure handlers use latest state
+  }, [isOpen, nextMonth, prevMonth]); // Re-bind on pickerDate change to ensure handlers use latest state
 
   if (!isOpen) return null;
 
@@ -80,9 +85,6 @@ export default function AddEventModal({
     onClose();
   };
 
-  const isHijri = type === 'hijri';
-  const hijriYear = pickerDate.iYear();
-  
   // Gregorian info for the header if needed
   const gregMonthName = pickerDate.format('MMMM');
   const gregYear = pickerDate.year();
@@ -93,9 +95,6 @@ export default function AddEventModal({
   // Adjust to start from Monday (1)
   // 0 -> 6, 1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 6 -> 5
   const calendarStartOffset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
-
-  const prevMonth = () => setPickerDate(moment(pickerDate).subtract(1, isHijri ? 'iMonth' : 'month'));
-  const nextMonth = () => setPickerDate(moment(pickerDate).add(1, isHijri ? 'iMonth' : 'month'));
 
   const now = moment();
   const isToday = (date: any) => now.isSame(date, 'day');

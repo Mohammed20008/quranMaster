@@ -34,8 +34,7 @@ export type AvatarPreset = typeof AVATAR_PRESETS[0];
  */
 export function getAvatarStyle(
   preset: AvatarPreset,
-  size: number = 120,
-  _userInitial: string = 'U'
+  size: number = 120
 ): React.CSSProperties {
   const baseStyle: React.CSSProperties = {
     width: `${size}px`,
@@ -97,7 +96,7 @@ export function renderAvatar(
   className?: string
 ): React.JSX.Element {
   const userInitial = userName ? userName[0].toUpperCase() : 'U';
-  const style = getAvatarStyle(preset, size, userInitial);
+  const style = getAvatarStyle(preset, size);
 
   return (
     <div style={style} className={className}>

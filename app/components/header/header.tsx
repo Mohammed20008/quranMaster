@@ -42,7 +42,7 @@ export default function Header({
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showReciters, setShowReciters] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [pendingReciter, setQueuedReciter] = useState<Reciter | null>(null);
+  const [, setQueuedReciter] = useState<Reciter | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   

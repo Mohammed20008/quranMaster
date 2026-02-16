@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAudio } from '@/app/context/audio-context';
 import { surahs } from '@/data/surah-data';
 import ReciterImage from './reciter-image';
@@ -40,18 +40,18 @@ export default function AudioPlayerBar() {
     seek(percentage * duration);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isDragging && progressBarRef.current && duration > 0) {
       const rect = progressBarRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const percentage = Math.max(0, Math.min(1, x / rect.width));
       seek(percentage * duration);
     }
-  };
+  }, [isDragging, duration, seek]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -65,7 +65,7 @@ export default function AudioPlayerBar() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   if (!currentSurah) return null;
 
