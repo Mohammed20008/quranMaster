@@ -115,9 +115,9 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
 
   return (
     <div style={{
-      background: 'white',
+      background: 'var(--card-bg)',
       borderRadius: '1.5rem',
-      border: '1px solid #e5e7eb',
+      border: '1px solid var(--border)',
       padding: '2rem',
       position: 'relative',
       overflow: 'hidden'
@@ -127,7 +127,7 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
         <h3 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '0.5rem' }}>
           Student Reviews
         </h3>
-        <p style={{ color: '#6b7280' }}>
+        <p style={{ color: 'var(--foreground-secondary)' }}>
           What students are saying about this teacher
         </p>
       </div>
@@ -156,10 +156,10 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
             }}
           >
             <div style={{
-              background: '#f9fafb',
+              background: 'var(--background-secondary)',
               borderRadius: '1rem',
               padding: '2rem',
-              border: '1px solid #e5e7eb'
+              border: '1px solid var(--border)'
             }}>
               {/* Quote Icon */}
               <div style={{
@@ -181,7 +181,7 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
               <p style={{
                 fontSize: '1.1rem',
                 lineHeight: '1.8',
-                color: '#374151',
+                color: 'var(--foreground)',
                 marginBottom: '1.5rem',
                 fontStyle: 'italic'
               }}>
@@ -194,7 +194,7 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 paddingTop: '1rem',
-                borderTop: '1px solid #e5e7eb'
+                borderTop: '1px solid var(--border)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{
@@ -212,15 +212,15 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
                     {currentTestimonial.studentName[0]}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '600', color: '#111827' }}>
+                    <div style={{ fontWeight: '600', color: 'var(--foreground)' }}>
                       {currentTestimonial.studentName}
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)' }}>
                       {currentTestimonial.subject}
                     </div>
                   </div>
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)' }}>
                   {currentTestimonial.date}
                 </div>
               </div>
@@ -242,21 +242,22 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
             width: '48px',
             height: '48px',
             borderRadius: '50%',
-            border: '2px solid #e5e7eb',
-            background: 'white',
+            border: '2px solid var(--border)',
+            background: 'var(--card-bg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            color: 'var(--foreground)'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = '#d4af37';
-            e.currentTarget.style.background = '#fff9db';
+            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.1)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#e5e7eb';
-            e.currentTarget.style.background = 'white';
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.background = 'var(--card-bg)';
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -291,21 +292,22 @@ export default function TestimonialsCarousel({ teacherId }: TestimonialsCarousel
             width: '48px',
             height: '48px',
             borderRadius: '50%',
-            border: '2px solid #e5e7eb',
-            background: 'white',
+            border: '2px solid var(--border)',
+            background: 'var(--card-bg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            color: 'var(--foreground)'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = '#d4af37';
-            e.currentTarget.style.background = '#fff9db';
+            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.1)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#e5e7eb';
-            e.currentTarget.style.background = 'white';
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.background = 'var(--card-bg)';
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

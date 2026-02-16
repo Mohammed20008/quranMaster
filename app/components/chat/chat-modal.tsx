@@ -55,7 +55,7 @@ export default function ChatModal() {
        const other = c.participants.find(p => p !== user?.email);
        return other?.toLowerCase().includes(searchQuery.toLowerCase());
     })
-    .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   // Get active conversation details
   const activeConversation = conversations.find(c => c.id === activeConversationId);
@@ -75,7 +75,7 @@ export default function ChatModal() {
     e?.preventDefault();
     if (!messageText.trim() || !activeConversationId) return;
     
-    sendMessage(activeConversationId, messageText);
+    sendMessage(messageText);
     setMessageText('');
   };
 
@@ -141,7 +141,7 @@ export default function ChatModal() {
               <div className={styles.view}>
                 <div className={styles.searchBar}>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
                     <input 
                       type="text" 
                       placeholder="Search messages..." 
@@ -154,7 +154,7 @@ export default function ChatModal() {
 
                 <div className={styles.conversationList}>
                   {filteredConversations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-40 text-gray-400 opacity-60">
+                    <div className="flex flex-col items-center justify-center h-40 text-gray-400 dark:text-gray-500 opacity-60">
                       <p>No messages yet</p>
                     </div>
                   ) : (
@@ -175,7 +175,7 @@ export default function ChatModal() {
                           className={`${styles.conversationItem} ${isUnread ? styles.unread : ''}`}
                         >
                           <div className={styles.avatarWrapper}>
-                             <div className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-white flex items-center justify-center text-gray-500 font-semibold shadow-sm text-lg">
+                             <div className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 border-2 border-white dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300 font-semibold shadow-sm text-lg">
                                 {renderAvatar(getAvatarPreset('gradient-gold'), other.name, 46, "w-full h-full rounded-full")}
                              </div>
                              {isUnread && (

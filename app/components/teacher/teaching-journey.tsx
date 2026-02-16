@@ -20,15 +20,15 @@ function TimelineItem({ icon: Icon, date, title, description, delay }: TimelineI
       className="flex gap-4 group"
     >
       <div className="flex flex-col items-center">
-        <div className="w-10 h-10 rounded-full bg-amber-50 border-2 border-[#d4af37] flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+        <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-950/30 border-2 border-[#d4af37] flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
           <Icon size={18} className="text-[#d4af37]" />
         </div>
-        <div className="flex-1 w-0.5 bg-gray-100 my-2 group-last:hidden" />
+        <div className="flex-1 w-0.5 bg-gray-100 dark:bg-gray-800 my-2 group-last:hidden" />
       </div>
       <div className="pb-8">
         <div className="text-sm font-semibold text-[#d4af37] mb-1">{date}</div>
-        <h4 className="text-lg font-bold text-gray-900 mb-1">{title}</h4>
-        <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+        <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{title}</h4>
+        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{description}</p>
       </div>
     </motion.div>
   );
@@ -64,8 +64,8 @@ export default function TeachingJourney({ joinedAt }: { joinedAt: string }) {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
         <span className="w-1.5 h-6 bg-[#d4af37] rounded-full" />
         Teaching Journey
       </h3>

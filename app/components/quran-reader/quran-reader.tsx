@@ -233,7 +233,7 @@ export default function QuranReader({
   surahNumber, 
   showTransliteration = true, 
   showTranslation = true, 
-  viewMode = 'verse',
+  viewMode: propViewMode = 'verse',
   bookmarkedVerses,
   onToggleBookmark,
   onNextSurah,
@@ -241,6 +241,18 @@ export default function QuranReader({
   onPageChange
 }: QuranReaderProps) {
   const { playVerse: playVerseAudio, state: audioState } = useAudio();
+  
+  // Responsive check for spread view
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  useEffect(() => {
+    const checkScreen = () => setIsSmallScreen(window.innerWidth < 1024);
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
+  // Override view mode on small screens
+  const viewMode = (propViewMode === 'spread' && isSmallScreen) ? 'page' : propViewMode;
   
   const surah = surahs.find(s => s.number === surahNumber);
   const verses = getVersesBySurah(surahNumber);

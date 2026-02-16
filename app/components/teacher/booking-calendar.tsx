@@ -48,9 +48,9 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
 
   return (
     <div style={{
-      background: 'white',
+      background: 'var(--card-bg)',
       borderRadius: '1.5rem',
-      border: '1px solid #e5e7eb',
+      border: '1px solid var(--border)',
       overflow: 'hidden'
     }}>
       {/* Header */}
@@ -74,7 +74,7 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
             display: 'block',
             fontSize: '0.9rem',
             fontWeight: '600',
-            color: '#374151',
+            color: 'var(--foreground)',
             marginBottom: '1rem'
           }}>
             Select Date
@@ -97,8 +97,8 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
                   style={{
                     padding: '0.75rem 0.5rem',
                     borderRadius: '0.75rem',
-                    border: isSelected ? '2px solid #d4af37' : '1px solid #e5e7eb',
-                    background: isSelected ? '#fff9db' : 'white',
+                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
+                    background: isSelected ? 'rgba(212, 175, 55, 0.1)' : 'var(--card-bg)',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     textAlign: 'center'
@@ -106,7 +106,7 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
                 >
                   <div style={{ 
                     fontSize: '0.7rem',
-                    color: '#6b7280',
+                    color: 'var(--foreground-secondary)',
                     marginBottom: '0.25rem'
                   }}>
                     {DAYS_OF_WEEK[date.getDay()]}
@@ -114,7 +114,7 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
                   <div style={{
                     fontSize: '1.1rem',
                     fontWeight: '700',
-                    color: isSelected ? '#d4af37' : '#111827'
+                    color: isSelected ? 'var(--primary)' : 'var(--foreground)'
                   }}>
                     {date.getDate()}
                   </div>
@@ -145,7 +145,7 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
               display: 'block',
               fontSize: '0.9rem',
               fontWeight: '600',
-              color: '#374151',
+              color: 'var(--foreground)',
               marginBottom: '1rem'
             }}>
               Select Time
@@ -170,9 +170,9 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
                     style={{
                       padding: '0.75rem',
                       borderRadius: '0.5rem',
-                      border: isSelected ? '2px solid #d4af37' : '1px solid #e5e7eb',
-                      background: isPastTime ? '#f3f4f6' : isSelected ? '#fff9db' : 'white',
-                      color: isPastTime ? '#9ca3af' : isSelected ? '#d4af37' : '#111827',
+                      border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
+                      background: isPastTime ? 'var(--background-secondary)' : isSelected ? 'rgba(212, 175, 55, 0.1)' : 'var(--card-bg)',
+                      color: isPastTime ? 'var(--foreground-secondary)' : isSelected ? 'var(--primary)' : 'var(--foreground)',
                       cursor: isPastTime ? 'not-allowed' : 'pointer',
                       fontWeight: isSelected ? '700' : '600',
                       fontSize: '0.9rem',
@@ -193,7 +193,7 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
-              background: '#f9fafb',
+              background: 'var(--background-secondary)',
               padding: '1.5rem',
               borderRadius: '1rem',
               marginBottom: '1.5rem'
@@ -202,28 +202,28 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
             <h4 style={{ fontWeight: '700', marginBottom: '1rem' }}>Session Summary</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#6b7280' }}>Teacher:</span>
+                <span style={{ color: 'var(--foreground-secondary)' }}>Teacher:</span>
                 <span style={{ fontWeight: '600' }}>{teacherName}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#6b7280' }}>Date:</span>
+                <span style={{ color: 'var(--foreground-secondary)' }}>Date:</span>
                 <span style={{ fontWeight: '600' }}>
                   {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#6b7280' }}>Time:</span>
+                <span style={{ color: 'var(--foreground-secondary)' }}>Time:</span>
                 <span style={{ fontWeight: '600' }}>{selectedTime}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#6b7280' }}>Duration:</span>
+                <span style={{ color: 'var(--foreground-secondary)' }}>Duration:</span>
                 <span style={{ fontWeight: '600' }}>60 minutes</span>
               </div>
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 paddingTop: '0.75rem',
-                borderTop: '1px solid #e5e7eb'
+                borderTop: '1px solid var(--border)'
               }}>
                 <span style={{ fontWeight: '700' }}>Total:</span>
                 <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#d4af37' }}>
@@ -243,8 +243,8 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
             padding: '1rem',
             background: selectedDate && selectedTime
               ? 'linear-gradient(135deg, #d4af37, #b4941f)'
-              : '#e5e7eb',
-            color: selectedDate && selectedTime ? 'white' : '#9ca3af',
+              : 'var(--border)',
+            color: selectedDate && selectedTime ? 'white' : 'var(--foreground-secondary)',
             border: 'none',
             borderRadius: '0.75rem',
             fontSize: '1rem',
@@ -294,14 +294,15 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                background: 'white',
+                background: 'var(--card-bg)',
                 borderRadius: '1.5rem',
                 padding: '2rem',
                 maxWidth: '400px',
                 width: '90%',
                 zIndex: 51,
                 textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                color: 'var(--foreground)'
               }}
             >
               <div style={{
@@ -320,7 +321,7 @@ export default function BookingCalendar({ teacherId, teacherName, hourlyRate = 1
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem' }}>
                 Booking Confirmed!
               </h3>
-              <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--foreground-secondary)', marginBottom: '1.5rem' }}>
                 You'll receive a confirmation email with the meeting link shortly.
               </p>
               <button
