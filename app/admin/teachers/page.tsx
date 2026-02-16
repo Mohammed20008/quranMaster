@@ -1,6 +1,6 @@
 'use client';
 
-import { sendEmail, generateRejectionEmail, generateAcceptanceEmail, sendApplicationReceivedEmail } from '@/app/lib/email-service';
+import { sendEmail, generateRejectionEmail, generateAcceptanceEmail } from '@/app/lib/email-service';
 import { useAuth } from '@/app/context/auth-context';
 import { useTeachers } from '@/app/context/teacher-context';
 import { useRouter } from 'next/navigation';
@@ -166,7 +166,7 @@ export default function TeacherApplicationsPage() {
     }
   };
 
-  const handleQuickReject = async (appId: string, personalInfo: any, reason: string) => {
+  const handleQuickReject = async (appId: string, personalInfo: { name: string; email: string }, reason: string) => {
     try {
       rejectApplication(appId, reason);
       const emailHtml = await generateRejectionEmail(personalInfo.name, reason);
@@ -441,7 +441,7 @@ export default function TeacherApplicationsPage() {
             <label style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)', marginBottom: '0.5rem', display: 'block' }}>Sort By</label>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'date-desc' | 'date-asc' | 'name-asc')}
               style={{
                 background: 'var(--background)',
                 border: '1px solid var(--border)',

@@ -83,13 +83,14 @@ export async function POST(request: NextRequest) {
       message: `${emailType === 'approved' ? 'Approval' : 'Rejection'} email sent successfully to ${to}`,
     });
 
-  } catch (error: any) {
-    console.error('Error sending email:', error);
+  } catch (error) {
+    const err = error as Error;
+    console.error('Error sending email:', err);
     
     return NextResponse.json(
       {
         error: 'Failed to send email',
-        details: error.message,
+        details: err.message,
       },
       { status: 500 }
     );
@@ -134,7 +135,8 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'text/html',
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const err = error as Error;
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

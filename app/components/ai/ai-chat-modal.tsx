@@ -88,7 +88,7 @@ export default function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
     addMessage({
       conversationId: conversationIdRef.current,
       sender: 'ai',
-      content: 'I\'ve notified the admin. They will respond to you here shortly. You can also reach them directly via WhatsApp.',
+      content: 'I&apos;ve notified the admin. They will respond to you here shortly. You can also reach them directly via WhatsApp.',
     });
 
     markAsWaitingForAdmin(conversationIdRef.current);
@@ -103,7 +103,7 @@ export default function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
           message: messages.slice(-3).map(m => {
             const content = m.parts
               .filter(p => p.type === 'text')
-              .map(p => (p as any).text)
+              .map(p => (p as { text: string }).text)
               .join('');
             return `${m.role}: ${content}`;
           }).join('\n') || requestMessage,
@@ -122,7 +122,7 @@ export default function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
   const displayMessages: AppMessage[] = messages.map(m => {
     const content = m.parts
       .filter(p => p.type === 'text')
-      .map(p => (p as any).text)
+      .map(p => (p as { text: string }).text)
       .join('');
 
     return {

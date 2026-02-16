@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Trash2, Shield, User as UserIcon, BadgeCheck, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import styles from './users.module.css';
 
 interface RegisteredUser {
@@ -32,7 +33,7 @@ export default function AdminUsersPage() {
     // Load users from registry
     try {
       const storedUsers = JSON.parse(localStorage.getItem('all_users') || '[]');
-      const processedUsers = storedUsers.map((u: any) => ({
+      const processedUsers = (storedUsers as RegisteredUser[]).map((u) => ({
         ...u,
         joinedAt: u.joinedAt || new Date().toISOString()
       }));
@@ -118,7 +119,7 @@ export default function AdminUsersPage() {
                    <tr>
                      <td colSpan={4}>
                         <div className={styles.stateContainer}>
-                          No users match "{searchTerm}"
+                          No users match &quot;{searchTerm}&quot;
                         </div>
                      </td>
                    </tr>
@@ -133,7 +134,7 @@ export default function AdminUsersPage() {
                       <td className={styles.cell}>
                         <div className={styles.userInfo}>
                           {user.avatar ? (
-                             <img src={user.avatar} className={styles.avatar} alt="" />
+                             <Image src={user.avatar} className={styles.avatar} alt="" width={40} height={40} />
                           ) : (
                              <div className={styles.avatarPlaceholder}>
                                {user.name[0].toUpperCase()}

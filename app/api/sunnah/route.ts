@@ -2,8 +2,19 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+interface SunnahCollection {
+  id: string;
+  category: string;
+  name: string;
+  arabicName: string;
+  author: string;
+  description: string;
+  hadithCount: number;
+  chapterCount: number;
+}
+
 // Simple in-memory cache
-let cachedCollections: any[] | null = null;
+let cachedCollections: SunnahCollection[] | null = null;
 
 export async function GET() {
   try {
@@ -15,7 +26,7 @@ export async function GET() {
     
     // Read all categories
     const categories = await fs.readdir(sunnahDataPath);
-    const collections: any[] = [];
+    const collections: SunnahCollection[] = [];
     
     for (const category of categories) {
       const categoryPath = path.join(sunnahDataPath, category);

@@ -36,11 +36,12 @@ export async function GET() {
       testResponse: message,
       model: 'llama3-8b-8192 (Meta Llama 3)'
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     return NextResponse.json({
       success: false,
       error: 'Connection failed',
-      message: error.message,
+      message: err.message,
       details: 'Unable to connect to Groq API. Check your API key and network connection.'
     }, { status: 500 });
   }

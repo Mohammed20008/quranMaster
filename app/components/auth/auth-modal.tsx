@@ -11,7 +11,7 @@ import { X, Mail, Lock, User, Github, Chrome } from 'lucide-react';
 type AuthMode = 'login' | 'register';
 
 export default function AuthModal() {
-  const { isAuthModalOpen, closeAuthModal, login, getLoginRedirectPath } = useAuth();
+  const { isAuthModalOpen, closeAuthModal, getLoginRedirectPath } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -69,7 +69,7 @@ export default function AuthModal() {
         const redirectPath = getLoginRedirectPath(email);
         router.push(redirectPath);
       }
-    } catch (error) {
+    } catch {
       setError('An unexpected error occurred');
       setLoading(false);
     }

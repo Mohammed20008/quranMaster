@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAudio } from '@/app/context/audio-context';
 import { surahs } from '@/data/surah-data';
 import styles from './audio-player-bar.module.css';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import ReciterImage from './reciter-image';
 
 

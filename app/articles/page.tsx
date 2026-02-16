@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import styles from './articles.module.css';
@@ -85,7 +85,7 @@ const mockArticles: Article[] = [
 const categories = ['All', 'Quran', 'Spirituality', 'Education', 'Character', 'Worship'];
 
 export default function ArticlesPage() {
-  const [articles, setArticles] = useState<Article[]>(mockArticles);
+  const [articles] = useState<Article[]>(mockArticles);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 

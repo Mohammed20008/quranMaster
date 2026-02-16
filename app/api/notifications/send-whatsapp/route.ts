@@ -89,27 +89,28 @@ export async function POST(request: NextRequest) {
       message: `WhatsApp ${messageType === 'approved' ? 'approval' : 'rejection'} message sent to ${to}`,
     });
 
-  } catch (error: any) {
-    console.error('Error sending WhatsApp message:', error);
+  } catch (error) {
+    const twilioError = error as { code: number; message: string };
+    console.error('Error sending WhatsApp message:', twilioError);
 
     // Handle specific Twilio errors
-    if (error.code === 21211) {
+    if (twilioError.code === 21211) {
       return NextResponse.json(
         {
           error: 'Invalid phone number',
           message: 'The provided phone number is not valid for WhatsApp',
-          details: error.message,
+          details: twilioError.message,
         },
         { status: 400 }
       );
     }
 
-    if (error.code === 21408) {
+    if (twilioError.code === 21408) {
       return NextResponse.json(
         {
           error: 'Permission denied',
           message: 'Your Twilio account does not have permission to send WhatsApp messages',
-          details: error.message,
+          details: twilioError.message,
         },
         { status: 403 }
       );
@@ -118,8 +119,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to send WhatsApp message',
-        details: error.message,
-        code: error.code,
+        details: twilioError.message,
+        code: twilioError.code,
       },
       { status: 500 }
     );

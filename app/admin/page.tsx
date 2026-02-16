@@ -9,10 +9,7 @@ import Link from 'next/link';
 import styles from './admin.module.css';
 
 // Types and Mocks
-interface VisitorStats {
-  total: number;
-  today: number;
-}
+
 
 const mockStatsData = {
   visitors: {
@@ -24,7 +21,7 @@ const mockStatsData = {
 };
 
 export default function AdminDashboard() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const { articles, deleteArticle } = useArticles();
 
   const router = useRouter();

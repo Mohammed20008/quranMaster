@@ -3,13 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-// @ts-ignore
 import moment from 'moment-hijri';
 import { 
   HIJRI_MONTHS, 
   HIJRI_MONTHS_AR,
   ISLAMIC_EVENTS, 
-  IslamicEvent, 
   isSunnahFastingDay, 
   getMoonPhase 
 } from '@/app/lib/islamic-dates';
@@ -29,12 +27,10 @@ export default function CalendarPage() {
   // Hijri Date of the *current view's* month
   const hijriYear = currentDate.iYear();
   const hijriMonthIndex = currentDate.iMonth(); // 0-indexed
-  const hijriMonthName = HIJRI_MONTHS[hijriMonthIndex];
   const isHijri = true; // Main calendar page currently defaults to Hijri view
   
   // Calculate grid
   const startOfMonth = isHijri ? moment(currentDate).startOf('iMonth') : moment(currentDate).startOf('month');
-  const daysInMonth = currentDate.iDaysInMonth();
   const startDayOfWeek = startOfMonth.day(); // 0 (Sun) - 6 (Sat)
   const calendarStartOffset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Start from Monday
 
@@ -93,7 +89,6 @@ export default function CalendarPage() {
     
     // Update selected day view if it's the day we added to
     if (selectedDay) {
-        const updatedEvents = getEventsForDay(selectedDay.day);
         // We need to wait for state update or manually inject
         setSelectedDay({ ...selectedDay, events: [...selectedDay.events, newEvent] });
     }
@@ -117,6 +112,7 @@ export default function CalendarPage() {
     } else {
         setSelectedDay({ day: 1, events: getEventsForDay(1) });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, customEvents.length]);
 
   return (
@@ -210,8 +206,7 @@ export default function CalendarPage() {
                                     const events = getEventsForDay(inMonth ? day : -1);
                                     const isDayToday = today.isSame(date, 'day');
                                     const isSelected = selectedDay?.day === day && inMonth; 
-                                    const fasting = isSunnahFastingDay(day, date, date.iMonth() + 1);
-
+                                     
                                      cells.push(
                                         <div key={i} className="relative group">
                                             <motion.button
@@ -342,7 +337,6 @@ export default function CalendarPage() {
                                         <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 border-l-4 group relative" style={{ borderLeftColor: e.color }}>
                                             <h4 className="font-bold text-sm" style={{ color: e.color }}>{e.name}</h4>
                                             {e.description && <p className="text-xs text-gray-400 mt-1 leading-relaxed">{e.description}</p>}
-                                            {/* @ts-ignore */}
                                             {e.id && e.id.toString().includes('islamic') === false && (
                                                 <button 
                                                     onClick={(me) => handleDeleteEvent(e.id, me)}

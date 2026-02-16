@@ -41,7 +41,7 @@ const handler = NextAuth({
     error: '/', // Redirect back to home/modal on error instead of ugly error page
   },
   callbacks: {
-    async session({ session, token }) {
+    async session({ session }) {
       return session;
     },
   },

@@ -46,7 +46,7 @@ export async function GET(
     const data = JSON.parse(file);
     
     // Handle both array and object structure
-    let hadiths: any[] = [];
+    let hadiths: Record<string, unknown>[] = [];
     if (Array.isArray(data)) {
       hadiths = data;
     } else if (data && typeof data === 'object') {
@@ -59,7 +59,7 @@ export async function GET(
     }
     
     return NextResponse.json({ hadiths });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Chapter not found", hadiths: [] }, { status: 404 });
   }
 }
