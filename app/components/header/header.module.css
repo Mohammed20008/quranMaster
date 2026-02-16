@@ -405,6 +405,7 @@
 }
 
 /* Responsive */
+/* Responsive */
 @media (max-width: 1024px) {
   .viewModeBtn span {
     display: none;
@@ -417,77 +418,22 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 12px 16px;
-    gap: 12px;
-  }
-
-  .surahBadge {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-  }
-
-  .surahNumber {
-    font-size: 1rem;
-  }
-
-  .surahNames h2 {
-    font-size: 1.1rem;
-  }
-
-  .surahMeta {
-    font-size: 0.7rem;
-  }
-  
-  .surahSelector {
-    padding: 8px 12px;
-  }
-  
-  .currentSurah {
-    font-size: 0.8rem;
-  }
-
-  .navBtn,
-  .iconBtn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .controls {
-    gap: 8px;
-  }
-
-  .options {
-    gap: 8px;
-  }
-
-  .viewModeToggle {
-    padding: 3px;
-    gap: 4px;
-  }
-
-  .viewModeBtn {
-    padding: 6px 8px;
-  }
-
-  .divider {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
     padding: 10px 12px;
     gap: 8px;
+    flex-wrap: nowrap; /* Prevent wrapping, force compaction */
   }
-  
+
+  /* Compact Surah Info */
   .surahInfo {
+    flex: 1;
+    min-width: 0; /* Allow shrinking */
     gap: 10px;
   }
 
   .surahBadge {
     width: 36px;
     height: 36px;
+    border-radius: 8px;
   }
 
   .surahNumber {
@@ -495,15 +441,24 @@
   }
 
   .surahNames h2 {
-    font-size: 0.95rem;
-  }
-
-  .surahMeta {
-    font-size: 0.65rem;
+    font-size: 1rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px;
+  }
+
+  .surahMeta {
+    display: none; /* Hide meta on mobile to save space */
+  }
+  
+  /* Hide text selector */
+  .surahSelector {
+    display: none;
+  }
+  
+  /* Compact Controls */
+  .controls {
+    gap: 6px;
   }
 
   .navBtn,
@@ -512,27 +467,88 @@
     height: 32px;
     border-radius: 8px;
   }
-
+  
   .navBtn svg,
   .iconBtn svg {
     width: 16px;
     height: 16px;
   }
 
-  .viewModeBtn {
-    padding: 5px 6px;
+  /* Compact Options */
+  .options {
+    gap: 6px;
   }
 
+  .divider {
+    display: none;
+  }
+  
+  /* Compact Reciter Button */
+  .reciterBtn span,
+  .reciterBtn svg {
+    display: none;
+  }
+  
+  .reciterBtn {
+    min-width: auto;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  
+  .reciterBtn img {
+    margin: 0;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .reciterMenu {
+    right: -20px;
+    width: 220px;
+  }
+
+  /* Compact Font Toggle */
+  .fontToggleBtn {
+    padding: 0 6px;
+    height: 32px;
+    font-size: 0.75rem;
+    margin-left: 0;
+  }
+  
+  /* Compact View Mode */
+  .viewModeToggle {
+    padding: 2px;
+    gap: 2px;
+  }
+  
+  .viewModeBtn {
+    padding: 4px 6px;
+    border-radius: 6px;
+  }
+  
   .viewModeBtn svg {
     width: 14px;
     height: 14px;
   }
-  
-  .surahSelector {
-    padding: 6px 10px;
+}
+
+@media (max-width: 480px) {
+  /* Ultra compact for very small screens */
+  .surahBadge {
+    display: none; /* Hide badge, just show name */
   }
   
-  .currentSurah {
-    font-size: 0.7rem;
+  .surahNames h2 {
+    font-size: 0.95rem;
+  }
+  
+  .options {
+    gap: 4px;
+  }
+  
+  .fontToggleBtn {
+    display: none; /* Hide font toggle on very small screens */
   }
 }

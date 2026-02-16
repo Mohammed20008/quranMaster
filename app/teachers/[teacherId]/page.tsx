@@ -11,6 +11,7 @@ import TestimonialsCarousel from '@/app/components/teacher/testimonials-carousel
 import { getAvatarPreset, renderAvatar } from '@/app/components/avatar/avatar-utils';
 import { Settings, Edit, Heart, Share2, MessageCircle } from 'lucide-react';
 import TeachingJourney from '@/app/components/teacher/teaching-journey';
+import styles from './teacher-profile.module.css';
 
 // Simple wrapper for using the renderAvatar util in JSX
 const AvatarDisplay = ({ avatarId, name, size }: { avatarId: string, name: string, size: number }) => {
@@ -26,37 +27,23 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
   const teacher = getTeacher(teacherId);
 
   const isOwner = loggedInTeacherId === teacher?.id; // Check if current user owns this profile
-
   const [showVideo, setShowVideo] = useState(false);
 
   if (!teacher) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className={styles.notFound}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
-          <h1 style={{ fontSize: '2rem', fontWeight: '800', color: '#111827', marginBottom: '1rem' }}>
+          <h1 className={styles.notFoundTitle}>
             Teacher Not Found
           </h1>
-          <p style={{ color: '#6b7280', marginBottom: '2rem', maxWidth: '400px' }}>
+          <p className={styles.notFoundText}>
             The teacher profile you are looking for does not exist or has been removed.
           </p>
-          <Link
-            href="/learn"
-            style={{
-              display: 'inline-block',
-              background: 'linear-gradient(135deg, #d4af37, #b4941f)',
-              color: 'white',
-              padding: '1rem 2rem',
-              borderRadius: '9999px',
-              fontWeight: '700',
-              textDecoration: 'none',
-              boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
-              transition: 'all 0.3s'
-            }}
-          >
+          <Link href="/learn" className={styles.primaryBtn} style={{ display: 'inline-block' }}>
             Browse All Teachers
           </Link>
         </motion.div>
@@ -65,17 +52,14 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
   }
 
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', paddingBottom: '4rem' }}>
+    <div className={styles.container}>
       {/* Enhanced Hero Header with Parallax Effect */}
-      <div style={{ position: 'relative', height: '350px', overflow: 'hidden' }}>
+      <div className={styles.heroWrapper}>
         {/* Animated Background */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-        }}>
+        <div className={styles.heroBackground}>
           {/* Animated Shapes */}
           <motion.div
+            className={styles.heroShape1}
             animate={{
               y: [0, -20, 0],
               rotate: [0, 5, 0]
@@ -85,17 +69,9 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            style={{
-              position: 'absolute',
-              top: '10%',
-              right: '10%',
-              width: '300px',
-              height: '300px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%)',
-            }}
           />
           <motion.div
+            className={styles.heroShape2}
             animate={{
               y: [0, 20, 0],
               rotate: [0, -5, 0]
@@ -106,48 +82,14 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
               ease: "easeInOut",
               delay: 1
             }}
-            style={{
-              position: 'absolute',
-              bottom: '10%',
-              left: '15%',
-              width: '250px',
-              height: '250px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
-            }}
           />
 
           {/* Islamic Pattern Overlay */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L34 26L60 30L34 34L30 60L26 34L0 30L26 26z' fill='rgba(212,175,55,0.03)'/%3E%3C/svg%3E")`,
-            backgroundSize: '60px 60px'
-          }} />
+          <div className={styles.patternOverlay} />
         </div>
 
         {/* Back Button */}
-        <Link
-          href="/learn"
-          style={{
-            position: 'absolute',
-            top: '2rem',
-            left: '2rem',
-            zIndex: 20,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '9999px',
-            color: 'white',
-            fontWeight: '600',
-            textDecoration: 'none',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            transition: 'all 0.3s'
-          }}
-        >
+        <Link href="/learn" className={styles.backButton}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -155,65 +97,19 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
         </Link>
         
         {/* Actions Group */}
-        <div style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 20, display: 'flex', gap: '0.75rem' }}>
+        <div className={styles.actionsGroup}>
           {isOwner && (
-             <Link
-               href="/teacher/settings"
-               style={{
-                 background: 'rgba(255, 255, 255, 0.9)',
-                 backdropFilter: 'blur(10px)',
-                 padding: '0.75rem 1rem',
-                 borderRadius: '9999px',
-                 color: '#d4af37',
-                 fontWeight: '700',
-                 border: 'none',
-                 cursor: 'pointer',
-                 textDecoration: 'none',
-                 display: 'flex',
-                 alignItems: 'center',
-                 gap: '0.5rem',
-                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-               }}
-             >
+             <Link href="/teacher/settings" className={styles.editButton}>
                <Settings size={18} /> Edit Profile
              </Link>
           )}
 
-          <button
-             style={{
-               background: 'rgba(255, 255, 255, 0.1)',
-               backdropFilter: 'blur(10px)',
-               width: '42px', 
-               height: '42px',
-               borderRadius: '50%',
-               color: 'white',
-               border: '1px solid rgba(255, 255, 255, 0.2)',
-               cursor: 'pointer',
-               display: 'flex',
-               alignItems: 'center',
-               justifyContent: 'center'
-             }}
-             onClick={() => {
-                // Toggle favorite logic here
-             }}
-          >
+          <button className={styles.actionIconBtn} onClick={() => {}}>
             <Heart size={20} />
           </button>
 
           <button
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              width: '42px',
-              height: '42px',
-              borderRadius: '50%',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
+            className={styles.actionIconBtn}
             onClick={() => {
               if (navigator.share) {
                 navigator.share({
@@ -227,291 +123,140 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
             <Share2 size={20} />
           </button>
         </div>
-
-        {/* Old buttons removed - replaced by Action Group above */}
       </div>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1.5rem' }}>
+      <div className={styles.mainWrapper}>
         {/* Profile Card - Overlapping Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          style={{
-            marginTop: '-120px',
-            position: 'relative',
-            zIndex: 10
-          }}
+          className={styles.profileCard}
         >
-          <div style={{
-            background: 'white',
-            borderRadius: '2rem',
-            padding: '2.5rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-            border: '1px solid rgba(0, 0, 0, 0.05)'
-          }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
-              {/* Avatar */}
-              <div style={{ position: 'relative' }}>
-                {teacher.photo && !teacher.avatarId ? (
-                  <img
-                    src={teacher.photo}
-                    alt={teacher.name}
-                    style={{
-                      width: '160px',
-                      height: '160px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '5px solid white',
-                      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
-                    }}
-                  />
-                ) : teacher.avatarId ? (
-                   <div style={{
-                      border: '5px solid white',
-                      borderRadius: '50%',
-                      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
-                   }}>
-                    <AvatarDisplay avatarId={teacher.avatarId} name={teacher.name} size={160} />
-                   </div>
-                ) : (
-                  <div style={{
-                    width: '160px',
-                    height: '160px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #d4af37, #b4941f)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '4rem',
-                    fontWeight: '700',
-                    border: '5px solid white',
-                    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
-                  }}>
-                    {teacher.name[0]}
+          <div className={styles.profileHeaderGrid}>
+            {/* Avatar */}
+            <div className={styles.avatarSection}>
+              {teacher.photo && !teacher.avatarId ? (
+                <img
+                  src={teacher.photo}
+                  alt={teacher.name}
+                  className={styles.profileAvatar}
+                />
+              ) : teacher.avatarId ? (
+                 <div className={styles.profileAvatar} style={{ overflow: 'hidden', padding: 0 }}>
+                  <AvatarDisplay avatarId={teacher.avatarId} name={teacher.name} size={150} />
+                 </div>
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  {teacher.name[0]}
+                </div>
+              )}
+              {/* Online Status */}
+              <div className={styles.onlineBadge} />
+            </div>
+
+            {/* Teacher Info */}
+            <div className={styles.infoSection}>
+              <div className={styles.nameRow}>
+                <h1 className={styles.teacherName}>
+                  {teacher.name}
+                </h1>
+                {teacher.ijazah && (
+                  <div className={styles.ijazahTag}>
+                    ✓ IJAZAH CERTIFIED
                   </div>
                 )}
-                {/* Online Status */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '10px',
-                  right: '10px',
-                  width: '24px',
-                  height: '24px',
-                  background: '#10b981',
-                  borderRadius: '50%',
-                  border: '3px solid white',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-                }} />
               </div>
 
-              {/* Teacher Info */}
-              <div style={{ flex: 1, minWidth: '300px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
-                  <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#111827' }}>
-                    {teacher.name}
-                  </h1>
-                  {teacher.ijazah && (
-                    <div style={{
-                      background: 'linear-gradient(135deg, #d4af37, #b4941f)',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
-                      letterSpacing: '0.5px',
-                      boxShadow: '0 2px 8px rgba(212, 175, 55, 0.3)'
-                    }}>
-                      ✓ IJAZAH CERTIFIED
-                    </div>
+              {/* Rating */}
+              <div className={styles.ratingRow}>
+                <div className={styles.stars}>
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} style={{ color: i < Math.floor(teacher.rating) ? '#fbbf24' : 'var(--border)' }}>
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <span className={styles.ratingValue}>
+                  {teacher.rating.toFixed(1)}
+                </span>
+                <span className={styles.reviewCount}>
+                  ({teacher.reviewCount} reviews)
+                </span>
+              </div>
+
+              {/* Teaching Style & Subjects */}
+              <div className={styles.tagsRow}>
+                 {teacher.teachingStyle?.map(style => (
+                   <span key={style} className={styles.styleTag}>
+                     ✨ {style}
+                   </span>
+                 ))}
+                 {teacher.subjects.map(subject => (
+                   <span key={subject} className={styles.subjectTag}>
+                     {subject}
+                   </span>
+                 ))}
+              </div>
+
+              {/* Quick Stats */}
+              <div className={styles.statsRow}>
+                <div>
+                  <div className={styles.statLabel}>
+                    Hourly Rate
+                  </div>
+                  <div className={styles.statValue}>
+                    ${teacher.hourlyRate || 15}/hr
+                  </div>
+                </div>
+                <div>
+                  <div className={styles.statLabel}>
+                    Availability
+                  </div>
+                  <div className={styles.availabilityValue}>
+                    <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} />
+                    {teacher.availability}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className={styles.ctaSection}>
+              {isOwner ? (
+                <>
+                <Link href="/teacher/settings" className={styles.primaryBtn}>
+                  <Edit size={20} /> Manage Profile
+                </Link>
+                <button
+                  onClick={() => openChat()}
+                  className={styles.secondaryBtn}
+                  style={{ position: 'relative' }}
+                >
+                  <MessageCircle size={20} /> Messages
+                  {unreadTotal > 0 && (
+                    <span className={styles.badge}>{unreadTotal}</span>
                   )}
-                </div>
-
-                {/* Rating */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', gap: '0.25rem' }}>
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          color: i < Math.floor(teacher.rating) ? '#fbbf24' : '#e5e7eb',
-                          fontSize: '1.5rem'
-                        }}
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <span style={{ fontSize: '1.25rem', fontWeight: '700' }}>
-                    {teacher.rating.toFixed(1)}
-                  </span>
-                  <span style={{ color: '#6b7280' }}>
-                    ({teacher.reviewCount} reviews)
-                  </span>
-                </div>
-
-                {/* Teaching Style & Subjects */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                   {teacher.teachingStyle?.map(style => (
-                     <span
-                       key={style}
-                       style={{
-                         background: '#ecfdf5',
-                         color: '#047857',
-                         padding: '0.4rem 0.8rem',
-                         borderRadius: '8px',
-                         fontSize: '0.85rem',
-                         fontWeight: '600',
-                         border: '1px solid #a7f3d0'
-                       }}
-                     >
-                       ✨ {style}
-                     </span>
-                   ))}
-                   {teacher.subjects.map(subject => (
-                     <span
-                       key={subject}
-                       style={{
-                         background: '#f3f4f6',
-                         color: '#374151',
-                         padding: '0.4rem 0.8rem',
-                         borderRadius: '8px',
-                         fontSize: '0.85rem',
-                         fontWeight: '600'
-                       }}
-                     >
-                       {subject}
-                     </span>
-                   ))}
-                </div>
-
-                {/* Quick Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>
-                      Hourly Rate
-                    </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#d4af37' }}>
-                      ${teacher.hourlyRate || 15}/hr
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>
-                      Availability
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: '600', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} />
-                      {teacher.availability}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA Buttons */}
-              {/* CTA Buttons */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: '200px' }}>
-                {isOwner ? (
-                  <>
-                  <Link
-                    href="/teacher/settings"
-                    style={{
-                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                      color: 'white',
-                      padding: '1rem 2rem',
-                      borderRadius: '0.75rem',
-                      border: 'none',
-                      fontSize: '1.1rem',
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
-                      transition: 'all 0.3s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    <Edit size={20} /> Manage Profile
-                  </Link>
-                  <button
-                    onClick={() => openChat()}
-                    style={{
-                      background: 'white',
-                      color: '#374151',
-                      padding: '1rem 2rem',
-                      borderRadius: '0.75rem',
-                      border: '2px solid #e5e7eb',
-                      fontSize: '1.1rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      position: 'relative'
-                    }}
-                  >
-                    <MessageCircle size={20} /> Messages
-                    {unreadTotal > 0 && (
-                      <span style={{
-                        position: 'absolute',
-                        top: '-8px',
-                        right: '-8px',
-                        background: '#ef4444',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        padding: '2px 8px',
-                        borderRadius: '999px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                      }}>{unreadTotal}</span>
-                    )}
+                </button>
+                </>
+              ) : (
+                <>
+                  <button className={styles.primaryBtn}>
+                    📅 Book Trial Lesson
                   </button>
-                  </>
-                ) : (
-                  <>
-                    <button style={{
-                      background: 'linear-gradient(135deg, #d4af37, #b4941f)',
-                      color: 'white',
-                      padding: '1rem 2rem',
-                      borderRadius: '0.75rem',
-                      border: 'none',
-                      fontSize: '1.1rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
-                      transition: 'all 0.3s'
-                    }}>
-                      📅 Book Trial Lesson
-                    </button>
-                    <button 
-                      onClick={() => openChat(teacher.email)}
-                      style={{
-                      background: 'white',
-                      color: '#374151',
-                      padding: '1rem 2rem',
-                      borderRadius: '0.75rem',
-                      border: '2px solid #e5e7eb',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}>
-                      💬 Send Message
-                    </button>
-                  </>
-                )}
-              </div>
+                  <button 
+                    onClick={() => openChat(teacher.email)}
+                    className={styles.secondaryBtn}>
+                    <MessageCircle size={20} /> Send Message
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </motion.div>
 
         {/* Main Content Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+        <div className={styles.contentGrid}>
           {/* Left Column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* About Section */}
@@ -519,18 +264,13 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              style={{
-                background: 'white',
-                borderRadius: '1.5rem',
-                padding: '2rem',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
+              className={styles.sectionCard}
             >
-              <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ width: '6px', height: '32px', background: 'linear-gradient(180deg, #d4af37, #b4941f)', borderRadius: '3px' }} />
+              <h2 className={styles.sectionTitle}>
+                <span className={styles.goldBar} />
                 About Me
               </h2>
-              <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#374151', whiteSpace: 'pre-wrap' }}>
+              <p className={styles.bioText}>
                 {teacher.bio}
               </p>
             </motion.div>
@@ -543,57 +283,23 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              style={{
-                background: 'white',
-                borderRadius: '1.5rem',
-                overflow: 'hidden',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
+              className={styles.sectionCard}
+              style={{ overflow: 'hidden', padding: 0 }}
             >
-              <div style={{ position: 'relative', aspectRatio: '16/9', background: '#111827' }}>
+              <div className={styles.videoWrapper}>
                 {!showVideo ? (
                   <div
                     onClick={() => setShowVideo(true)}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(31, 41, 55, 0.9))'
-                    }}
+                    className={styles.videoOverlay}
                   >
                     <motion.div
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
-                      style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        background: 'rgba(212, 175, 55, 0.9)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)'
-                      }}
+                      className={styles.playButton}
                     >
-                      <div style={{
-                        width: 0,
-                        height: 0,
-                        borderTop: '15px solid transparent',
-                        borderBottom: '15px solid transparent',
-                        borderLeft: '25px solid white',
-                        marginLeft: '5px'
-                      }} />
+                      <div className={styles.playIcon} />
                     </motion.div>
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '2rem',
-                      left: '2rem',
-                      right: '2rem',
-                      color: 'white'
-                    }}>
+                    <div className={styles.videoText}>
                       <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem' }}>
                         Watch Introduction Video
                       </h3>
@@ -616,15 +322,10 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              style={{
-                background: 'white',
-                borderRadius: '1.5rem',
-                padding: '2rem',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
+              className={styles.sectionCard}
             >
-              <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ width: '6px', height: '32px', background: 'linear-gradient(180deg, #d4af37, #b4941f)', borderRadius: '3px' }} />
+              <h2 className={styles.sectionTitle}>
+                <span className={styles.goldBar} />
                 Qualifications & Experience
               </h2>
               <div style={{ display: 'grid', gap: '1rem' }}>
@@ -634,33 +335,14 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
-                    style={{
-                      display: 'flex',
-                      gap: '1rem',
-                      padding: '1.25rem',
-                      background: '#f9fafb',
-                      borderRadius: '1rem',
-                      border: '1px solid #e5e7eb'
-                    }}
+                    className={styles.qualificationItem}
                   >
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      background: 'linear-gradient(135deg, #fff9db, #fef3c7)',
-                      borderRadius: '0.75rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem',
-                      flexShrink: 0
-                    }}>
-                      🎓
-                    </div>
+                    <div className={styles.qualIcon}>🎓</div>
                     <div>
-                      <div style={{ fontWeight: '600', fontSize: '1.1rem', color: '#111827', marginBottom: '0.25rem' }}>
+                      <div className={styles.qualText}>
                         {qual}
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                      <div className={styles.qualSub}>
                         Verified Credential
                       </div>
                     </div>
@@ -681,7 +363,7 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
 
           {/* Right Column - Sticky Sidebar */}
           <div>
-            <div style={{ position: 'sticky', top: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div className={styles.stickySidebar}>
               {!isOwner ? (
                 <>
                   {/* Booking Calendar */}
@@ -703,28 +385,13 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 }}
-                    style={{
-                      background: 'white',
-                      borderRadius: '1.5rem',
-                      padding: '1.5rem',
-                      border: '1px solid #e5e7eb',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }}
+                    className={styles.contactCard}
                   >
-                    <h3 style={{ fontWeight: '700', marginBottom: '1rem' }}>Need Help?</h3>
-                    <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '1rem' }}>
+                    <h3 className={styles.contactTitle}>Need Help?</h3>
+                    <p className={styles.contactText}>
                       Have questions? Our support team is here to assist you.
                     </p>
-                    <button style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      background: '#f3f4f6',
-                      border: 'none',
-                      borderRadius: '0.75rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}>
+                    <button className={styles.contactBtn}>
                       Contact Support
                     </button>
                   </motion.div>
@@ -735,26 +402,20 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ teach
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  style={{
-                    background: 'white',
-                    borderRadius: '1.5rem',
-                    padding: '1.5rem',
-                    border: '1px solid #e5e7eb',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
+                  className={styles.contactCard}
                 >
-                   <h3 style={{ fontWeight: '700', marginBottom: '1rem' }}>Your Stats</h3>
+                   <h3 className={styles.contactTitle}>Your Stats</h3>
                    <div style={{ display: 'grid', gap: '1rem' }}>
-                     <div style={{ padding: '1rem', background: '#f9fafb', borderRadius: '1rem' }}>
-                       <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Total Earnings</div>
+                     <div style={{ padding: '1rem', background: 'var(--background-secondary)', borderRadius: '1rem' }}>
+                       <div style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)' }}>Total Earnings</div>
                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981' }}>$0.00</div>
                      </div>
-                     <div style={{ padding: '1rem', background: '#f9fafb', borderRadius: '1rem' }}>
-                       <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Sessions Taught</div>
+                     <div style={{ padding: '1rem', background: 'var(--background-secondary)', borderRadius: '1rem' }}>
+                       <div style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)' }}>Sessions Taught</div>
                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3b82f6' }}>0</div>
                      </div>
                    </div>
-                   <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginTop: '1rem', fontStyle: 'italic' }}>
+                   <p style={{ fontSize: '0.85rem', color: 'var(--foreground-secondary)', marginTop: '1rem', fontStyle: 'italic' }}>
                       Detailed dashboard coming soon...
                    </p>
                 </motion.div>

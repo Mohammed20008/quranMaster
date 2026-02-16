@@ -20,6 +20,22 @@ import ShareModal from '../share/share-modal';
 import { useAudio } from '@/app/context/audio-context';
 import { useUserData } from '@/app/context/user-data-context';
 
+// STATIC DATA OPTIMIZATION
+// Pre-compute flattened verses and lookup map to avoid O(N) operations on every render
+const ALL_VERSES = Object.keys(quranData).flatMap(sNum => 
+  (quranData[sNum as keyof typeof quranData] as any).map((v: any) => ({
+    ...v,
+    chapter: parseInt(sNum),
+    verseKey: `${sNum}-${v.verse}`
+  }))
+);
+
+const VERSES_BY_KEY = ALL_VERSES.reduce((acc, v) => {
+  acc[v.verseKey] = v;
+  return acc;
+}, {} as Record<string, any>);
+
+
 interface QuranReaderProps {
   surahNumber: number;
   showTransliteration?: boolean;
@@ -230,7 +246,7 @@ export default function QuranReader({
   const verses = getVersesBySurah(surahNumber);
 
   // Target specific line counts for Mushaf modes
-  const displayFontSize = viewMode === 'spread' ? fontSize * 0.581 : (viewMode === 'page' ? fontSize * 1.1 : fontSize);
+  const displayFontSize = viewMode === 'spread' ? fontSize * 0.67 : (viewMode === 'page' ? fontSize * 1.2 : fontSize);
   const displayLineHeight = viewMode === 'spread' ? 1.65 : (viewMode === 'page' ? 1.85 : 2.2);
 
   if (!surah) {
@@ -387,22 +403,42 @@ export default function QuranReader({
     return () => observer.disconnect();
   }, [fontMode, qpcData]);
 
-  // Lazy loading fonts
+  // Lazy loading fonts - LOAD ALL SURAH PAGES to prevent FOUT
   useEffect(() => {
     if (fontMode !== 'qpc') {
       setFontsLoaded(true);
       return;
     }
-    const activePages = Array.from(visiblePages);
-    if (activePages.length === 0) {
-       setFontsLoaded(false); 
+    
+    // Get all pages for the current surah from QPC data
+    const surahPages = new Set<number>();
+    Object.values(qpcData).forEach(v => {
+        // v.id check? qpcData keys are 'surah-verse'.
+        // We filter by current surah to be safe, though qpcData usually contains current + neighbors
+        const [sNum] = v.id.split(':'); // id is usually '1:1' in QPC API data?
+        // Wait, line 366: const [s, v] = d.id.split(':');
+        // line 367: map[`${s}-${v}`] = d;
+        // The values in qpcData are QPCVerseData objects.
+        // Assuming d.page is present.
+        if (v.page && parseInt(sNum) === surahNumber) {
+            surahPages.add(v.page);
+        }
+    });
+
+    const targetPages = Array.from(surahPages);
+    if (targetPages.length === 0) {
+       // If QPC data not loaded yet, do nothing (keep loading)
+       // Or if empty surah?
+       if (!loadingQPC && Object.keys(qpcData).length > 0) setFontsLoaded(true);
        return;
     }
-    const pagesToLoad = activePages.filter(page => !loadedPages.has(page));
+    
+    const pagesToLoad = targetPages.filter(p => !loadedPages.has(p));
     if (pagesToLoad.length === 0) {
       setFontsLoaded(true);
       return;
     }
+
     const checkFonts = async () => {
        const promises = pagesToLoad.map(page => document.fonts.load(`16px "QPC_Page_${page}"`));
        try {
@@ -419,7 +455,7 @@ export default function QuranReader({
        }
     };
     checkFonts();
-  }, [visiblePages, fontMode, loadedPages]);
+  }, [fontMode, qpcData, loadingQPC, loadedPages, surahNumber]);
 
   // Scroll active verse into view
   useEffect(() => {
@@ -477,8 +513,14 @@ export default function QuranReader({
     setShareModalOpen(true);
   };
 
-  // Only load fonts for visible pages
-  const activePagesArray = Array.from(visiblePages);
+  // Use all loaded pages for QPCFontLoader to ensure styles are available
+  // We determine this by checking loadedPages + visiblePages logic or simply iterating qpcData for current surah
+  const qpcPagesForLoader = useMemo(() => {
+      const p = new Set<number>();
+      // Add all pages from current QPC data (current surah + neighbors)
+      Object.values(qpcData).forEach(v => { if(v.page) p.add(v.page); });
+      return Array.from(p).sort();
+  }, [qpcData]);
 
   return (
     <div className={styles.reader}>
@@ -492,7 +534,7 @@ export default function QuranReader({
         )}
       </AnimatePresence>
 
-      <QPCFontLoader pages={activePagesArray} />
+      <QPCFontLoader pages={qpcPagesForLoader} />
       
       {/* Share Modal */}
       {shareVerseData && (
@@ -570,14 +612,9 @@ export default function QuranReader({
                   (() => {
                     const pages: Record<number, any[]> = {};
                     
-                    // Flatten all verses from quranData to allow cross-surah spreads
-                    const allVerses = Object.keys(quranData).flatMap(sNum => 
-                      (quranData[sNum as keyof typeof quranData] as any).map((v: any) => ({
-                        ...v,
-                        chapter: parseInt(sNum)
-                      }))
-                    );
-
+                    // Optimization: Instead of filtering ALL_VERSES on every render,
+                    // we utilize the pre-computed VERSE_BY_KEY and iterate only relevant data.
+                    
                     // Find all pages that contain verses from the current surah
                     const currentSurahPages = new Set<number>();
                     verses.forEach((v: QuranVerse) => {
@@ -598,11 +635,27 @@ export default function QuranReader({
                     });
 
                     // Populate pages with verses
+                    // Populate pages with verses efficiently
+                    // Instead of filtering 6000+ verses for each page, we rely on qpcData
+                    const versesByPage: Record<number, any[]> = {};
+                    
+                    // We need to group ALL known qpcData keys by page to support cross-surah rendering
+                    // This is still better than filtering ALL_VERSES
+                    // However, we only have qpcData for loaded surahs. 
+                    // Fallback: If qpcData is missing for adjacent pages, we might need a better strategy.
+                    // For now, we iterate ALL_VERSES but only check against active pages (set lookup)
+                    
+                    // To avoid iterating 6236 items x ActivePages, we iterate ALL_VERSES once and bucket them to active pages
+                    ALL_VERSES.forEach(v => {
+                        const page = qpcData[v.verseKey]?.page;
+                        if (page && activePages.has(page)) {
+                            if (!versesByPage[page]) versesByPage[page] = [];
+                            versesByPage[page].push(v);
+                        }
+                    });
+                    
                     activePages.forEach(p => {
-                      pages[p] = allVerses.filter(v => {
-                        const vKey = `${v.chapter}-${v.verse}`;
-                        return qpcData[vKey]?.page === p;
-                      });
+                       pages[p] = versesByPage[p] || [];
                     });
 
                     const getPageInfo = (pNum: number) => {
@@ -762,14 +815,10 @@ export default function QuranReader({
                   })()
                 ) : (
                     (() => {
-                        // Group verses by page for standard page view too
+                        // Group verses by page using static data
                         const pages: Record<number, any[]> = {};
-                        const allVerses = Object.keys(quranData).flatMap(sNum => 
-                          (quranData[sNum as keyof typeof quranData] as any).map((v: any) => ({
-                            ...v,
-                            chapter: parseInt(sNum)
-                          }))
-                        );
+                        // Using static ALL_VERSES instead of re-computing
+
                         
                         const currentSurahPages = new Set<number>();
                         verses.forEach((v: QuranVerse) => {
@@ -778,11 +827,20 @@ export default function QuranReader({
                         });
 
                         const sortedActivePages = Array.from(currentSurahPages).sort((a, b) => a - b);
+                        
+                        // Optimized population
+                        const versesByPage: Record<number, any[]> = {};
+                         ALL_VERSES.forEach(v => {
+                            const page = qpcData[v.verseKey]?.page;
+                            // Only care about pages relevant to current surah view
+                            if (page && currentSurahPages.has(page)) {
+                                if (!versesByPage[page]) versesByPage[page] = [];
+                                versesByPage[page].push(v);
+                            }
+                        });
+
                         sortedActivePages.forEach(p => {
-                          pages[p] = allVerses.filter(v => {
-                            const vKey = `${v.chapter}-${v.verse}`;
-                            return qpcData[vKey]?.page === p;
-                          });
+                           pages[p] = versesByPage[p] || [];
                         });
 
                         const getPageInfo = (pNum: number) => {

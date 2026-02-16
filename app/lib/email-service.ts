@@ -35,11 +35,11 @@ export async function sendEmail(
   from: string = FROM_EMAIL
 ): Promise<EmailResult> {
   try {
-    // Development mode: Log and show preview instead of sending
-    if (IS_DEVELOPMENT || !resend) {
+    // Development mode with NO key: Log and preview
+    if (!resend) {
       console.log(`
 ╔════════════════════════════════════════════════════════════
-║ 📧 EMAIL PREVIEW (Development Mode)
+║ 📧 EMAIL PREVIEW (No API Key)
 ╠════════════════════════════════════════════════════════════
 ║ From: ${from}
 ║ To: ${to}
@@ -58,10 +58,7 @@ export async function sendEmail(
         }
       }
 
-      if (!resend) {
-        console.warn('⚠️ RESEND_API_KEY not configured. Emails will not be sent in production.');
-      }
-
+      console.warn('⚠️ RESEND_API_KEY not configured. Emails will not be sent.');
       return { success: true, messageId: `dev-${Date.now()}` };
     }
 

@@ -18,7 +18,7 @@ export default function QPCFontLoader({ pages }: QPCFontLoaderProps) {
         @font-face {
           font-family: 'QPC_Page_${page}';
           src: url('/fonts/qpc/p${page}.woff2') format('woff2');
-          font-display: swap;
+          font-display: block;
         }
         .qpc-page-${page} {
           font-family: 'QPC_Page_${page}', sans-serif !important;
