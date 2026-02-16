@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import styles from '@/app/calendar/calendar.module.css';
 
 interface PrayerTimes {
@@ -16,7 +16,7 @@ interface PrayerTimes {
 export default function PrayerTimesCard() {
   const [timings, setTimings] = useState<PrayerTimes | null>(null);
   const [loading, setLoading] = useState(true);
-  const [city, setCity] = useState('London');
+  // const [] = useState('London');
   const [locationName, setLocationName] = useState('London, UK');
 
   useEffect(() => {

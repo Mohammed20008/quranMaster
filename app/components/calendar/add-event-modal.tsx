@@ -81,7 +81,6 @@ export default function AddEventModal({
   };
 
   const isHijri = type === 'hijri';
-  const hijriMonthName = HIJRI_MONTHS[pickerDate.iMonth()];
   const hijriYear = pickerDate.iYear();
   
   // Gregorian info for the header if needed

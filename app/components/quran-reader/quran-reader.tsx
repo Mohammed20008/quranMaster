@@ -31,10 +31,6 @@ const ALL_VERSES = Object.keys(quranData).flatMap(sNum =>
   }))
 );
 
-const VERSES_BY_KEY = ALL_VERSES.reduce((acc, v) => {
-  acc[v.verseKey] = v;
-  return acc;
-}, {} as Record<string, any>);
 
 
 interface QuranReaderProps {
@@ -232,8 +228,6 @@ function TransitionNotification({ title, message, onClose }: { title: string; me
 
 export default function QuranReader({ 
   surahNumber, 
-  showTransliteration = true, 
-  showTranslation = true, 
   viewMode: propViewMode = 'verse',
   bookmarkedVerses,
   onToggleBookmark,
@@ -262,9 +256,6 @@ export default function QuranReader({
   const displayFontSize = viewMode === 'spread' ? fontSize * 0.67 : (viewMode === 'page' ? fontSize * 1.2 : fontSize);
   const displayLineHeight = viewMode === 'spread' ? 1.65 : (viewMode === 'page' ? 1.85 : 2.2);
 
-  if (!surah) {
-    return <div className={styles.error}>Surah not found</div>;
-  }
 
   const [toast, setToast] = useState<string | null>(null);
   const [activeTafsirVerse, setActiveTafsirVerse] = useState<string | null>(null);
