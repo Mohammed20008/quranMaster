@@ -6,7 +6,6 @@ interface Hadith {
   id: number | string;
   arabic: string;
   english: { text: string; narrator?: string };
-  [key: string]: any;
 }
 
 interface ChapterInfo {
@@ -108,18 +107,19 @@ async function getHadithsForChapter(
     const data = JSON.parse(file);
     
     // Handle both array and object structure
-    let hadiths: any[] = [];
+    let hadiths: Hadith[] = [];
     if (Array.isArray(data)) {
-      hadiths = data;
+      hadiths = data as Hadith[];
     } else if (data && typeof data === 'object') {
+      const obj = data as { hadiths?: Hadith[]; Hadiths?: Hadith[] };
       // Check for 'hadiths' property or common variations
-      hadiths = data.hadiths || data.Hadiths || [];
+      hadiths = obj.hadiths || obj.Hadiths || [];
       if (!Array.isArray(hadiths)) hadiths = [];
     }
     
     return hadiths;
   } catch (error) {
-    if ((error as any).code !== 'ENOENT') {
+    if ((error as { code?: string }).code !== 'ENOENT') {
       console.error(`Error loading chapter ${chapter}:`, error);
     }
     return [];

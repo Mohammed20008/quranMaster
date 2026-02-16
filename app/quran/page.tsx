@@ -21,8 +21,7 @@ function QuranContent() {
     toggleBookmark, 
     updateLastRead, 
     settings, 
-    updateSettings,
-    incrementVersesRead 
+    updateSettings 
   } = useUserData();
 
   // Update current surah if valid URL param changes

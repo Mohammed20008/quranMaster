@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Salam, {user?.name}</h2>
-            <p className="text-gray-500 mt-1">Here is what's happening with your students today.</p>
+            <p className="text-gray-500 mt-1">Here is what&apos;s happening with your students today.</p>
         </div>
 
         {/* Stats Grid */}

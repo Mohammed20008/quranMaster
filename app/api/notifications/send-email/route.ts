@@ -4,7 +4,9 @@ import { render } from '@react-email/render';
 import TeacherApprovedEmail from '@/app/emails/teacher-approved';
 import TeacherRejectedEmail from '@/app/emails/teacher-rejected';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize with a fallback to prevent build-time errors if env var is missing
+const resendApiKey = process.env.RESEND_API_KEY || 're_123456789';
+const resend = new Resend(resendApiKey);
 
 export async function POST(request: NextRequest) {
   try {

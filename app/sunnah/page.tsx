@@ -56,7 +56,21 @@ export default function SunnahPage() {
   }, []);
 
   useEffect(() => {
-    filterCollections();
+    let filtered = collections;
+
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(c => c.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.arabicName.includes(searchQuery) ||
+        c.author.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    setFilteredCollections(filtered);
   }, [searchQuery, selectedCategory, collections]);
 
   const loadCollections = async () => {
@@ -73,23 +87,7 @@ export default function SunnahPage() {
     }
   };
 
-  const filterCollections = () => {
-    let filtered = collections;
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(c => c.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.arabicName.includes(searchQuery) ||
-        c.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredCollections(filtered);
-  };
 
   const categories = [
     { id: 'all', name: 'All Collections' },
