@@ -5,13 +5,13 @@ import { useMessages } from '@/app/context/messages-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef, use } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import MessageBubble from '@/app/components/ai/message-bubble';
 import styles from '../../admin.module.css';
 
 export default function MessageThreadPage({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = use(params);
-  const { isAuthenticated, isAdmin, user } = useAuth();
+  const { isAuthenticated, isAdmin} = useAuth();
   const { getConversation, addAdminReply, markAsResponded, closeConversation } = useMessages();
   const router = useRouter();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);

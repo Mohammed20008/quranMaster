@@ -28,21 +28,21 @@ export default function Header({
   currentSurah, 
   onPrevSurah, 
   onNextSurah, 
-  onThemeToggle, 
-  theme, 
+  // onThemeToggle, 
+  // theme, 
   viewMode, 
   onViewModeChange,
   currentPage
 }: HeaderProps) {
   const { settings, updateSettings } = useUserData();
-  const { state: audioState, playSurah, playVerse, playPage, togglePlay, stop, currentReciter } = useAudio();
+  const { state: audioState, playSurah, playPage, togglePlay, currentReciter } = useAudio();
   
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showReciters, setShowReciters] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [pendingReciter, setPendingReciter] = useState<Reciter | null>(null);
+  const [pendingReciter, setQueuedReciter] = useState<Reciter | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -82,7 +82,7 @@ export default function Header({
   
   const handleReciterSelect = (reciter: Reciter) => {
     updateSettings({ selectedReciterId: reciter.id });
-    setPendingReciter(reciter);
+    setQueuedReciter(reciter);
     setShowReciters(false);
     setShowPrompt(true);
   };

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from '@/app/context/chat-context';
 import { useAuth } from '@/app/context/auth-context';
-import { X, Send, ChevronLeft, Search, Check, CheckCheck, MoreVertical } from 'lucide-react';
+import { X, Send, ChevronLeft, Search, Check, CheckCheck} from 'lucide-react';
 import { renderAvatar, getAvatarPreset } from '@/app/components/avatar/avatar-utils';
 import styles from './chat-modal.module.css';
 

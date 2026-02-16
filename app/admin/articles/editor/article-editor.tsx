@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useArticles } from '@/app/context/article-context';
-import { Article } from '@/app/context/article-context';
+// import { Article } from '@/app/context/article-context';
 import styles from '../../admin.module.css'; // Re-use basic styles
 
 interface ArticleEditorProps {

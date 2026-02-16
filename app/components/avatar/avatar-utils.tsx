@@ -35,7 +35,7 @@ export type AvatarPreset = typeof AVATAR_PRESETS[0];
 export function getAvatarStyle(
   preset: AvatarPreset,
   size: number = 120,
-  userInitial: string = 'U'
+  _userInitial: string = 'U'
 ): React.CSSProperties {
   const baseStyle: React.CSSProperties = {
     width: `${size}px`,

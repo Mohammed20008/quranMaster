@@ -85,7 +85,7 @@ export default function ShareModal({
     }
   }, [isOpen, arabicText, englishText, subText, initialBg]);
 
-  const filterNode = (node: HTMLElement) => {
+  const filterNode = () => {
     // Optional: add conditional filtering logic here if needed
     return true;
   };

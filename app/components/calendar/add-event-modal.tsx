@@ -165,7 +165,7 @@ export default function AddEventModal({
                             ))}
                             
                             {(() => {
-                                const cells = [];
+                                const cells: React.ReactNode[] = [];
                                 // Start from the first cell of the grid
                                 const startDate = moment(startOfMonth).subtract(calendarStartOffset, 'days');
                                 

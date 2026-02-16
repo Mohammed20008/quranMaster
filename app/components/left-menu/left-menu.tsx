@@ -103,7 +103,7 @@ export default function LeftMenu({
         let matchCount = 0;
 
         // Search both Arabic and English
-        for (const [surahKey, verses] of Object.entries(quranData)) {
+        for (const [, verses] of Object.entries(quranData)) {
           if (matchCount >= 50) break;
           for (const verse of verses as Array<{ chapter: number; verse: number; text: string }>) {
             if (matchCount >= 50) break;

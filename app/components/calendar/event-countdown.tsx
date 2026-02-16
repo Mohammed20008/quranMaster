@@ -44,7 +44,7 @@ export default function EventCountdown({ customEvents = [] }: EventCountdownProp
             eventDate = date.format('MMMM D, YYYY');
         } else if (e.type === 'gregorian' && e.gregorianMonth && e.gregorianDay) {
             daysUntil = daysUntilGregorianDate(e.gregorianMonth, e.gregorianDay);
-            let date = moment().month(e.gregorianMonth - 1).date(e.gregorianDay);
+            const date = moment().month(e.gregorianMonth - 1).date(e.gregorianDay);
             if (date.isBefore(moment(), 'day')) {
                 date.add(1, 'year');
             }

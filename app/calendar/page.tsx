@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import moment from 'moment-hijri';
 import { 
-  HIJRI_MONTHS, 
+//   HIJRI_MONTHS, 
   HIJRI_MONTHS_AR,
   ISLAMIC_EVENTS, 
   isSunnahFastingDay, 
@@ -192,7 +192,7 @@ export default function CalendarPage() {
                             ))}
 
                             {(() => {
-                                const cells = [];
+                                const cells: React.ReactNode[] = [];
                                 const startDate = moment(startOfMonth).subtract(calendarStartOffset, 'days');
                                 
                                 // Determine if we need 5 or 6 rows (35 or 42 cells)

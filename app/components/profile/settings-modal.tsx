@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/app/context/auth-context';
-import { X, Camera, User, BadgeCheck, Upload, Save, Check } from 'lucide-react';
+import { X, Camera, User, BadgeCheck, Upload, Save } from 'lucide-react';
 import { renderAvatar, AVATAR_PRESETS } from '@/app/components/avatar/avatar-utils';
 
 interface SettingsModalProps {
