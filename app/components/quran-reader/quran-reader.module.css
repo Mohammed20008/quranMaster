@@ -376,6 +376,19 @@
   border-color: rgba(198, 147, 32, 0.4);
 }
 
+.glowSuccess {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+}
+
+.iconSuccess {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+.titleSuccess {
+  color: #10b981 !important;
+}
+
 .notificationIcon {
   width: 48px;
   height: 48px;
@@ -434,6 +447,33 @@
 
 [data-theme='dark'] .notificationClose:hover {
   background: rgba(255,255,255,0.05);
+}
+
+/* Confetti effect */
+.confettiContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.confettiPiece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+.confettiPiece:nth-child(even) {
+  background: #10b981;
+}
+
+.confettiPiece:nth-child(3n) {
+  background: #3b82f6;
 }
 
 .pageHeader {

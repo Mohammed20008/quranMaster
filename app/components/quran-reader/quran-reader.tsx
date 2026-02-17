@@ -21,6 +21,15 @@ import ShareModal from '../share/share-modal';
 import { useAudio } from '@/app/context/audio-context';
 import { useUserData } from '@/app/context/user-data-context';
 
+// Constants for transition notifications
+const ORDINAL_WORDS = [
+  "Zero", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth",
+  "Eleventh", "Twelfth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth", "Twentieth",
+  "Twenty-First", "Twenty-Second", "Twenty-Third", "Twenty-Fourth", "Twenty-Fifth", "Twenty-Sixth", "Twenty-Seventh", "Twenty-Eighth", "Twenty-Ninth", "Thirtieth"
+];
+
+const RUB_POSITIONS = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth"];
+
 // STATIC DATA OPTIMIZATION
 // Pre-compute flattened verses and lookup map to avoid O(N) operations on every render
 const ALL_VERSES = Object.keys(quranData).flatMap(sNum => 
@@ -184,18 +193,24 @@ function VersePopup({
 function TransitionNotification({ title, message, onClose }: { title: string; message: string; onClose: () => void }) {
   const isJuz = title.toLowerCase().includes('juz');
   const isHizb = title.toLowerCase().includes('hizb');
+  const isFinish = message.toLowerCase().includes('finished');
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: -100, scale: 0.9 }}
-      animate={{ opacity: 1, y: 30, scale: 1 }}
-      exit={{ opacity: 0, y: -100, scale: 0.9 }}
+      initial={{ opacity: 0, y: -120, scale: 0.8, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, y: 40, scale: 1, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: -120, scale: 0.8, filter: 'blur(10px)' }}
+      transition={{ type: 'spring', damping: 20, stiffness: 120 }}
       className={styles.outstandingNotification}
     >
-      <div className={styles.notificationGlow}></div>
+      <div className={`${styles.notificationGlow} ${isFinish ? styles.glowSuccess : ''}`}></div>
       <div className={styles.notificationContent}>
-        <div className={`${styles.notificationIcon} ${isJuz ? styles.iconJuz : isHizb ? styles.iconHizb : styles.iconRub}`}>
-          {isJuz ? (
+        <div className={`${styles.notificationIcon} ${isJuz ? styles.iconJuz : isHizb ? styles.iconHizb : styles.iconRub} ${isFinish ? styles.iconSuccess : ''}`}>
+          {isFinish ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          ) : isJuz ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
             </svg>
@@ -212,16 +227,39 @@ function TransitionNotification({ title, message, onClose }: { title: string; me
           )}
         </div>
         <div className={styles.notificationText}>
-          <h3>{title}</h3>
+          <h3 className={isFinish ? styles.titleSuccess : ''}>{isFinish ? 'Milestone Reached' : title}</h3>
           <p>{message}</p>
         </div>
         <button onClick={onClose} className={styles.notificationClose}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
+      {isFinish && (
+        <motion.div 
+          className={styles.confettiContainer}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {Array.from({ length: 12 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className={styles.confettiPiece}
+              initial={{ x: 0, y: 0, opacity: 1 }}
+              animate={{ 
+                x: (Math.random() - 0.5) * 200, 
+                y: (Math.random() - 0.5) * 200,
+                opacity: 0,
+                scale: 0
+              }}
+              transition={{ duration: 1, delay: 0.1 }}
+            />
+          ))}
+        </motion.div>
+      )}
     </motion.div>
   );
 }
@@ -295,35 +333,69 @@ export default function QuranReader({
 
     const currentKey = `${audioState.currentSurah}:${audioState.currentVerse}`;
     
-    // Check for Juz Start
+    // Check for Juz Start/Finish
     Object.values(juzData).forEach((j: any) => {
       if (j.first_verse_key === currentKey && lastNotificationKey !== `juz-${j.juz_number}`) {
-        setOutstandingNotification({ 
-          title: 'Al-Juz', 
-          message: `Juz ${j.juz_number} starts here` 
-        });
+        if (j.juz_number > 1) {
+          const finishedJuz = j.juz_number - 1;
+          setOutstandingNotification({ 
+            title: 'Al-Juz', 
+            message: `You just finished the ${ORDINAL_WORDS[finishedJuz]} Juz` 
+          });
+        } else {
+          setOutstandingNotification({ 
+            title: 'Al-Juz', 
+            message: `Juz ${j.juz_number} starts here` 
+          });
+        }
         setLastNotificationKey(`juz-${j.juz_number}`);
       }
     });
 
-    // Check for Hizb Start
+    // Check for Hizb Start/Finish
     Object.values(hizbData).forEach((h: any) => {
         if (h.first_verse_key === currentKey && lastNotificationKey !== `hizb-${h.hizb_number}`) {
-          setOutstandingNotification({ 
-            title: 'Al-Hizb', 
-            message: `Hizb ${h.hizb_number} starts here` 
-          });
+          if (h.hizb_number > 1) {
+             const finishedHizb = h.hizb_number - 1;
+             setOutstandingNotification({ 
+               title: 'Al-Hizb', 
+               message: `You just finished the ${ORDINAL_WORDS[finishedHizb]} Hizb` 
+             });
+          } else {
+             setOutstandingNotification({ 
+               title: 'Al-Hizb', 
+               message: `Hizb ${h.hizb_number} starts here` 
+             });
+          }
           setLastNotificationKey(`hizb-${h.hizb_number}`);
         }
     });
 
-    // Check for Rub Start
+    // Check for Rub Start/Finish
     Object.values(rubData).forEach((r: any) => {
         if (r.first_verse_key === currentKey && lastNotificationKey !== `rub-${r.rub_number}`) {
-          setOutstandingNotification({ 
-            title: 'Rub el Hizb', 
-            message: `A new quarter started` 
-          });
+          if (r.rub_number > 1) {
+             const finishedRubIdx = r.rub_number - 1;
+             const juz = Math.ceil(finishedRubIdx / 8);
+             const rubInJuz = (finishedRubIdx - 1) % 8 + 1;
+             
+             // If this rub finished also finish a hizb or juz, the higher level notification takes priority
+             // But we still update the key to avoid duplicate triggers
+             const isJuzEnd = rubInJuz === 8;
+             const isHizbEnd = rubInJuz === 4;
+             
+             if (!isJuzEnd && !isHizbEnd) {
+                setOutstandingNotification({ 
+                  title: 'Rub el Hizb', 
+                  message: `You just finished ${RUB_POSITIONS[rubInJuz-1].toLowerCase()} rub from the ${ORDINAL_WORDS[juz].toLowerCase()} juz` 
+                });
+             }
+          } else {
+             setOutstandingNotification({ 
+               title: 'Rub el Hizb', 
+               message: `A new quarter started` 
+             });
+          }
           setLastNotificationKey(`rub-${r.rub_number}`);
         }
     });
