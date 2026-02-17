@@ -5,11 +5,13 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  adjustFontFallback: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  adjustFontFallback: false,
 });
 
 import { Amiri, Scheherazade_New, Inter, Cairo } from 'next/font/google';
