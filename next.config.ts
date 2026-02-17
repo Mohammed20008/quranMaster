@@ -9,19 +9,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'upload.wikimedia.org' },
     ],
   },
-  // Ensure JSON files are properly bundled
-  webpack: (config, { isServer }) => {
-    // Handle large JSON files
-    config.module.rules.push({
-      test: /\.json$/,
-      type: 'json',
-    });
-    
-    return config;
-  },
-  // Increase body size limit for large data
+  // Increase page data limit for large JSON files like quran.json
   experimental: {
-    largePageDataBytes: 128 * 100000, // 12.8 MB
+    largePageDataBytes: 128 * 100000, // 12.8 MB (default is 128 KB)
   },
 };
 
