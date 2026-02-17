@@ -335,7 +335,7 @@ export default function QuranReader({
     console.log('Detection Check - Current Key:', currentKey);
     
     let newNotif: { title: string; message: string } | null = null;
-    let nextLastKeys = { ...lastKeys };
+    const nextLastKeys = { ...lastKeys };
     let triggered = false;
 
     // 1. Check for Juz Start/Finish
