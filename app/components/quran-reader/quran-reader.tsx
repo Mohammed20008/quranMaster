@@ -205,7 +205,7 @@ function TransitionNotification({ title, message, onClose }: { title: string; me
     >
       <div className={`${styles.notificationGlow} ${isFinish ? styles.glowSuccess : ''}`}></div>
       <div className={styles.notificationContent}>
-        <div className={`${styles.notificationIcon} ${isJuz ? styles.iconJuz : isHizb ? styles.iconHizb : styles.iconRub} ${isFinish ? styles.iconSuccess : ''}`}>
+      <div className={`${styles.notificationIcon} ${isJuz ? styles.iconJuz : (isHizb && !title.toLowerCase().includes('rub')) ? styles.iconHizb : styles.iconRub} ${isFinish ? styles.iconSuccess : ''}`}>
           {isFinish ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <path d="M20 6L9 17l-5-5"></path>
@@ -332,7 +332,7 @@ export default function QuranReader({
     if (!audioState.currentVerse || !audioState.currentSurah || !juzData || !hizbData || !rubData) return;
 
     const currentKey = `${audioState.currentSurah}:${audioState.currentVerse}`;
-    console.log('Detection Check - Current Key:', currentKey);
+    // console.log('Detection Check - Current Key:', currentKey, 'JuzData Loaded:', !!juzData);
     
     let newNotif: { title: string; message: string } | null = null;
     const nextLastKeys = { ...lastKeys };
@@ -410,7 +410,7 @@ export default function QuranReader({
 
     if (triggered) {
       if (newNotif) {
-        console.log('Triggering notification:', newNotif.message);
+        console.log('Triggering notification:', newNotif.title, newNotif.message);
         setOutstandingNotification(newNotif);
       }
       setLastKeys(nextLastKeys);

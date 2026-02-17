@@ -11,7 +11,11 @@ import { AudioProvider } from './context/audio-context';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider 
+      // Disable automatic session fetching to make auth optional
+      refetchInterval={0}
+      refetchOnWindowFocus={false}
+    >
       <UserDataProvider>
         <AudioProvider>
           <ArticleProvider>

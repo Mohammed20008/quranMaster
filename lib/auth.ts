@@ -24,5 +24,6 @@ export const authOptions: AuthOptions = {
   pages: {
     signIn: '/',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  // Use fallback secret if not configured (for public pages)
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-public-access-only',
 };

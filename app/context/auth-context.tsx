@@ -57,10 +57,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [teacherId, setTeacherId] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  
+  // useSession hook - it's okay if it fails, we'll handle locally
+  const sessionResult = useSession();
+  const session = sessionResult?.data ?? null;
+  const status = sessionResult?.status ?? 'unauthenticated';
 
   // Get teacher ID by email
   const getTeacherIdByEmail = (email: string): string | null => {
@@ -142,24 +146,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             localStorage.setItem('all_users', JSON.stringify(allUsers));
         } catch(e) { console.error('Registry update failed', e); }
-    } else if (status === 'unauthenticated') {
+    } else if (status === 'unauthenticated' || status === 'loading') {
       // Fallback to local storage for manual auth if not in NextAuth session
-      const stored = localStorage.getItem('user_session');
-      if (stored) {
-         try {
-           const parsedUser = JSON.parse(stored);
-           // Ensure role is set correctly
-           const role = isAdminEmail(parsedUser.email) ? 'admin' : (isTeacherEmail(parsedUser.email) ? 'teacher' : 'user');
-           setUser({
-             ...parsedUser,
-             role,
-           });
-           if (role === 'teacher') {
-             setTeacherId(getTeacherIdByEmail(parsedUser.email));
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('user_session');
+        if (stored) {
+           try {
+             const parsedUser = JSON.parse(stored);
+             // Ensure role is set correctly
+             const role = isAdminEmail(parsedUser.email) ? 'admin' : (isTeacherEmail(parsedUser.email) ? 'teacher' : 'user');
+             setUser({
+               ...parsedUser,
+               role,
+             });
+             if (role === 'teacher') {
+               setTeacherId(getTeacherIdByEmail(parsedUser.email));
+             }
+           } catch (e) {
+             console.error('Failed to parse user session', e);
            }
-         } catch (e) {
-           console.error('Failed to parse user session', e);
-         }
+        }
       }
     }
   }, [session, status]);
