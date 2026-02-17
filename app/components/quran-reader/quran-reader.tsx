@@ -610,8 +610,35 @@ export default function QuranReader({
       return Array.from(p).sort();
   }, [qpcData]);
 
+  // Debug logging for production
+  useEffect(() => {
+    console.log('QuranReader Debug:', {
+      surahNumber,
+      surahExists: !!surah,
+      versesCount: verses.length,
+      qpcDataKeys: Object.keys(qpcData).length,
+      quranDataImported: !!quranData,
+      viewMode
+    });
+  }, [surahNumber, surah, verses.length, qpcData, viewMode]);
+
   if (!surah) {
-    return <div className={styles.error}>Surah not found</div>;
+    return (
+      <div className={styles.error}>
+        <h2>Surah not found</h2>
+        <p>Surah #{surahNumber} could not be loaded.</p>
+      </div>
+    );
+  }
+
+  if (verses.length === 0) {
+    return (
+      <div className={styles.error}>
+        <h2>No verses found</h2>
+        <p>Surah {surah.name} has no verses loaded. This might be a data loading issue.</p>
+        <p>Debug: Check browser console for details.</p>
+      </div>
+    );
   }
 
   return (
