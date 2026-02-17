@@ -198,7 +198,7 @@ function TransitionNotification({ title, message, onClose }: { title: string; me
   return (
     <motion.div 
       initial={{ opacity: 0, y: -120, scale: 0.8, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, y: 40, scale: 1, filter: 'blur(0px)' }}
+      animate={{ opacity: 1, y: 110, scale: 1, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -120, scale: 0.8, filter: 'blur(10px)' }}
       transition={{ type: 'spring', damping: 20, stiffness: 120 }}
       className={styles.outstandingNotification}
@@ -319,7 +319,7 @@ export default function QuranReader({
   const [rubData, setRubData] = useState<any>(null);
 
   const [outstandingNotification, setOutstandingNotification] = useState<{ title: string; message: string } | null>(null);
-  const [lastNotificationKey, setLastNotificationKey] = useState<string | null>(null);
+  const [lastKeys, setLastKeys] = useState({ juz: '', hizb: '', rub: '' });
 
   useEffect(() => {
     fetchQuranMetadata('juz').then(setJuzData);
@@ -332,74 +332,90 @@ export default function QuranReader({
     if (!audioState.currentVerse || !audioState.currentSurah || !juzData || !hizbData || !rubData) return;
 
     const currentKey = `${audioState.currentSurah}:${audioState.currentVerse}`;
+    console.log('Detection Check - Current Key:', currentKey);
     
-    // Check for Juz Start/Finish
-    Object.values(juzData).forEach((j: any) => {
-      if (j.first_verse_key === currentKey && lastNotificationKey !== `juz-${j.juz_number}`) {
+    let newNotif: { title: string; message: string } | null = null;
+    let nextLastKeys = { ...lastKeys };
+    let triggered = false;
+
+    // 1. Check for Juz Start/Finish
+    for (const j of Object.values(juzData) as any[]) {
+      if (j.first_verse_key === currentKey && lastKeys.juz !== `juz-${j.juz_number}`) {
+        triggered = true;
+        nextLastKeys.juz = `juz-${j.juz_number}`;
         if (j.juz_number > 1) {
           const finishedJuz = j.juz_number - 1;
-          setOutstandingNotification({ 
+          newNotif = { 
             title: 'Al-Juz', 
             message: `You just finished the ${ORDINAL_WORDS[finishedJuz]} Juz` 
-          });
+          };
         } else {
-          setOutstandingNotification({ 
+          newNotif = { 
             title: 'Al-Juz', 
             message: `Juz ${j.juz_number} starts here` 
-          });
+          };
         }
-        setLastNotificationKey(`juz-${j.juz_number}`);
+        break;
       }
-    });
+    }
 
-    // Check for Hizb Start/Finish
-    Object.values(hizbData).forEach((h: any) => {
-        if (h.first_verse_key === currentKey && lastNotificationKey !== `hizb-${h.hizb_number}`) {
+    // 2. Check for Hizb Start/Finish (Only if no Juz notification)
+    if (!newNotif) {
+      for (const h of Object.values(hizbData) as any[]) {
+        if (h.first_verse_key === currentKey && lastKeys.hizb !== `hizb-${h.hizb_number}`) {
+          triggered = true;
+          nextLastKeys.hizb = `hizb-${h.hizb_number}`;
           if (h.hizb_number > 1) {
              const finishedHizb = h.hizb_number - 1;
-             setOutstandingNotification({ 
+             newNotif = { 
                title: 'Al-Hizb', 
                message: `You just finished the ${ORDINAL_WORDS[finishedHizb]} Hizb` 
-             });
+             };
           } else {
-             setOutstandingNotification({ 
+             newNotif = { 
                title: 'Al-Hizb', 
                message: `Hizb ${h.hizb_number} starts here` 
-             });
+             };
           }
-          setLastNotificationKey(`hizb-${h.hizb_number}`);
+          break;
         }
-    });
+      }
+    }
 
-    // Check for Rub Start/Finish
-    Object.values(rubData).forEach((r: any) => {
-        if (r.first_verse_key === currentKey && lastNotificationKey !== `rub-${r.rub_number}`) {
+    // 3. Check for Rub Start/Finish (Only if no Hizb/Juz notification)
+    if (!newNotif) {
+      for (const r of Object.values(rubData) as any[]) {
+        if (r.first_verse_key === currentKey && lastKeys.rub !== `rub-${r.rub_number}`) {
+          triggered = true;
+          nextLastKeys.rub = `rub-${r.rub_number}`;
           if (r.rub_number > 1) {
              const finishedRubIdx = r.rub_number - 1;
              const juz = Math.ceil(finishedRubIdx / 8);
              const rubInJuz = (finishedRubIdx - 1) % 8 + 1;
              
-             // If this rub finished also finish a hizb or juz, the higher level notification takes priority
-             // But we still update the key to avoid duplicate triggers
-             const isJuzEnd = rubInJuz === 8;
-             const isHizbEnd = rubInJuz === 4;
-             
-             if (!isJuzEnd && !isHizbEnd) {
-                setOutstandingNotification({ 
-                  title: 'Rub el Hizb', 
-                  message: `You just finished ${RUB_POSITIONS[rubInJuz-1].toLowerCase()} rub from the ${ORDINAL_WORDS[juz].toLowerCase()} juz` 
-                });
-             }
+             newNotif = { 
+               title: 'Rub el Hizb', 
+               message: `You just finished ${RUB_POSITIONS[rubInJuz-1].toLowerCase()} rub from the ${ORDINAL_WORDS[juz].toLowerCase()} juz` 
+             };
           } else {
-             setOutstandingNotification({ 
+             newNotif = { 
                title: 'Rub el Hizb', 
                message: `A new quarter started` 
-             });
+             };
           }
-          setLastNotificationKey(`rub-${r.rub_number}`);
+          break;
         }
-    });
-  }, [audioState.currentVerse, audioState.currentSurah, juzData, hizbData, rubData, lastNotificationKey]);
+      }
+    }
+
+    if (triggered) {
+      if (newNotif) {
+        console.log('Triggering notification:', newNotif.message);
+        setOutstandingNotification(newNotif);
+      }
+      setLastKeys(nextLastKeys);
+    }
+  }, [audioState.currentVerse, audioState.currentSurah, juzData, hizbData, rubData, lastKeys]);
 
   // Auto-close notification
   useEffect(() => {
