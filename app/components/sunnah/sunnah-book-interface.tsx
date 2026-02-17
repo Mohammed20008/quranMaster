@@ -304,7 +304,7 @@ export default function SunnahBookInterface({
                       key={hadith.id} 
                       className={styles.searchResultCard}
                       onClick={() => {
-                        if (hadith.chapterId) {
+                        if (hadith.chapterId !== undefined && hadith.chapterId !== null) {
                             setPendingScrollId(hadith.id);
                             handleChapterSelect(hadith.chapterId);
                             setIsSearchOpen(false);

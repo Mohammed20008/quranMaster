@@ -134,7 +134,7 @@ export default async function BookPage({
   const { category, book } = await params;
   const meta = await getBookMetaAndChapters(category, book);
   const chapters = meta.chapters;
-  const initialChapter = chapters[0]?.id || 1;
+  const initialChapter = chapters[0]?.id ?? 1;
   const hadiths = await getHadithsForChapter(category, book, initialChapter);
 
   return (
