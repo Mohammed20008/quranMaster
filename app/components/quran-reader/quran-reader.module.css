@@ -288,7 +288,7 @@
 }
 
 .mushafPage {
-  padding: 50px 24px;
+  padding: 50px 24.5px;
   height: 750px; /* Fixed height to ensure symmetry */
   position: relative;
   background: #ffffff;
@@ -1756,7 +1756,7 @@
   }
   
   .mushafPage {
-    padding: 40px 24px;
+    padding: 40px 25px;
     min-height: auto;
     border: none;
     border-bottom: 1px solid var(--border);
@@ -1766,30 +1766,90 @@
     border-right: none;
   }
 }
-.playing {
-  background: var(--primary-gradient) !important;
-  color: white !important;
-  border-radius: 8px;
-  box-shadow: 0 0 30px var(--primary);
-  animation: playingPulse 2s infinite ease-in-out;
-  position: relative;
-  z-index: 10;
-  padding: 4px 8px !important;
-  margin: 0 -4px !important;
+@keyframes movingBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @keyframes playingPulse {
-  0% { transform: scale(1); box-shadow: 0 0 20px var(--primary); }
-  50% { transform: scale(1.02); box-shadow: 0 0 40px var(--primary); }
-  100% { transform: scale(1); box-shadow: 0 0 20px var(--primary); }
+  0% { box-shadow: 0 0 15px rgba(198, 147, 32, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 30px rgba(198, 147, 32, 0.7); transform: scale(1.002); }
+  100% { box-shadow: 0 0 15px rgba(198, 147, 32, 0.4); transform: scale(1); }
 }
 
-.playing::after {
-  content: '🔊';
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  opacity: 1;
+.playing {
+  position: relative;
+  z-index: 5;
+  transition: all 0.4s ease;
+  color: inherit !important;
+  
+  /* Premium Gold Highlight - Subtle & Clean */
+  background: linear-gradient(
+    90deg,
+    rgba(198, 147, 32, 0.12) 0%,
+    rgba(235, 207, 116, 0.25) 50%,
+    rgba(198, 147, 32, 0.12) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: movingBackground 20s linear infinite !important;
+  
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  
+  padding: 0.1em 0.3em !important;
+  margin: 0 -0.3em !important;
+  border-radius: 4px;
 }
+
+/* Static Glow for clarity - No pulsing/transform */
+.playing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 12px rgba(198, 147, 32, 0.15);
+  border-radius: 4px;
+  z-index: -1;
+  pointer-events: none;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Pause state: stopped and slightly dimmed */
+.playing.paused {
+  animation-play-state: paused !important;
+  background: rgba(198, 147, 32, 0.08) !important;
+  opacity: 0.8;
+}
+
+.playing.paused::after {
+  box-shadow: 0 0 5px rgba(198, 147, 32, 0.1);
+}
+
+/* Ensure the verse card has a distinct look when playing */
+.verseCard.playing {
+  background: rgba(198, 147, 32, 0.05) !important;
+  border-color: var(--primary) !important;
+  padding: 32px !important;
+  margin: 0 0 24px 0 !important;
+}
+
+
+[data-theme="dark"] .playing {
+  color: #fff !important;
+}
+
+/* Adjust for Full Verse Card */
+.verseCard.playing {
+  background: rgba(198, 147, 32, 0.05) !important;
+  border-color: var(--primary);
+}
+
+.verseCard.playing::before,
+.verseCard.playing::after {
+  inset: 0;
+  border-radius: 16px;
+}
+
+
+

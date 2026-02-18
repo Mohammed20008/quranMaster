@@ -551,14 +551,14 @@ export default function QuranReader({
 
   // Scroll active verse into view
   useEffect(() => {
-    if (audioState.currentSurah === surahNumber && audioState.currentVerse) {
-        const verseId = `${surahNumber}-${audioState.currentVerse}`;
+    if (audioState.currentVerse && audioState.currentSurah) {
+        const verseId = `${audioState.currentSurah}-${audioState.currentVerse}`;
         const verseEl = document.getElementById(`verse-${verseId}`);
         if (verseEl) {
             verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
-  }, [audioState.currentSurah, audioState.currentVerse, surahNumber]);
+  }, [audioState.currentSurah, audioState.currentVerse]);
 
   const toggleTestMode = () => {
     const newMode = !isTestMode;
@@ -863,7 +863,8 @@ export default function QuranReader({
                                   {pageVerses.map((verse: any) => {
                                   const verseId = `${verse.chapter}-${verse.verse}`;
                                   const isBlurred = isTestMode && !revealedVerses.has(verseId);
-                                  const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse.toString();
+                                  const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse;
+                                  const isPaused = isPlaying && !audioState.isPlaying;
                                   
                                   // Check if this verse is the start of a surah (verse 1)
                                   const isSurahStart = verse.verse === 1;
@@ -875,7 +876,7 @@ export default function QuranReader({
                                         id={`verse-${verseId}`}
                                         className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
                                           isPlaying ? styles.playing : ''
-                                        }`}
+                                        } ${isPaused ? styles.paused : ''}`}
                                         onClick={() => isTestMode && toggleVerseReveal(verseId)}
                                       >
                                         <span 
@@ -1007,7 +1008,8 @@ export default function QuranReader({
                                         {pages[pageNum].map((verse: any) => {
                                             const verseId = `${verse.chapter}-${verse.verse}`;
                                             const isBlurred = isTestMode && !revealedVerses.has(verseId);
-                                            const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse.toString();
+                                            const isPlaying = audioState.currentSurah === verse.chapter && audioState.currentVerse === verse.verse;
+                                            const isPaused = isPlaying && !audioState.isPlaying;
                                             
                                             return (
                                                 <span 
@@ -1015,7 +1017,7 @@ export default function QuranReader({
                                                     id={`verse-${verseId}`}
                                                     className={`${styles.pageVerse} ${isBlurred ? styles.blurred : styles.revealed} ${
                                                         isPlaying ? styles.playing : ''
-                                                    }`}
+                                                    } ${isPaused ? styles.paused : ''}`}
                                                     onClick={() => isTestMode && toggleVerseReveal(verseId)}
                                                 >
                                                     <span 
@@ -1083,13 +1085,16 @@ export default function QuranReader({
                   const isBookmarked = bookmarkedVerses.has(verseId);
                   const isBlurred = isTestMode && !revealedVerses.has(verseId);
 
+                  const isPlaying = audioState.currentSurah === surahNumber && audioState.currentVerse === verse.verse;
+                  const isPaused = isPlaying && !audioState.isPlaying;
+
                   return (
                     <div 
                       key={verseId} 
                       id={`verse-${verseId}`}
                       className={`${styles.verseCard} ${isBlurred ? styles.blurredVerse : styles.revealedVerse} ${
-                        audioState.currentSurah === surahNumber && audioState.currentVerse === verse.verse ? styles.playing : ''
-                      }`}
+                        isPlaying ? styles.playing : ''
+                      } ${isPaused ? styles.paused : ''}`}
                       onClick={() => isTestMode && toggleVerseReveal(verseId)}
                     >
                       {/* Verse Number Badge */}
