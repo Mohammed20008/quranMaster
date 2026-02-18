@@ -291,7 +291,7 @@ export default function QuranReader({
   const verses = getVersesBySurah(surahNumber);
 
   // Target specific line counts for Mushaf modes
-  const displayFontSize = viewMode === 'spread' ? fontSize * 0.67 : (viewMode === 'page' ? fontSize * 1.2 : fontSize);
+  const displayFontSize = viewMode === 'spread' ? fontSize * 0.60 : (viewMode === 'page' ? fontSize * 1.2 : fontSize);
   const displayLineHeight = viewMode === 'spread' ? 1.65 : (viewMode === 'page' ? 1.85 : 2.2);
 
 
