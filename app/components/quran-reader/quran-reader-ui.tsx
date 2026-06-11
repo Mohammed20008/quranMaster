@@ -1,0 +1,441 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { QuranVerse } from "@/data/quran-verses";
+import { VersePopupProps } from "./quran-reader.types";
+import styles from "./quran-reader.module.css";
+
+// ─── Collapsible Section ─────────────────────────────────────────────────────
+
+export function CollapsibleSection({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className={styles.collapsible}>
+      <button
+        className={styles.collapsibleHeader}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+      >
+        <span>{title}</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          style={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+            transition: "transform 0.2s",
+          }}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: "hidden" }}
+          >
+            <div className={styles.collapsibleContent}>{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Verse Popup ─────────────────────────────────────────────────────────────
+
+export function VersePopup({
+  verse,
+  verseId,
+  isBookmarked,
+  onCopy,
+  onBookmark,
+  onShare,
+  onTafsir,
+  onMutashabihat,
+  onPlay,
+}: VersePopupProps) {
+  return (
+    <span className={styles.versePopup} onClick={(e) => e.stopPropagation()}>
+      <button
+        className={styles.popupBtn}
+        onClick={() => onCopy(verse)}
+        title="Copy"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+      <button
+        className={`${styles.popupBtn} ${isBookmarked ? styles.active : ""}`}
+        onClick={() => onBookmark(verseId)}
+        title="Bookmark"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill={isBookmarked ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+      <button
+        className={styles.popupBtn}
+        onClick={() => onShare(verse)}
+        title="Share"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+      </button>
+      <button
+        className={styles.popupBtn}
+        onClick={() => onPlay(verse)}
+        title="Play Verse"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </button>
+      <button
+        className={styles.popupBtn}
+        onClick={() => onTafsir(verseId)}
+        title="Tafsir"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+      </button>
+      <button
+        className={styles.popupBtn}
+        onClick={() => onMutashabihat(verseId)}
+        title="Mutashabihat"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+          <line x1="9" y1="9" x2="15" y2="9"></line>
+          <line x1="9" y1="13" x2="15" y2="13"></line>
+          <line x1="9" y1="17" x2="13" y2="17"></line>
+        </svg>
+      </button>
+    </span>
+  );
+}
+
+// ─── Transition Notification ─────────────────────────────────────────────────
+
+export function TransitionNotification({
+  title,
+  message,
+  onClose,
+}: {
+  title: string;
+  message: string;
+  onClose: () => void;
+}) {
+  const isJuz = title.toLowerCase().includes("juz");
+  const isHizb = title.toLowerCase().includes("hizb");
+  const isFinish = message.toLowerCase().includes("finished");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -120, scale: 0.8, filter: "blur(10px)" }}
+      animate={{ opacity: 1, y: 110, scale: 1, filter: "blur(0px)" }}
+      exit={{ opacity: 0, y: -120, scale: 0.8, filter: "blur(10px)" }}
+      transition={{ type: "spring", damping: 20, stiffness: 120 }}
+      className={styles.outstandingNotification}
+    >
+      <div
+        className={`${styles.notificationGlow} ${isFinish ? styles.glowSuccess : ""}`}
+      ></div>
+      <div className={styles.notificationContent}>
+        <div
+          className={`${styles.notificationIcon} ${isJuz ? styles.iconJuz : isHizb && !title.toLowerCase().includes("rub") ? styles.iconHizb : styles.iconRub} ${isFinish ? styles.iconSuccess : ""}`}
+        >
+          {isFinish ? (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+            >
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          ) : isJuz ? (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+          ) : isHizb ? (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          ) : (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+          )}
+        </div>
+        <div className={styles.notificationText}>
+          <h3 className={isFinish ? styles.titleSuccess : ""}>
+            {isFinish ? "Milestone Reached" : title}
+          </h3>
+          <p>{message}</p>
+        </div>
+        <button onClick={onClose} className={styles.notificationClose}>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      {isFinish && (
+        <motion.div
+          className={styles.confettiContainer}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className={styles.confettiPiece}
+              initial={{ x: 0, y: 0, opacity: 1 }}
+              animate={{
+                x: (Math.random() - 0.5) * 200,
+                y: (Math.random() - 0.5) * 200,
+                opacity: 0,
+                scale: 0,
+              }}
+              transition={{ duration: 1, delay: 0.1 }}
+            />
+          ))}
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+// ─── Quran Page Loader ────────────────────────────────────────────────────────
+
+export function QuranPageLoader({ surahName }: { surahName?: string }) {
+  return (
+    <motion.div
+      className={styles.simpleLoaderOverlay}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className={styles.simpleLoaderContent}>
+        <div className={styles.simpleSpinner}></div>
+        <h3 className={styles.simpleLoaderText}>
+          {surahName ? `Loading Surah ${surahName}...` : "Loading Quran..."}
+        </h3>
+      </div>
+    </motion.div>
+  );
+}
+
+export function NextSurahTrigger({
+  onNext,
+  nextSurahNumber,
+  nextSurahName,
+  nextSurahNameArabic,
+}: {
+  onNext?: () => void;
+  nextSurahNumber?: number;
+  nextSurahName?: string;
+  nextSurahNameArabic?: string;
+}) {
+  const [progress, setProgress] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!onNext || !containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.6 } // 60% visible
+    );
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [onNext]);
+
+  useEffect(() => {
+    if (!isVisible || !onNext) {
+      setProgress(0);
+      return;
+    }
+
+    const duration = 1200; // 1.2 seconds
+    const intervalTime = 16; // ~60fps
+    const increment = (intervalTime / duration) * 100;
+
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(timer);
+          // Defer the parent state update to avoid "Cannot update a component while rendering" error
+          setTimeout(onNext, 0);
+          return 100;
+        }
+        return prev + increment;
+      });
+    }, intervalTime);
+
+    return () => clearInterval(timer);
+  }, [isVisible, onNext]);
+
+  if (!onNext) {
+    return null;
+  }
+
+  return (
+    <div ref={containerRef} className={styles.nextSurahContainer}>
+      <button
+        type="button"
+        onClick={onNext}
+        className={styles.nextSurahBtn}
+      >
+        <div className={styles.arrowIcon}>
+          <svg width="42" height="42" viewBox="0 0 42 42">
+            <circle
+              cx="21"
+              cy="21"
+              r="18"
+              fill="transparent"
+              stroke="rgba(255, 255, 255, 0.2)"
+              strokeWidth="3"
+            />
+            <circle
+              cx="21"
+              cy="21"
+              r="18"
+              fill="transparent"
+              stroke="white"
+              strokeWidth="3"
+              strokeDasharray={`${2 * Math.PI * 18}`}
+              strokeDashoffset={`${2 * Math.PI * 18 * (1 - progress / 100)}`}
+              strokeLinecap="round"
+              style={{
+                transform: "rotate(-90deg)",
+                transformOrigin: "50% 50%",
+                transition: "stroke-dashoffset 16ms linear",
+              }}
+            />
+            <path
+              d="M19 16l5 5-5 5"
+              fill="none"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <span>
+          Surah {nextSurahNumber} • {nextSurahNameArabic}
+        </span>
+      </button>
+    </div>
+  );
+}

@@ -1,0 +1,755 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(5, 7, 12, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: var(--font-sans), sans-serif;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .overlay {
+    padding: 3rem;
+  }
+}
+
+.modalCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .modalCard {
+    height: 90vh;
+    padding: 2.5rem;
+  }
+}
+
+.modalCardZen {
+  padding: 0 !important;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerIconRing {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  font-size: 1.5rem;
+}
+
+.headerTitleRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.headerTitleRow h3 {
+  font-size: 1.125rem;
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .headerTitleRow h3 {
+    font-size: 1.5rem;
+  }
+}
+
+.themeBadge {
+  display: none;
+  padding: 0.25rem 0.75rem;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  border-radius: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .themeBadge {
+    display: inline-block;
+  }
+}
+
+.headerSubtitle {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  opacity: 0.85;
+}
+
+@media (min-width: 768px) {
+  .headerSubtitle {
+    font-size: 0.875rem;
+  }
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.shortcutGuideTrigger {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 750;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.shortcutGuideTriggerActive {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  border-color: transparent !important;
+}
+
+.zenTrigger {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 750;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: var(--background-secondary);
+  color: var(--foreground);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.zenTrigger:hover {
+  border-color: var(--primary);
+}
+
+.exitBtn {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card-bg);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.exitBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 0;
+  background: transparent;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .workspace {
+    flex-direction: row;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: var(--glass-shadow);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    flex-direction: column;
+    width: 14rem;
+  }
+}
+
+.toolGroup {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  width: 100%;
+}
+
+:global(.dark) .toolGroup {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@media (min-width: 768px) {
+  .toolGroup {
+    flex-direction: column;
+  }
+}
+
+.toolBtn {
+  width: 100%;
+  padding: 1rem 0.75rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--foreground-secondary);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.toolBtn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .toolBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.toolBtnActive {
+  background: var(--primary) !important;
+  color: var(--slate-950) !important;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.sliderBox {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sliderBox {
+    display: flex;
+  }
+}
+
+.sectionLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: var(--foreground-secondary);
+  opacity: 0.8;
+}
+
+.sliderInput {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 0.5rem;
+  outline: none;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.sliderVal {
+  text-align: center;
+  font-size: 0.875rem;
+  font-family: var(--font-mono), monospace;
+  font-weight: 750;
+  color: var(--primary);
+}
+
+.guideBox {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .guideBox {
+    flex-direction: column;
+  }
+}
+
+.guideBtnGroup {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+:global(.dark) .guideBtnGroup {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@media (min-width: 768px) {
+  .guideBtnGroup {
+    flex-direction: column;
+  }
+}
+
+.guideBtn {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  font-weight: 750;
+  border: none;
+  background: transparent;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.guideBtnActive {
+  background: var(--background) !important;
+  color: var(--primary) !important;
+  box-shadow: var(--shadow-sm);
+  font-weight: 850;
+}
+
+.historyRow {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: auto;
+}
+
+@media (min-width: 768px) {
+  .historyRow {
+    flex-direction: column;
+  }
+}
+
+.undoRedoGroup {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+:global(.dark) .undoRedoGroup {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.actionIconBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.15rem;
+  transition: all 0.2s;
+}
+
+.actionIconBtn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.actionIconBtn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.trashBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  color: #ef4444;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.trashBtn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.downloadBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  color: #10b981;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.downloadBtn:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.canvasContainer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.canvasTextInputWrapper {
+  position: absolute;
+  z-index: 35;
+}
+
+.canvasTextInput {
+  background: rgba(10, 14, 23, 0.98);
+  border: 2px solid var(--primary);
+  border-radius: 1rem;
+  padding: 1rem 1.5rem;
+  color: var(--foreground);
+  font-weight: 800;
+  box-shadow: var(--shadow-2xl);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  min-width: 280px;
+}
+
+.canvasTextInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25);
+}
+
+.zenControlsBar {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  background: rgba(10, 14, 23, 0.98);
+  border: 1.5px solid var(--border);
+  padding: 1rem 1.5rem;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: var(--shadow-2xl);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.zenLabel {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border);
+}
+
+.zenColorsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zenColorBtn {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.zenColorBtnActive {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.exitZenBtn {
+  padding: 0.5rem 1rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground-secondary);
+  font-size: 0.75rem;
+  font-weight: 850;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+.shortcutOverlayCard {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 40;
+  width: 24rem;
+  background: rgba(10, 14, 23, 0.98);
+  border: 2px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-2xl);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.shortcutHeader {
+  font-size: 1rem;
+  font-weight: 850;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shortcutCloseBtn {
+  background: transparent;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 750;
+}
+
+.shortcutList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+}
+
+.shortcutItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shortcutKey {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-family: var(--font-mono), monospace;
+}
+
+.shortcutKeyGold {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.paletteColumn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: var(--glass-shadow);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .paletteColumn {
+    flex-direction: column;
+    width: 6rem;
+  }
+}
+
+.paletteGrid {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .paletteGrid {
+    flex-direction: column;
+  }
+}
+
+.paletteBtn {
+  position: relative;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paletteBtnActive {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  border-color: var(--foreground) !important;
+}
+
+.paletteBtnInnerCircle {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  right: 0.25rem;
+  bottom: 0.25rem;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.textEditContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.textToolbar {
+  position: absolute;
+  top: -3.5rem;
+  background: rgba(10, 14, 23, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  box-shadow: var(--shadow-xl);
+  pointer-events: auto;
+}
+
+.textToolBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--foreground-secondary);
+  font-weight: 700;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.textToolBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.textToolBtnActive {
+  background: var(--primary);
+  color: var(--slate-950);
+  border: 1px solid var(--primary);
+  font-weight: 800;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.textToolBtnDanger {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #ef4444;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.textToolBtnDanger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}

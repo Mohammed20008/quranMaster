@@ -1,13 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import canvasConfetti from 'canvas-confetti';
+
 import styles from './learn.module.css';
+import { SectionData, LessonData, UserProgress, QuizQuestion } from './types';
+import { INITIAL_LEARNING_SECTIONS } from './data/curriculum';
 import { useTeachers } from '@/app/context/teacher-context';
-import { renderAvatar, getAvatarPreset } from '@/app/components/avatar/avatar-utils';
+
+// Import newly externalized modular components
+import UserProgressBanner from './components/UserProgressBanner';
+import SectionTimeline from './components/SectionTimeline';
+import LessonModal from './components/LessonModal';
+import QuizModal from './components/QuizModal';
+import TeacherMarketplace from './components/TeacherMarketplace';
 
 const BookingModal = dynamic(() => import('./booking-modal'), { 
   ssr: false,
@@ -15,14 +24,147 @@ const BookingModal = dynamic(() => import('./booking-modal'), {
 });
 
 export default function LearnPage() {
+  // Navigation & View Toggles
+  const [activeTab, setActiveTab] = useState<'path' | 'teachers'>('path');
+  const [selectedSection, setSelectedSection] = useState<SectionData | null>(null);
+  const [selectedLevelKey, setSelectedLevelKey] = useState<'explorer' | 'adventure' | 'master' | null>(null);
+
+  // User database state
+  const [userProgress, setUserProgress] = useState<UserProgress>({
+    xp: 0,
+    completedLessons: [],
+    unlockedLevels: { arabic: ['explorer'] }
+  });
+
+  // Load Curriculum state (respecting custom LocalStorage modifications from architect)
+  const [learningSections, setLearningSections] = useState<SectionData[]>(INITIAL_LEARNING_SECTIONS);
+
+  // Studying states
+  const [activeLesson, setActiveLesson] = useState<LessonData | null>(null);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  // Alphabet lessons helper states
+  const [currentAlphabetStep, setCurrentAlphabetStep] = useState<'shapes' | 'vowels'>('shapes');
+  const [selectedAlphabetLetter, setSelectedAlphabetLetter] = useState('أ');
+  const [selectedVowelIndex, setSelectedVowelIndex] = useState(0);
+  const [activeVowelLetterApplied, setActiveVowelLetterApplied] = useState('أَ');
+
+  // Quiz Engine State
+  const [activeQuiz, setActiveQuiz] = useState<{ 
+    lessonId: string; 
+    questions: QuizQuestion[]; 
+    points: number;
+    isUnlockQuiz?: boolean;
+    targetLevelKey?: 'adventure' | 'master';
+  } | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  // Teacher marketplace states
   const { teachers: allTeachers } = useTeachers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [sortBy, setSortBy] = useState<'rating' | 'students' | 'newest'>('rating');
 
-  // Get unique subjects from all teachers
-  const subjects = useMemo(() => {
+  // Load user data on startup
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('quranmaster_learn_progress');
+    if (savedProgress) {
+      try {
+        const parsed = JSON.parse(savedProgress);
+        setUserProgress({
+          xp: typeof parsed?.xp === 'number' ? parsed.xp : 0,
+          completedLessons: Array.isArray(parsed?.completedLessons) ? parsed.completedLessons : [],
+          unlockedLevels: parsed?.unlockedLevels && typeof parsed.unlockedLevels === 'object' ? parsed.unlockedLevels : { arabic: ['explorer'] }
+        });
+      } catch (err) {
+        console.error('Failed to parse user progress', err);
+      }
+    }
+
+    const savedCurriculum = localStorage.getItem('quranmaster_curriculum_v2');
+    if (savedCurriculum) {
+      try {
+        const parsed: SectionData[] = JSON.parse(savedCurriculum);
+        const merged = parsed.map(s => {
+          const original = INITIAL_LEARNING_SECTIONS.find(o => o.id === s.id);
+          
+          if (s.id === 'arabic' && original) {
+            const updatedLevels = { ...s.levels };
+            (['explorer', 'adventure', 'master'] as const).forEach(lvlKey => {
+              const origLvl = original.levels[lvlKey];
+              const savedLvl = s.levels[lvlKey];
+              if (savedLvl && origLvl) {
+                savedLvl.lessons = savedLvl.lessons.map(savedLsn => {
+                  if (savedLsn.isAlphabet) {
+                    savedLsn.description = "";
+                    const origLsn = origLvl.lessons.find(l => l.id === savedLsn.id);
+                    if (origLsn && origLsn.alphabetData && savedLsn.alphabetData) {
+                      const updatedDetails = { ...savedLsn.alphabetData.letterDetails };
+                      
+                      Object.keys(updatedDetails).forEach(letterChar => {
+                        const savedDetail = updatedDetails[letterChar];
+                        const origDetail = origLsn.alphabetData?.letterDetails[letterChar];
+                        if (origDetail && savedDetail) {
+                          savedDetail.shapes = {
+                            ...origDetail.shapes,
+                            ...savedDetail.shapes,
+                            isNonConnecting: origDetail.shapes.isNonConnecting
+                          };
+                          
+                          const fields = [
+                            'isolatedWord', 'isolatedTranslation', 'isolatedArabic', 'isolatedEmoji',
+                            'initialWord', 'initialTranslation', 'initialArabic', 'initialEmoji',
+                            'medialWord', 'medialTranslation', 'medialArabic', 'medialEmoji',
+                            'finalWord', 'finalTranslation', 'finalArabic', 'finalEmoji'
+                          ] as const;
+                          fields.forEach(f => {
+                            if (!savedDetail.shapes[f]) {
+                              (savedDetail.shapes as any)[f] = origDetail.shapes[f];
+                            }
+                          });
+                        }
+                      });
+                      
+                      return {
+                        ...savedLsn,
+                        alphabetData: {
+                          ...savedLsn.alphabetData,
+                          letterDetails: updatedDetails
+                        }
+                      };
+                    }
+                  }
+                  return savedLsn;
+                });
+              }
+            });
+          }
+          
+          return { ...s, icon: original ? original.icon : null };
+        });
+        setLearningSections(merged);
+      } catch (err) {
+        console.error('Failed to parse curriculum backup', err);
+      }
+    }
+  }, []);
+
+  const saveProgress = (updatedProgress: UserProgress) => {
+    localStorage.setItem('quranmaster_learn_progress', JSON.stringify(updatedProgress));
+    setUserProgress(updatedProgress);
+  };
+
+  const triggerConfetti = () => {
+    canvasConfetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+  };
+
+  // Compile certified teacher subjects
+  const teacherSubjects = useMemo(() => {
     const subjectSet = new Set<string>();
     allTeachers.forEach(teacher => {
       teacher.subjects.forEach(subject => subjectSet.add(subject));
@@ -30,16 +172,15 @@ export default function LearnPage() {
     return Array.from(subjectSet);
   }, [allTeachers]);
 
-  // Filter and sort teachers
+  // Filtering teachers list
   const filteredTeachers = useMemo(() => {
     const filtered = allTeachers.filter(teacher => {
       const matchesSearch = teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           teacher.bio.toLowerCase().includes(searchQuery.toLowerCase());
+                            teacher.bio.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSubject = selectedSubject === 'all' || teacher.subjects.includes(selectedSubject);
       return matchesSearch && matchesSubject;
     });
 
-    // Sort
     filtered.sort((a, b) => {
       if (sortBy === 'rating') return b.rating - a.rating;
       if (sortBy === 'students') return (b.students || 0) - (a.students || 0);
@@ -50,276 +191,391 @@ export default function LearnPage() {
     return filtered;
   }, [allTeachers, searchQuery, selectedSubject, sortBy]);
 
+  // Overall track completion calculation
+  const overallCompletion = useMemo(() => {
+    let totalLessonsCount = 0;
+    let completedLessonsCount = 0;
+    const completedList = userProgress?.completedLessons || [];
+
+    learningSections.forEach(sec => {
+      (['explorer', 'adventure', 'master'] as const).forEach(lvlKey => {
+        const lvl = sec.levels[lvlKey];
+        totalLessonsCount += lvl.lessons.length;
+        lvl.lessons.forEach(lsn => {
+          if (completedList.includes(lsn.id)) {
+            completedLessonsCount++;
+          }
+        });
+      });
+    });
+
+    if (totalLessonsCount === 0) return 0;
+    return Math.round((completedLessonsCount / totalLessonsCount) * 100);
+  }, [userProgress?.completedLessons, learningSections]);
+
+  // Determine seeker scholar rank status
+  const scholarRank = useMemo(() => {
+    const xp = userProgress.xp;
+    if (xp >= 1200) return 'Grand Scholar (عَالِم)';
+    if (xp >= 700) return 'Researcher (بَاحِث)';
+    if (xp >= 400) return 'Scholar (شَيْخ)';
+    if (xp >= 150) return 'Seeker (طَالِب عِلْم)';
+    return 'Initiate (مُبْتَدِئ)';
+  }, [userProgress.xp]);
+
+  // Initialize selected alphabet letter details
+  useEffect(() => {
+    if (activeLesson?.isAlphabet && activeLesson.alphabetData?.letters.length) {
+      const firstLetter = activeLesson.alphabetData.letters[0];
+      setSelectedAlphabetLetter(firstLetter);
+      setSelectedVowelIndex(0);
+      setCurrentAlphabetStep('shapes');
+      
+      const letterData = activeLesson.alphabetData.letterDetails[firstLetter];
+      if (letterData?.vowels.length) {
+        setActiveVowelLetterApplied(letterData.vowels[0].letterApplied);
+      }
+    }
+  }, [activeLesson]);
+
+  // Submit Quiz Options Answers
+  const submitAnswer = () => {
+    if (selectedOption === null || isAnswered || !activeQuiz) return;
+    const currentQuestion = activeQuiz.questions[currentQuestionIndex];
+    if (selectedOption === currentQuestion.correctAnswer) {
+      setQuizScore(prev => prev + 1);
+    }
+    setIsAnswered(true);
+  };
+
+  // Stepper logic for quiz navigation
+  const nextQuestion = () => {
+    if (!activeQuiz) return;
+
+    if (currentQuestionIndex < activeQuiz.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    } else {
+      const minToPass = activeQuiz.isUnlockQuiz
+        ? Math.ceil(activeQuiz.questions.length * 0.8) // 80% passing for review unlock quiz
+        : Math.ceil(activeQuiz.questions.length * 0.6); // 60% passing for regular lesson quiz
+      const passed = quizScore >= minToPass;
+      setQuizFinished(true);
+
+      if (passed) {
+        triggerConfetti();
+
+        let newXp = userProgress?.xp || 0;
+        let newCompleted = [...(userProgress?.completedLessons || [])];
+
+        const currentSecId = selectedSection?.id || '';
+        let updatedUnlocked = { ...(userProgress?.unlockedLevels || {}) };
+        const unlockedList = [...(updatedUnlocked[currentSecId] || ['explorer'])];
+
+        if (activeQuiz.isUnlockQuiz && activeQuiz.targetLevelKey) {
+          if (!unlockedList.includes(activeQuiz.targetLevelKey)) {
+            unlockedList.push(activeQuiz.targetLevelKey);
+          }
+          if (!newCompleted.includes(activeQuiz.lessonId)) {
+            newCompleted.push(activeQuiz.lessonId);
+            newXp += activeQuiz.points;
+          }
+          updatedUnlocked[currentSecId] = unlockedList as ('explorer' | 'adventure' | 'master')[];
+        } else {
+          if (!newCompleted.includes(activeQuiz.lessonId)) {
+            newCompleted.push(activeQuiz.lessonId);
+            newXp += activeQuiz.points;
+          }
+        }
+
+        saveProgress({
+          xp: newXp,
+          completedLessons: newCompleted,
+          unlockedLevels: updatedUnlocked
+        });
+      }
+    }
+  };
+
+  const startUnlockQuiz = (fromLevelKey: 'explorer' | 'adventure', targetLevelKey: 'adventure' | 'master') => {
+    if (!selectedSection) return;
+    
+    const levelsToInclude: ('explorer' | 'adventure')[] = targetLevelKey === 'master' 
+      ? ['explorer', 'adventure'] 
+      : ['explorer'];
+
+    // Collect all quiz questions from all lessons in the previous levels
+    let allQuestions: QuizQuestion[] = [];
+    levelsToInclude.forEach(lvlKey => {
+      const lessons = selectedSection.levels[lvlKey]?.lessons || [];
+      lessons.forEach(lesson => {
+        if (lesson.quiz && lesson.quiz.length > 0) {
+          allQuestions = [...allQuestions, ...lesson.quiz];
+        }
+      });
+    });
+
+    if (allQuestions.length === 0) {
+      alert("No review questions available in the previous level to generate an unlock quiz.");
+      return;
+    }
+
+    // Shuffle the collected questions
+    const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+    // Select up to 10 questions for the unlock quiz
+    const selectedQuestions = shuffled.slice(0, 10);
+
+    // Initialize the activeQuiz state
+    setQuizScore(0);
+    setCurrentQuestionIndex(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setQuizFinished(false);
+
+    setActiveQuiz({
+      lessonId: `unlock_quiz_${selectedSection.id}_${targetLevelKey}`,
+      questions: selectedQuestions,
+      points: 100, // Unlock quizzes give 100 bonus points!
+      isUnlockQuiz: true,
+      targetLevelKey: targetLevelKey
+    });
+  };
+
+  const getLevelStatus = (sectionId: string, levelId: 'explorer' | 'adventure' | 'master') => {
+    const unlocked = userProgress?.unlockedLevels?.[sectionId] || ['explorer'];
+    const isUnlocked = unlocked.includes(levelId);
+    
+    if (!isUnlocked) return 'locked';
+
+    const levelLessons = learningSections.find(s => s.id === sectionId)?.levels[levelId].lessons || [];
+    const completedList = userProgress?.completedLessons || [];
+    const allCompleted = levelLessons.length > 0 && levelLessons.every(l => completedList.includes(l.id));
+    
+    if (allCompleted) return 'passed';
+    return 'active';
+  };
+
+  const resetQuizState = () => {
+    setActiveQuiz(null);
+    setCurrentQuestionIndex(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setQuizScore(0);
+    setQuizFinished(false);
+  };
+
   return (
     <div className={styles.container}>
-      <Link href="/" className={styles.backLink}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5"></path>
-          <path d="M12 19l-7-7 7-7"></path>
-        </svg>
-        Back to Home
-      </Link>
+      
+      {/* Top Breadcrumb & Architect Jump links */}
+      <div className={styles.architectBar}>
+        <Link href="/" className={styles.backLink} style={{ margin: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+          Back to Home
+        </Link>
 
-      {/* Hero Section */}
+        <Link
+          href="/learn/edit"
+          className={styles.architectLink}
+        >
+          <span>Curriculum Architect 🛠️</span>
+        </Link>
+      </div>
+
+      {/* Hero Header */}
       <motion.div 
         className={styles.hero}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className={styles.title}>Find Your Perfect Quran Teacher</h1>
+        <h1 className={styles.title}>
+          <span>QuranMaster Learning Hub</span>
+          Expand Your Faith
+        </h1>
         <p className={styles.subtitle}>
-          Connect with certified teachers who will guide you through Tajweed, memorization, and understanding the divine message.
+          Embark on a beautifully structured journey of knowledge. Explore the depths of the Arabic language, Islamic jurisprudence, core creed, stories of the prophets, and Prophetic biographies.
         </p>
-        <div className={styles.heroStats}>
-          <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>{allTeachers.length}</div>
-            <div className={styles.heroStatLabel}>Certified Teachers</div>
-          </div>
-          <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>{allTeachers.reduce((sum, t) => sum + (t.students || 0), 0)}</div>
-            <div className={styles.heroStatLabel}>Active Students</div>
-          </div>
-          <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>
-              {allTeachers.length > 0 ? (allTeachers.reduce((sum, t) => sum + t.rating, 0) / allTeachers.length).toFixed(1) : '0'}★
-            </div>
-            <div className={styles.heroStatLabel}>Average Rating</div>
-          </div>
-        </div>
       </motion.div>
 
-      {/* Apply as Teacher CTA */}
-      <motion.div 
-        className={styles.teacherCta}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <div className={styles.teacherCtaContent}>
-          <div className={styles.teacherCtaIcon}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-            </svg>
-          </div>
-          <div>
-            <h3>Interested in Teaching?</h3>
-            <p>Share your knowledge and inspire students worldwide</p>
-          </div>
-        </div>
-        <Link href="/learn/join-teacher" className={styles.teacherCtaBtn}>
-          Apply as Teacher
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7"></path>
-          </svg>
-        </Link>
-      </motion.div>
-
-      {/* Search and Filters */}
-      <motion.div 
-        className={styles.filters}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className={styles.searchBar}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-          </svg>
-          <input 
-            type="text"
-            placeholder="Search teachers by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Subject:</label>
-          <select 
-            value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
-            className={styles.filterSelect}
-          >
-            <option value="all">All Subjects</option>
-            {subjects.map(subject => (
-              <option key={subject} value={subject}>{subject}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Sort by:</label>
-          <select 
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'rating' | 'students' | 'newest')}
-            className={styles.filterSelect}
-          >
-            <option value="rating">Highest Rated</option>
-            <option value="students">Most Popular</option>
-            <option value="newest">Newest</option>
-          </select>
-        </div>
-      </motion.div>
-
-      {/* Results Count */}
-      <div className={styles.resultsCount}>
-        {filteredTeachers.length === 0 ? (
-          <p>No teachers found matching your criteria</p>
-        ) : (
-          <p>Showing {filteredTeachers.length} {filteredTeachers.length === 1 ? 'teacher' : 'teachers'}</p>
-        )}
+      {/* Primary Tab Toggler Switches */}
+      <div className={styles.tabContainer}>
+        <button 
+          onClick={() => { setActiveTab('path'); setSelectedSection(null); setSelectedLevelKey(null); }}
+          className={`${styles.tabButton} ${activeTab === 'path' ? styles.tabButtonActive : ''}`}
+        >
+          📚 Self-Paced Curriculum
+        </button>
+        <button 
+          onClick={() => setActiveTab('teachers')}
+          className={`${styles.tabButton} ${activeTab === 'teachers' ? styles.tabButtonActive : ''}`}
+        >
+          🎓 Certified Teachers
+        </button>
       </div>
 
-      {/* Teachers Grid */}
-      {filteredTeachers.length === 0 ? (
-        <div className={styles.emptyState}>
-          <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <h3>No Teachers Found</h3>
-          <p>Try adjusting your search or filter criteria</p>
-        </div>
-      ) : (
-        <>
-          {/* Featured Teachers Section */}
-          {searchQuery === '' && selectedSubject === 'all' && sortBy === 'rating' && (
-            <motion.div 
-              className={styles.featuredSection}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className={styles.featuredHeader}>
-                <div className={styles.featuredBadge}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  Featured Teachers
-                </div>
-                <h2>Top Rated Educators</h2>
-                <p>Our highest-rated teachers with exceptional student feedback</p>
-              </div>
-              
-              <div className={styles.featuredGrid}>
-                {filteredTeachers.slice(0, 3).map((teacher, idx) => (
-                  <Link key={teacher.id} href={teacher.profileUrl} className={styles.featuredCard}>
-                    <div className={styles.featuredRank}>#{idx + 1}</div>
-                    <div className={styles.featuredAvatar}>
-                      {teacher.photo ? (
-                        <Image src={teacher.photo} alt={teacher.name} width={80} height={80} className={styles.featuredAvatarImg} />
-                      ) : (
-                        renderAvatar(getAvatarPreset(teacher.avatarId), teacher.name, 80)
-                      )}
-                      {teacher.verified && (
-                        <div className={styles.featuredVerified}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                          </svg>
+      {/* Render selected active Tab pane */}
+      {activeTab === 'path' && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+          {!selectedSection ? (
+            /* Subcomponent: Overall Seeker status banner followed by grid selectors */
+            <>
+              <UserProgressBanner
+                userProgress={userProgress}
+                scholarRank={scholarRank}
+                overallCompletion={overallCompletion}
+                styles={styles}
+              />
+
+              <div className={styles.sectionGrid}>
+                {learningSections.map((section) => {
+                  let totalLsns = 0;
+                  let completedLsns = 0;
+                  const completedList = userProgress?.completedLessons || [];
+                  
+                  (['explorer', 'adventure', 'master'] as const).forEach(lvlKey => {
+                    const level = section.levels[lvlKey];
+                    totalLsns += level.lessons.length;
+                    level.lessons.forEach(l => {
+                      if (completedList.includes(l.id)) {
+                        completedLsns++;
+                      }
+                    });
+                  });
+
+                  const percent = totalLsns > 0 ? Math.round((completedLsns / totalLsns) * 100) : 0;
+
+                  return (
+                    <motion.div
+                      key={section.id}
+                      className={section.id === 'arabic' ? `${styles.sectionCard} ${styles.sectionCardArabic}` : styles.sectionCard}
+                      onClick={() => setSelectedSection(section)}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileHover={{ y: -6, scale: 1.01 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <div className={styles.sectionHeader}>
+                        <div className={styles.sectionIconRing}>{section.icon}</div>
+                        <div className={styles.sectionTitleCol}>
+                          <h3>{section.title}</h3>
+                          <span className={styles.arabicHeading}>{section.arabicTitle}</span>
                         </div>
-                      )}
-                    </div>
-                    <h3>{teacher.name}</h3>
-                    <div className={styles.featuredRating}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                      </svg>
-                      {teacher.rating.toFixed(1)} • {teacher.students || 0} students
-                    </div>
-                  </Link>
-                ))}
+                      </div>
+                      <p className={styles.sectionDesc}>{section.description}</p>
+                      
+                      <div className={styles.progressBarTrack}>
+                        <div className={styles.progressBarFill} style={{ width: `${percent}%` }} />
+                      </div>
+                      <div className={styles.sectionProgressFooter}>
+                        <span>{percent}% Completed</span>
+                        <span>{completedLsns} / {totalLsns} Lessons</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
-            </motion.div>
+            </>
+          ) : (
+            /* Subcomponent: Section Level timelines detailed roadmaps viewport */
+            <SectionTimeline
+              selectedSection={selectedSection}
+              styles={styles}
+              userProgress={userProgress}
+              getLevelStatus={getLevelStatus}
+              onBack={() => { setSelectedSection(null); setSelectedLevelKey(null); }}
+              onStartLesson={(lesson, levelKey) => {
+                setActiveLesson(lesson);
+                setSelectedLevelKey(levelKey);
+                setCurrentSlideIndex(0);
+              }}
+              onStartQuiz={(lesson, levelKey) => {
+                resetQuizState();
+                setSelectedLevelKey(levelKey);
+                setActiveQuiz({
+                  lessonId: lesson.id,
+                  questions: lesson.quiz,
+                  points: lesson.points
+                });
+              }}
+              onStartUnlockQuiz={startUnlockQuiz}
+            />
           )}
-
-          {/* All Teachers Grid */}
-          <div className={styles.teachersGrid}>
-            {filteredTeachers.map((teacher, idx) => (
-              <motion.div 
-                key={teacher.id}
-                className={styles.teacherCard}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-              >
-                <Link href={teacher.profileUrl} className={styles.teacherCardLink}>
-                  {/* Avatar */}
-                  <div className={styles.teacherAvatar}>
-                    {teacher.photo ? (
-                      <Image src={teacher.photo} alt={teacher.name} width={100} height={100} className={styles.avatarImage} />
-                    ) : (
-                      <div className={styles.avatarWrapper}>
-                        {renderAvatar(getAvatarPreset(teacher.avatarId), teacher.name, 100)}
-                      </div>
-                    )}
-                    {teacher.verified && (
-                      <div className={styles.verifiedBadge} title="Verified Teacher">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className={styles.teacherCardContent}>
-                    <h3 className={styles.teacherName}>{teacher.name}</h3>
-                    
-                    <div className={styles.teacherMeta}>
-                      <div className={styles.teacherRating}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        <span>{teacher.rating.toFixed(1)}</span>
-                      </div>
-                      <div className={styles.teacherStudents}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="9" cy="7" r="4"></circle>
-                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        <span>{teacher.students || 0} students</span>
-                      </div>
-                    </div>
-
-                    <p className={styles.teacherBio} title={teacher.bio}>
-                      {teacher.bio.length > 100 ? teacher.bio.substring(0, 100) + '...' : teacher.bio}
-                    </p>
-
-                    <div className={styles.teacherSubjects}>
-                      {teacher.subjects.slice(0, 3).map((subject, i) => (
-                        <span key={i} className={styles.subjectTag}>{subject}</span>
-                      ))}
-                      {teacher.subjects.length > 3 && (
-                        <span className={styles.subjectTag}>+{teacher.subjects.length - 3}</span>
-                      )}
-                    </div>
-
-                    <div className={styles.cardFooter}>
-                      <span className={styles.viewProfile}>
-                        View Profile 
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M5 12h14M12 5l7 7-7 7"></path>
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </>
+        </motion.div>
       )}
+
+      {/* Tab 2: Certified teachers listing */}
+      {activeTab === 'teachers' && (
+        <TeacherMarketplace
+          styles={styles}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedSubject={selectedSubject}
+          setSelectedSubject={setSelectedSubject}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          teacherSubjects={teacherSubjects}
+          filteredTeachers={filteredTeachers}
+          onBookClick={() => setIsModalOpen(true)}
+        />
+      )}
+
+      {/* overlay study slide-deck modal */}
+      <AnimatePresence>
+        {activeLesson && (
+          <LessonModal
+            activeLesson={activeLesson}
+            currentSlideIndex={currentSlideIndex}
+            setCurrentSlideIndex={setCurrentSlideIndex}
+            currentAlphabetStep={currentAlphabetStep}
+            setCurrentAlphabetStep={setCurrentAlphabetStep}
+            selectedAlphabetLetter={selectedAlphabetLetter}
+            setSelectedAlphabetLetter={setSelectedAlphabetLetter}
+            selectedVowelIndex={selectedVowelIndex}
+            setSelectedVowelIndex={setSelectedVowelIndex}
+            activeVowelLetterApplied={activeVowelLetterApplied}
+            setActiveVowelLetterApplied={setActiveVowelLetterApplied}
+            styles={styles}
+            onClose={() => { setActiveLesson(null); setCurrentSlideIndex(0); }}
+            onStartQuiz={(lesson) => {
+              resetQuizState();
+              setActiveLesson(null);
+              setActiveQuiz({
+                lessonId: lesson.id,
+                questions: lesson.quiz,
+                points: lesson.points
+              });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* overlay practice check quiz modal */}
+      <AnimatePresence>
+        {activeQuiz && (
+          <QuizModal
+            activeQuiz={activeQuiz}
+            currentQuestionIndex={currentQuestionIndex}
+            selectedOption={selectedOption}
+            isAnswered={isAnswered}
+            quizScore={quizScore}
+            quizFinished={quizFinished}
+            styles={styles}
+            onOptionSelect={isAnswered ? () => {} : setSelectedOption}
+            onSubmitAnswer={submitAnswer}
+            onNextQuestion={nextQuestion}
+            onClose={resetQuizState}
+          />
+        )}
+      </AnimatePresence>
 
       <BookingModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />
+
     </div>
   );
 }

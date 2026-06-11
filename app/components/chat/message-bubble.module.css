@@ -27,7 +27,7 @@
   border-bottom-right-radius: 0.25rem;
 }
 
-.aiBubble {
+.otherBubble {
   background: var(--card-bg);
   border: 1px solid var(--border);
   color: var(--foreground);

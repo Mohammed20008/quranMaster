@@ -5,7 +5,6 @@ import NextImage from 'next/image';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { surahs } from '@/data/surah-data';
-import { getVerse } from '@/data/quran-verses';
 import styles from './left-menu.module.css';
 import { useAuth } from '@/app/context/auth-context';
 import { useChat } from '@/app/context/chat-context';
@@ -53,6 +52,40 @@ export default function LeftMenu({
   const secondarySidebarRef = useRef<HTMLDivElement>(null);
   const primarySidebarRef = useRef<HTMLDivElement>(null);
   
+  const [bookmarkTexts, setBookmarkTexts] = useState<Record<string, string>>({});
+
+  // Load bookmark texts asynchronously when bookmarks section is open
+  useEffect(() => {
+    if (activeSection !== 'bookmarks' || !bookmarkedVerses || bookmarkedVerses.size === 0) return;
+
+    let active = true;
+    const loadBookmarks = async () => {
+      const { fetchVerseById } = await import('@/app/actions/get-verses');
+      const newTexts: Record<string, string> = { ...bookmarkTexts };
+      let updated = false;
+
+      for (const id of Array.from(bookmarkedVerses)) {
+        if (!newTexts[id]) {
+          const [surahNum, verseNum] = id.split('-').map(Number);
+          const v = await fetchVerseById(surahNum, verseNum);
+          if (v && active) {
+            newTexts[id] = v.text;
+            updated = true;
+          }
+        }
+      }
+
+      if (updated && active) {
+        setBookmarkTexts(newTexts);
+      }
+    };
+
+    loadBookmarks();
+
+    return () => {
+      active = false;
+    };
+  }, [activeSection, bookmarkedVerses]);
   // Search state
   const [advancedSearchQuery, setAdvancedSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -555,10 +588,10 @@ export default function LeftMenu({
                   <div className={styles.bookmarksList}>
                     {Array.from(bookmarkedVerses).map(id => {
                       const [surahNum, verseNum] = id.split('-').map(Number);
-                      const verse = getVerse(surahNum, verseNum);
                       const surah = surahs.find(s => s.number === surahNum);
                       
-                      if (!verse || !surah) return null;
+                      if (!surah) return null;
+                      const verseText = bookmarkTexts[id] || 'Loading...';
 
                       return (
                         <div key={id} className={styles.bookmarkWrapper}>
@@ -572,7 +605,7 @@ export default function LeftMenu({
                               </span>
                             </div>
                             <p className={`arabic-text ${styles.bookmarkText}`}>
-                              {verse.text}
+                              {verseText}
                             </p>
                           </button>
                           <button 

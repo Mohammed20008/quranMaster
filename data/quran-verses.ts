@@ -1,5 +1,3 @@
-import quranData from '@/data/quran.json';
-
 export interface QuranVerse {
   chapter: number;
   verse: number;
@@ -7,7 +5,8 @@ export interface QuranVerse {
 }
 
 // Get all verses for a specific Surah
-export function getVersesBySurah(surahNumber: number): QuranVerse[] {
+export async function getVersesBySurah(surahNumber: number): Promise<QuranVerse[]> {
+  const quranData = (await import('@/data/quran.json')).default;
   const surahKey = surahNumber.toString();
   if (quranData[surahKey as keyof typeof quranData]) {
     return quranData[surahKey as keyof typeof quranData] as QuranVerse[];
@@ -16,13 +15,14 @@ export function getVersesBySurah(surahNumber: number): QuranVerse[] {
 }
 
 // Get a specific verse
-export function getVerse(surahNumber: number, verseNumber: number): QuranVerse | null {
-  const verses = getVersesBySurah(surahNumber);
+export async function getVerse(surahNumber: number, verseNumber: number): Promise<QuranVerse | null> {
+  const verses = await getVersesBySurah(surahNumber);
   return verses.find(v => v.verse === verseNumber) || null;
 }
 
 // Get total verse count for a Surah (for verification)
-export function getTotalVerses(surahNumber: number): number {
-  const verses = getVersesBySurah(surahNumber);
+export async function getTotalVerses(surahNumber: number): Promise<number> {
+  const verses = await getVersesBySurah(surahNumber);
   return verses.length;
 }
+

@@ -34,7 +34,7 @@
 /* Hero Section */
 .hero {
   text-align: center;
-  padding: 5rem 1.5rem 3rem;
+  padding: 4rem 1.5rem 2rem;
   max-width: 1000px;
   margin: 0 auto;
   position: relative;
@@ -87,7 +87,7 @@
   color: var(--foreground-secondary);
   line-height: 1.6;
   max-width: 650px;
-  margin: 0 auto 3rem;
+  margin: 0 auto 2rem;
 }
 
 .heroStats {
@@ -241,7 +241,7 @@
 /* Filters */
 .filters {
   max-width: 1200px;
-  margin: 4rem auto 2rem;
+  margin: 2rem auto;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(20px);
@@ -696,38 +696,2131 @@
   max-width: 600px;
 }
 
-/* Dark Mode Overrides */
-:global(.dark) .backLink {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+
+
+/* ----------------------------------------------------
+   BRAND NEW STYLES FOR INTERACTIVE LEARNING PATH
+   ---------------------------------------------------- */
+
+/* Navigation Tabs */
+.tabContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(198, 147, 32, 0.15);
+  backdrop-filter: blur(20px);
+  border-radius: 100px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
 
-:global(.dark) .filters {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.05);
+.tabButton {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--foreground-secondary);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-:global(.dark) .subjectTag {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.1);
+.tabButtonActive {
+  background: var(--primary-gradient);
+  color: white !important;
+  box-shadow: 0 10px 20px rgba(198, 147, 32, 0.25);
 }
 
-:global(.dark) .teacherCard {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.05);
+.tabButton:hover:not(.tabButtonActive) {
+  background: rgba(198, 147, 32, 0.08);
+  color: var(--primary);
 }
 
-:global(.dark) .teacherCard:hover {
-  background: rgba(255, 255, 255, 0.06);
+/* User Progress Panel */
+.userStatsCard {
+  max-width: 1200px;
+  margin: 0 auto 3rem;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(145deg, var(--card-bg), rgba(198, 147, 32, 0.02));
+  border: 1px solid rgba(198, 147, 32, 0.25);
+  border-radius: 32px;
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.userStatsCard::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(198, 147, 32, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.profileInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profileAvatarRing {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c69320, #eab308);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(198, 147, 32, 0.25);
+  font-size: 2.2rem;
+  color: white;
+}
+
+.profileText h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.levelTag {
+  font-size: 0.75rem;
+  background: rgba(198, 147, 32, 0.15);
+  color: var(--primary-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.quranQuote {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--foreground-secondary);
+  opacity: 0.85;
+}
+
+.statsGrid {
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .userStatsCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.5rem;
+  }
+  .statsGrid {
+    justify-content: space-around;
+    gap: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statVal {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.statLbl {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Section Grid */
+.sectionGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .sectionGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sectionGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Learning Section Card */
+.sectionCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 2.25rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.sectionCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent 60%, rgba(198, 147, 32, 0.04));
+  pointer-events: none;
+}
+
+.sectionCard:hover {
+  transform: translateY(-8px) scale(1.01);
+  border-color: var(--primary);
+  box-shadow: 0 25px 50px rgba(198, 147, 32, 0.08);
+}
+
+.sectionCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.sectionIconWrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(198, 147, 32, 0.1), rgba(198, 147, 32, 0.02));
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.02);
+}
+
+.sectionArabic {
+  font-family: var(--font-arabic-alt);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.sectionTitleText {
+  margin-bottom: 1rem;
+}
+
+.sectionTitleText h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.sectionCardDesc {
+  font-size: 0.95rem;
+  color: var(--foreground-secondary);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  flex: 1;
+}
+
+.progressBarTrack {
+  width: 100%;
+  height: 10px;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--primary-gradient);
+  border-radius: 50px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--foreground-secondary);
+}
+
+.arrowIcon {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.sectionCard:hover .arrowIcon svg {
+  transform: translateX(5px);
+}
+
+/* Detailed Subject Timeline / Level Path */
+.timelineView {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .detailHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.detailTitleText h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.detailTitleText p {
+  color: var(--foreground-secondary);
+  font-size: 1.1rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: var(--shadow-sm);
+}
+
+.backBtn:hover {
+  background: rgba(198, 147, 32, 0.08);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateX(-4px);
+}
+
+/* Roadmap Levels Timeline Layout */
+.levelTimeline {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .levelTimeline {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Level Card */
+.levelCard {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 32px;
+  padding: 2.5rem 2rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+  height: 100%;
+}
+
+.levelCardUnlocked {
   border-color: rgba(198, 147, 32, 0.3);
+  box-shadow: 0 10px 30px rgba(198, 147, 32, 0.02);
 }
 
-:global(.dark) .featuredCard {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.2));
+.levelCardUnlocked:hover {
+  transform: translateY(-8px);
+  border-color: var(--primary);
+  box-shadow: 0 25px 50px rgba(198, 147, 32, 0.12);
 }
 
-:global(.dark) .avatarImage,
-:global(.dark) .avatarWrapper {
-  background: #1a1a1a;
-  border-color: #1a1a1a;
+.levelCardActive {
+  border-color: var(--primary);
+  background: linear-gradient(to bottom, rgba(198, 147, 32, 0.02), var(--card-bg));
+  box-shadow: 0 15px 40px rgba(198, 147, 32, 0.1);
 }
+
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+}
+
+.badgeExplorer {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.badgeAdventure {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.badgeMaster {
+  background: rgba(139, 92, 246, 0.15);
+  color: #6d28d9;
+}
+
+.levelCard h3 {
+  font-size: 1.65rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.levelCard p {
+  color: var(--foreground-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  flex: 1;
+}
+
+.xpReward {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: var(--primary);
+  background: rgba(198, 147, 32, 0.08);
+  padding: 0.4rem 0.9rem;
+  border-radius: 50px;
+  margin-bottom: 2rem;
+}
+
+.actionBtnGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.learnBtn, .quizBtn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.learnBtn {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.learnBtn:hover {
+  background: rgba(198, 147, 32, 0.08);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.quizBtn {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  box-shadow: 0 6px 15px rgba(198, 147, 32, 0.2);
+}
+
+.quizBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(198, 147, 32, 0.35);
+}
+
+.quizBtnPassed {
+  background: #10b981;
+  color: white;
+  border: none;
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
+  cursor: default;
+}
+
+.quizBtnPassed:hover {
+  transform: none;
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2);
+}
+
+/* Locked Card overlay */
+.lockedOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  color: var(--foreground-secondary);
+}
+
+.lockIconRing {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  color: var(--foreground-secondary);
+  margin-bottom: 1rem;
+}
+
+.lockedOverlay p {
+  font-weight: 750;
+  font-size: 1rem;
+  color: var(--foreground-secondary);
+  max-width: 200px;
+  text-align: center;
+}
+
+/* MODALS: Slide Deck and Quiz */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.5rem;
+}
+
+.modalContentCard {
+  background: var(--card-bg);
+  border: 1px solid rgba(198, 147, 32, 0.3);
+  border-radius: 36px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: modalZoom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.75rem 2.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitleText h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.15rem;
+}
+
+.modalTitleText p {
+  font-size: 0.9rem;
+  color: var(--foreground-secondary);
+}
+
+.closeBtn {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground-secondary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* SLIDESHOW VIEWPORT */
+.slideBody {
+  padding: 3rem 2.5rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 350px;
+}
+
+.slideHeading {
+  font-size: 1.85rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--foreground);
+}
+
+.arabicBox {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.arabicBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+.arabicTextLarge {
+  font-family: var(--font-arabic);
+  font-size: 2.8rem;
+  color: var(--primary-dark);
+  line-height: 1.8;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(198, 147, 32, 0.15);
+}
+
+.translitText {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground-secondary);
+}
+
+.textContent {
+  font-size: 1.1rem;
+  color: var(--foreground-secondary);
+  line-height: 1.7;
+  text-align: center;
+  white-space: pre-line;
+}
+
+/* Footer slide navigation */
+.slideFooter {
+  padding: 1.5rem 2.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--background-secondary);
+}
+
+.dotsContainer {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dotActive {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 10px;
+}
+
+.navButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.prevButton {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.prevButton:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.nextButton {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  box-shadow: 0 6px 15px rgba(198, 147, 32, 0.2);
+}
+
+.nextButton:hover {
+  box-shadow: 0 10px 25px rgba(198, 147, 32, 0.3);
+  transform: translateY(-1px);
+}
+
+/* QUIZ ENGINE STYLES */
+.quizHeaderBar {
+  padding: 1.5rem 2.25rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: var(--foreground-secondary);
+}
+
+.quizProgressBarTrack {
+  width: 100%;
+  height: 6px;
+  background: var(--border-light);
+  overflow: hidden;
+  position: relative;
+}
+
+.quizProgressBarFill {
+  height: 100%;
+  background: var(--primary-gradient);
+  transition: width 0.4s ease;
+}
+
+.quizBody {
+  padding: 2.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.questionBox {
+  margin-bottom: 2rem;
+}
+
+.questionBox h4 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.optionCard {
+  width: 100%;
+  text-align: left;
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  font-size: 1.05rem;
+  font-weight: 650;
+  font-family: inherit;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.optionCard:hover:not(.optionCardDisabled) {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.04);
+  transform: translateX(4px);
+}
+
+.optionCardSelected {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.08);
+}
+
+.optionCardCorrect {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.08) !important;
+  color: #047857 !important;
+}
+
+.optionCardIncorrect {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #b91c1c !important;
+}
+
+.optionCardDisabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.feedbackIcon {
+  flex-shrink: 0;
+}
+
+.explanationCard {
+  background: #f0fdf4;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  animation: slideDown 0.3s ease;
+}
+
+:global(.dark) .explanationCard {
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.explanationCard h5 {
+  color: #0f5132;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+:global(.dark) .explanationCard h5 {
+  color: #10b981;
+}
+
+.explanationCard p {
+  color: #155724;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+:global(.dark) .explanationCard p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* SUCCESS CELEBRATION VIEW */
+.quizResultScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.trophyCircle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c69320, #eab308);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 15px 30px rgba(198, 147, 32, 0.3);
+  color: white;
+  margin-bottom: 2rem;
+  font-size: 3rem;
+  animation: pulseTrophy 2s infinite;
+}
+
+@keyframes pulseTrophy {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(198, 147, 32, 0.45);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.quizResultScreen h3 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
+}
+
+.quizResultScreen p {
+  font-size: 1.15rem;
+  color: var(--foreground-secondary);
+  line-height: 1.6;
+  max-width: 400px;
+  margin-bottom: 2.5rem;
+}
+
+.scorePill {
+  font-size: 1.25rem;
+  font-weight: 800;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  padding: 0.6rem 1.5rem;
+  border-radius: 50px;
+  margin-bottom: 2rem;
+}
+
+.scorePillFailed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+/* Dark theme style overrides */
+:global(.dark) .tabContainer {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(212, 175, 55, 0.15);
+}
+
+:global(.dark) .tabButton:hover:not(.tabButtonActive) {
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--primary);
+}
+
+:global(.dark) .userStatsCard {
+  border-color: rgba(212, 175, 55, 0.2);
+  background: linear-gradient(145deg, #0A0A0A, rgba(212, 175, 55, 0.01));
+}
+
+:global(.dark) .levelCardUnlocked {
+  border-color: rgba(212, 175, 55, 0.15);
+}
+
+:global(.dark) .levelCardActive {
+  border-color: var(--primary);
+  background: linear-gradient(to bottom, rgba(212, 175, 55, 0.02), var(--card-bg));
+}
+
+:global(.dark) .levelCardUnlocked:hover {
+  border-color: var(--primary);
+}
+
+:global(.dark) .lockedOverlay {
+  background: rgba(5, 5, 5, 0.82);
+}
+
+:global(.dark) .lockIconRing {
+  background: #121212;
+  color: var(--foreground-secondary);
+}
+
+:global(.dark) .learnBtn {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:global(.dark) .optionCardCorrect {
+  color: #10b981 !important;
+}
+
+:global(.dark) .optionCardIncorrect {
+  color: #ef4444 !important;
+}
+
+:global(.dark) .optionCard {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+:global(.dark) .optionCard:hover:not(.optionCardDisabled) {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+:global(.dark) .optionCardSelected {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+/* Alphabet Lesson Styles - Dynamic Layouts */
+.partsStepper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--background-secondary);
+  border-radius: 16px;
+  padding: 0.85rem 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  gap: 0.5rem;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: var(--foreground-secondary);
+  opacity: 0.65;
+  transition: all 0.3s;
+}
+
+.stepItemActive {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.stepItemDone {
+  color: #10b981;
+  opacity: 0.95;
+}
+
+.stepArrow {
+  opacity: 0.3;
+}
+
+.alphabetGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.letterSelectBtn {
+  flex: 1;
+  min-width: 65px;
+  padding: 0.85rem 0.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--foreground);
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.letterSelectBtn:hover {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.04);
+  transform: translateY(-1px);
+}
+
+.letterSelectBtnActive {
+  background: var(--primary-gradient);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 6px 15px rgba(198, 147, 32, 0.25);
+}
+
+.twoColumnLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .twoColumnLayout {
+    grid-template-columns: 1.3fr 1fr;
+  }
+}
+
+.letterDisplayCard {
+  background: linear-gradient(135deg, rgba(198, 147, 32, 0.06) 0%, rgba(198, 147, 32, 0.01) 100%);
+  border: 1px solid rgba(198, 147, 32, 0.2);
+  border-radius: 24px;
+  padding: 2.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.displayLetter {
+  font-size: 5rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-arabic), serif;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
+}
+
+.displayName {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--foreground-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.shapesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.75rem;
+  width: 100%;
+}
+
+.shapeCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+}
+
+.shapeCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+}
+
+.shapeCardActive {
+  border-color: var(--primary) !important;
+  background: rgba(198, 147, 32, 0.06) !important;
+  box-shadow: 0 8px 20px rgba(198, 147, 32, 0.12) !important;
+  transform: translateY(-2px);
+}
+
+.shapeLabel {
+  font-size: 0.8rem;
+  color: var(--foreground-secondary);
+  margin-bottom: 0.5rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.shapeLetter {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-arabic), serif;
+}
+
+.shapeExample {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.illustrationCard {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  min-height: 350px;
+}
+
+:global(.dark) .illustrationCard {
+  background: linear-gradient(135deg, rgba(15, 15, 15, 0.8) 0%, rgba(5, 5, 5, 0.9) 100%);
+  border-color: rgba(212, 175, 55, 0.08);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+}
+
+.illustrationCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 25px 50px rgba(198, 147, 32, 0.12);
+  border-color: rgba(198, 147, 32, 0.25);
+}
+
+.illustrationEmoji {
+  font-size: 6rem;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.12));
+  animation: floatEmoji 4s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes floatEmoji {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.illustrationArabic {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-arabic), serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.illustrationEnglish {
+  font-size: 1.3rem;
+  font-weight: 750;
+  color: var(--foreground-secondary);
+}
+
+/* Vowel Selection Cards */
+.vowelsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.vowelSelectCard {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vowelSelectCard:hover {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.02);
+  transform: translateY(-2px);
+}
+
+.vowelSelectCardActive {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.06);
+  box-shadow: 0 8px 25px rgba(198, 147, 32, 0.12);
+}
+
+.vowelMark {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-arabic), serif;
+}
+
+.vowelTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.vowelSound {
+  font-size: 0.9rem;
+  color: var(--foreground-secondary);
+  font-weight: 650;
+}
+
+.vowelAppliedRow {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  margin-bottom: 0.85rem;
+}
+
+.vowelAppliedRow:hover {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.02);
+  transform: translateX(6px);
+}
+
+.vowelAppliedRowActive {
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.06);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.vowelAppliedLetter {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  font-family: var(--font-arabic), serif;
+}
+
+.vowelAppliedExample {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.vowelAppliedExampleArabic {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--foreground);
+  font-family: var(--font-arabic), serif;
+}
+
+.vowelAppliedExampleEnglish {
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--foreground-secondary);
+}
+
+/* Unified Lessons Grid timeline */
+.lessonsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .lessonsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.lessonCardItem {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 1.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+}
+
+.lessonCardItem:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(198, 147, 32, 0.05);
+}
+
+.lessonCardDone {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.lessonCardDone:hover {
+  border-color: #10b981;
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.05);
+}
+
+.lessonHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  width: 100%;
+}
+
+.lessonStatusBadge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.lessonStatusTodo {
+  background: rgba(198, 147, 32, 0.08);
+  color: var(--primary);
+}
+
+.lessonStatusCompleted {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+}
+
+.lessonCardTitle {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
+}
+
+.lessonCardDesc {
+  font-size: 0.9rem;
+  color: var(--foreground-secondary);
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.lessonCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-light);
+  padding-top: 1rem;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.lessonXpBadge {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.startLessonText {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: gap 0.2s;
+}
+
+.lessonCardItem:hover .startLessonText {
+  gap: 0.5rem;
+}
+
+.lessonRow {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  background: var(--background-secondary);
+}
+
+.lessonHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.lessonTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.lessonCompletedBadge {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.375rem;
+  text-transform: uppercase;
+}
+
+.lessonDesc {
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground-secondary);
+  min-height: 32px;
+}
+
+.lessonBtnRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.quizFooterRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.quizResultBody {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.quizResultIcon {
+  font-size: 3.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.quizResultTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.quizResultDesc {
+  font-size: 0.875rem;
+  max-width: 320px;
+  margin-bottom: 1.5rem;
+}
+
+.quizResultBtnRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.architectBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.architectLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.architectLink:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: scale(1.02);
+}
+
+/* Side-by-side curriculum page layouts */
+.twoColPathway {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .twoColPathway {
+    grid-template-columns: 340px 1fr;
+  }
+}
+
+.primaryMenuColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.secondaryMenuColumn {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 28px;
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+}
+
+:global(.dark) .secondaryMenuColumn {
+  border-color: rgba(212, 175, 55, 0.1);
+  background: linear-gradient(145deg, #0f131a 0%, #07090d 100%);
+}
+
+.levelGoldCard {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  padding: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.levelGoldCard:hover:not(.levelGoldCardLocked) {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(198, 147, 32, 0.08);
+}
+
+.levelGoldCardActive {
+  border-color: var(--primary) !important;
+  background: linear-gradient(135deg, rgba(198, 147, 32, 0.08) 0%, var(--card-bg) 100%) !important;
+  box-shadow: 0 15px 35px rgba(198, 147, 32, 0.18) !important;
+}
+
+.levelGoldCardLocked {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+:global(.dark) .levelGoldCardLocked {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.levelGoldCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.levelGoldCardTitleRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.levelGoldCardTitleRow h3 {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--foreground);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.levelGoldCardArabic {
+  font-family: var(--font-arabic), serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-top: 0.15rem;
+}
+
+.levelStatusIcon {
+  font-size: 1.25rem;
+}
+
+.levelGoldCardDesc {
+  font-size: 0.8rem;
+  color: var(--foreground-secondary);
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+
+.levelGoldCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-light);
+  padding-top: 0.75rem;
+  margin-top: auto;
+}
+
+.levelGoldCardXp {
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: var(--primary);
+}
+
+.levelGoldCardBtn {
+  font-size: 0.75rem;
+  font-weight: 850;
+  color: var(--primary);
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: gap 0.2s;
+}
+
+.levelGoldCardActive .levelGoldCardBtn {
+  font-weight: 900;
+}
+
+.secondaryHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.secondaryHeaderTitle h2 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.secondaryHeaderTitle p {
+  font-size: 0.85rem;
+  color: var(--foreground-secondary);
+  margin-top: 0.25rem;
+}
+
+.secondaryLessonsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .secondaryLessonsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* IMMERSIVE FULL-SCREEN LESSON PLAYER REDESIGN */
+.lessonOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  z-index: 99999;
+  overflow: hidden;
+  animation: slideUpLesson 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpLesson {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lessonContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .lessonContainer {
+    padding: 1.25rem 1rem;
+  }
+}
+
+.lessonHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.25rem 2.5rem;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--border);
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .lessonHeader {
+    padding: 1rem 1.25rem;
+    gap: 1rem;
+  }
+}
+
+.lessonProgressContainer {
+  flex: 1;
+  max-width: 650px;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.lessonProgressBar {
+  flex: 1;
+  height: 12px;
+  background: var(--border-light);
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+:global(.dark) .lessonProgressBar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lessonProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #c69320, #f59e0b);
+  border-radius: 50px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 12px rgba(198, 147, 32, 0.35);
+}
+
+.lessonMetaBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.xpBadge {
+  background: rgba(198, 147, 32, 0.08);
+  border: 1px solid rgba(198, 147, 32, 0.18);
+  color: var(--primary);
+  font-weight: 850;
+  font-size: 0.85rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.exitLessonBtn {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground-secondary);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.exitLessonBtn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* Premium Alphabet Elements */
+.premiumLetterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .premiumLetterGrid {
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    gap: 1rem;
+  }
+}
+
+.glassLetterCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.25rem 0.75rem;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--foreground);
+  font-family: var(--font-arabic), serif;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.dark) .glassLetterCard {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.glassLetterCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 12px 25px rgba(198, 147, 32, 0.15);
+  background: rgba(198, 147, 32, 0.02);
+}
+
+.glassLetterCardActive {
+  background: var(--primary-gradient) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 10px 25px rgba(198, 147, 32, 0.3) !important;
+}
+
+/* Vowel Tab Controls */
+.vowelTabContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .vowelTabContainer {
+    gap: 0.5rem;
+  }
+}
+
+.vowelTabButton {
+  flex: 1;
+  max-width: 240px;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 22px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.vowelTabButton:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  background: rgba(198, 147, 32, 0.02);
+}
+
+.vowelTabButtonActive {
+  background: var(--primary-gradient) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 10px 25px rgba(198, 147, 32, 0.25) !important;
+}
+
+.vowelTabButtonActive .vowelTabMark,
+.vowelTabButtonActive .vowelTabTitle,
+.vowelTabButtonActive .vowelTabSound {
+  color: white !important;
+}
+
+.vowelTabMark {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.35rem;
+  font-family: var(--font-arabic), serif;
+  line-height: 1;
+}
+
+.vowelTabTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.15rem;
+}
+
+.vowelTabSound {
+  font-size: 0.85rem;
+  color: var(--foreground-secondary);
+  font-weight: 650;
+}
+
+/* Beautiful Hero Arabic boxes for slides */
+.arabicHeroBox {
+  background: var(--background-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: 28px;
+  padding: 3rem 2rem;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  max-width: 600px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  transition: transform 0.3s ease;
+}
+
+:global(.dark) .arabicHeroBox {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.arabicHeroBox:hover {
+  transform: scale(1.01);
+}
+
+.arabicHeroBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: var(--primary-gradient);
+}
+
+.arabicHeroText {
+  font-family: var(--font-arabic);
+  font-size: 4rem;
+  color: var(--primary-dark);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 4px 10px rgba(198, 147, 32, 0.2);
+}
+
+:global(.dark) .arabicHeroText {
+  color: var(--primary);
+}
+
+.slideMainContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+.dotsWrapper {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+
+
+

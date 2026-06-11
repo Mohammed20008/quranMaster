@@ -14,43 +14,43 @@ const geistMono = Geist_Mono({
   adjustFontFallback: false,
 });
 
-import { Amiri, Scheherazade_New, Inter, Cairo } from 'next/font/google';
+import { Amiri, Scheherazade_New, Inter, Cairo } from "next/font/google";
 
 const amiri = Amiri({
-  weight: ['400', '700'],
-  style: ['normal', 'italic'],
-  subsets: ['arabic'],
-  display: 'swap',
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  subsets: ["arabic"],
+  display: "swap",
 });
 
 const scheherazade = Scheherazade_New({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['arabic'],
-  display: 'swap',
+  weight: ["400", "500", "600", "700"],
+  subsets: ["arabic"],
+  display: "swap",
 });
 
 const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const cairo = Cairo({
-  subsets: ['arabic', 'latin'],
-  display: 'swap',
+  subsets: ["arabic", "latin"],
+  display: "swap",
 });
 
-import { Providers } from './providers';
-import AuthModal from './components/auth/auth-modal';
-import ChatModal from './components/chat/chat-modal';
-import AIChatButton from './components/ai/ai-chat-button';
-import ThemeToggle from './components/ui/theme-toggle';
+import { Providers } from "./providers";
+import AuthModal from "./components/auth/auth-modal";
+import ChatModal from "./components/chat/chat-modal";
+import ThemeToggle from "./components/ui/theme-toggle";
+import WhiteboardButton from "./components/whiteboard/WhiteboardButton";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Al-Quran - القرآن الكريم",
-  description: "Read and explore the Holy Quran with translations and transliterations",
+  description:
+    "Read and explore the Holy Quran with translations and transliterations",
 };
-
-import { Toaster } from 'sonner';
 
 export default function RootLayout({
   children,
@@ -68,9 +68,9 @@ export default function RootLayout({
           {children}
           <AuthModal />
           <ChatModal />
-          <AIChatButton />
           <ThemeToggle />
-          <Toaster position="top-center" richColors closeButton /> 
+          <WhiteboardButton />
+          <Toaster position="top-center" richColors closeButton />
         </Providers>
       </body>
     </html>

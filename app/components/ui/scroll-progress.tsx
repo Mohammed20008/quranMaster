@@ -46,7 +46,7 @@ export function ScrollProgress({ className, progress, style, ...props }: ScrollP
         background: "var(--primary, #10b981)",
         ...style, 
       }}
-      {...props}
+      {...(props as any)}
     />
   );
 }

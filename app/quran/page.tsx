@@ -1,37 +1,45 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import LeftMenu from '../components/left-menu/left-menu';
-import Header, { ViewMode } from '../components/header/header';
-import QuranReader from '../components/quran-reader/quran-reader';
-import SideControls from '../components/side-controls/side-controls';
-import { useUserData } from '@/app/hooks/use-user-data';
-import AudioPlayerBar from '../components/audio/audio-player-bar';
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import LeftMenu from "../components/left-menu/left-menu";
+import Header, { ViewMode } from "../components/header/header";
+import QuranReader from "../components/quran-reader/quran-reader";
+import SideControls from "../components/side-controls/side-controls";
+import { useUserData } from "@/app/hooks/use-user-data";
+import AudioPlayerBar from "../components/audio/audio-player-bar";
 
 function QuranContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialSurah = parseInt(searchParams.get('surah') || '1');
-  
+  const initialSurah = parseInt(searchParams.get("surah") || "1");
+
   const [currentSurah, setCurrentSurah] = useState(initialSurah);
   const [currentPage, setCurrentPage] = useState<number | undefined>();
-  const { 
-    bookmarks, 
-    toggleBookmark, 
-    updateLastRead, 
-    settings, 
-    updateSettings 
+  const [pageSurahsContext, setPageSurahsContext] = useState<
+    | {
+        page: number;
+        surahs: number[];
+        startsSurahOnPage: number[];
+      }
+    | undefined
+  >();
+  const {
+    bookmarks,
+    toggleBookmark,
+    updateLastRead,
+    settings,
+    updateSettings,
   } = useUserData();
 
   // Update current surah if valid URL param changes
   useEffect(() => {
-    const surahParam = searchParams.get('surah');
+    const surahParam = searchParams.get("surah");
     if (surahParam) {
-       const num = parseInt(surahParam);
-       if (!isNaN(num) && num >= 1 && num <= 114) {
-          setCurrentSurah(num);
-       }
+      const num = parseInt(surahParam);
+      if (!isNaN(num) && num >= 1 && num <= 114) {
+        setCurrentSurah(num);
+      }
     }
   }, [searchParams]);
 
@@ -40,14 +48,14 @@ function QuranContent() {
   const handleSurahSelect = (surahNumber: number) => {
     setCurrentSurah(surahNumber);
     updateLastRead(surahNumber, 1);
-    
+
     // Update URL without full reload
     const params = new URLSearchParams(window.location.search);
-    params.set('surah', surahNumber.toString());
+    params.set("surah", surahNumber.toString());
     router.replace(`/quran?${params.toString()}`, { scroll: false });
-    
+
     // Scroll to top when changing surah
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePrevSurah = () => {
@@ -64,14 +72,12 @@ function QuranContent() {
   };
 
   const handleThemeToggle = () => {
-    updateSettings({ theme: settings.theme === 'light' ? 'dark' : 'light' });
+    updateSettings({ theme: settings.theme === "light" ? "dark" : "light" });
   };
-  
+
   const handleViewModeChange = (mode: ViewMode) => {
     updateSettings({ viewMode: mode });
   };
-
-
 
   return (
     <div className="app-container">
@@ -84,11 +90,11 @@ function QuranContent() {
       />
 
       {/* Main Content */}
-      <main 
+      <main
         className="main-content"
         style={{
-          marginLeft: '70px', // Only primary sidebar (secondary is hidden by default)
-          transition: 'margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+          marginLeft: "70px", // Only primary sidebar (secondary is hidden by default)
+          transition: "margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         {/* Header */}
@@ -101,6 +107,7 @@ function QuranContent() {
           viewMode={settings.viewMode}
           onViewModeChange={handleViewModeChange}
           currentPage={currentPage}
+          pageContext={pageSurahsContext}
         />
 
         {/* Quran Reader */}
@@ -116,6 +123,7 @@ function QuranContent() {
           onNextSurah={handleNextSurah}
           fontSize={settings.fontSize}
           onPageChange={setCurrentPage}
+          onPageSurahsChange={setPageSurahsContext}
         />
 
         <AudioPlayerBar />
@@ -198,7 +206,13 @@ function QuranContent() {
 
 export default function QuranPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <QuranContent />
     </Suspense>
   );

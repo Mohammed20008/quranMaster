@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 export interface UserStats {
   streak: number;
@@ -17,12 +23,13 @@ export interface LastRead {
 
 export interface UserSettings {
   fontSize: number;
-  viewMode: 'verse' | 'page' | 'spread';
+  viewMode: "verse" | "page" | "spread";
   showTranslation: boolean;
   showTransliteration: boolean;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   selectedReciterId: number;
-  fontMode: 'uthmanic' | 'qpc';
+  fontMode: "uthmanic" | "qpc";
+  mushafLayout: "v1" | "v4";
   isTestMode: boolean;
 }
 
@@ -47,16 +54,19 @@ const DEFAULT_STATS: UserStats = {
 
 const DEFAULT_SETTINGS: UserSettings = {
   fontSize: 32,
-  viewMode: 'verse',
+  viewMode: "verse",
   showTranslation: true,
   showTransliteration: true,
-  theme: 'light',
+  theme: "light",
   selectedReciterId: 1, // Default to Alafasy
-  fontMode: 'qpc', // Default to QPC for page structure
+  fontMode: "qpc", // Default to QPC for page structure
+  mushafLayout: "v1", // Default to King Fahd V1
   isTestMode: false,
 };
 
-const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
+const UserDataContext = createContext<UserDataContextType | undefined>(
+  undefined,
+);
 
 export function UserDataProvider({ children }: { children: ReactNode }) {
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
@@ -68,19 +78,23 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
   // Load data on mount
   useEffect(() => {
     try {
-      const savedBookmarks = localStorage.getItem('bookmarks');
+      const savedBookmarks = localStorage.getItem("bookmarks");
       if (savedBookmarks) setBookmarks(new Set(JSON.parse(savedBookmarks)));
 
-      const savedLastRead = localStorage.getItem('lastRead');
+      const savedLastRead = localStorage.getItem("lastRead");
       if (savedLastRead) setLastRead(JSON.parse(savedLastRead));
 
-      const savedStats = localStorage.getItem('userStats');
+      const savedStats = localStorage.getItem("userStats");
       if (savedStats) setStats(JSON.parse(savedStats));
 
-      const savedSettings = localStorage.getItem('userSettings');
-      if (savedSettings) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) });
+      const savedSettings = localStorage.getItem("userSettings");
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        parsed.fontMode = "qpc"; // Enforce QPC font mode
+        setSettings({ ...DEFAULT_SETTINGS, ...parsed });
+      }
     } catch (e) {
-      console.error('Failed to load user data', e);
+      console.error("Failed to load user data", e);
     } finally {
       setIsLoading(false);
     }
@@ -88,20 +102,20 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
 
   // Apply theme global effect
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', settings.theme);
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-theme", settings.theme);
     }
   }, [settings.theme]);
 
   const toggleBookmark = (verseId: string) => {
-    setBookmarks(prev => {
+    setBookmarks((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(verseId)) {
         newSet.delete(verseId);
       } else {
         newSet.add(verseId);
       }
-      localStorage.setItem('bookmarks', JSON.stringify(Array.from(newSet)));
+      localStorage.setItem("bookmarks", JSON.stringify(Array.from(newSet)));
       return newSet;
     });
   };
@@ -109,22 +123,24 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
   const updateLastRead = (surah: number, verse: number) => {
     const newLastRead = { surah, verse, timestamp: Date.now() };
     setLastRead(newLastRead);
-    localStorage.setItem('lastRead', JSON.stringify(newLastRead));
+    localStorage.setItem("lastRead", JSON.stringify(newLastRead));
     updateStatsOnRead();
   };
 
   const updateStatsOnRead = () => {
-    setStats(prev => {
-      const today = new Date().toISOString().split('T')[0];
-      const lastDate = prev.lastReadDate ? prev.lastReadDate.split('T')[0] : null;
+    setStats((prev) => {
+      const today = new Date().toISOString().split("T")[0];
+      const lastDate = prev.lastReadDate
+        ? prev.lastReadDate.split("T")[0]
+        : null;
       let newStreak = prev.streak;
-      
+
       if (lastDate !== today) {
         if (lastDate) {
           const last = new Date(lastDate);
           const now = new Date(today);
           const diffTime = Math.abs(now.getTime() - last.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           if (diffDays === 1) newStreak += 1;
           else if (diffDays > 1) newStreak = 1;
         } else {
@@ -137,51 +153,53 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
         streak: newStreak,
         lastReadDate: new Date().toISOString(),
       };
-      
-      localStorage.setItem('userStats', JSON.stringify(newStats));
+
+      localStorage.setItem("userStats", JSON.stringify(newStats));
       return newStats;
     });
   };
-  
+
   const incrementVersesRead = (count: number = 1) => {
-     setStats(prev => {
-         const newStats = { ...prev, versesRead: prev.versesRead + count };
-         localStorage.setItem('userStats', JSON.stringify(newStats));
-         return newStats;
-     });
+    setStats((prev) => {
+      const newStats = { ...prev, versesRead: prev.versesRead + count };
+      localStorage.setItem("userStats", JSON.stringify(newStats));
+      return newStats;
+    });
   };
 
   const updateSettings = (newSettings: Partial<UserSettings>) => {
-    setSettings(prev => {
+    setSettings((prev) => {
       // Check if any value actually changed
-      const hasChanges = (Object.keys(newSettings) as Array<keyof UserSettings>).some(
-        key => prev[key] !== newSettings[key]
-      );
-      
+      const hasChanges = (
+        Object.keys(newSettings) as Array<keyof UserSettings>
+      ).some((key) => prev[key] !== newSettings[key]);
+
       if (!hasChanges) return prev;
 
       const updated = { ...prev, ...newSettings };
       try {
-        localStorage.setItem('userSettings', JSON.stringify(updated));
+        localStorage.setItem("userSettings", JSON.stringify(updated));
       } catch (e) {
-        console.error('Failed to save settings', e);
+        console.error("Failed to save settings", e);
       }
       return updated;
     });
   };
 
   return (
-    <UserDataContext.Provider value={{
-      bookmarks,
-      lastRead,
-      stats,
-      settings,
-      isLoading,
-      toggleBookmark,
-      updateLastRead,
-      incrementVersesRead,
-      updateSettings
-    }}>
+    <UserDataContext.Provider
+      value={{
+        bookmarks,
+        lastRead,
+        stats,
+        settings,
+        isLoading,
+        toggleBookmark,
+        updateLastRead,
+        incrementVersesRead,
+        updateSettings,
+      }}
+    >
       {children}
     </UserDataContext.Provider>
   );
@@ -190,7 +208,7 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
 export function useUserData() {
   const context = useContext(UserDataContext);
   if (context === undefined) {
-    throw new Error('useUserData must be used within a UserDataProvider');
+    throw new Error("useUserData must be used within a UserDataProvider");
   }
   return context;
 }

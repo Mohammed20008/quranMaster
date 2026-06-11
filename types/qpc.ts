@@ -4,6 +4,7 @@ export type QPCVerseData = {
   words: {
     word: number;
     text: string;
+    layoutText?: string;
     id: number;
   }[];
 };

@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/app/context/auth-context';
-import { useMessages } from '@/app/context/messages-context';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef, use } from 'react';
-import Link from 'next/link';
+import { useAuth } from "@/app/context/auth-context";
+import { useMessages } from "@/app/context/messages-context";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef, use } from "react";
+import Link from "next/link";
 // import { motion } from 'framer-motion';
-import MessageBubble from '@/app/components/ai/message-bubble';
-import styles from '../../admin.module.css';
+import MessageBubble from "@/app/components/chat/message-bubble";
+import styles from "../../admin.module.css";
 
-export default function MessageThreadPage({ params }: { params: Promise<{ conversationId: string }> }) {
+export default function MessageThreadPage({
+  params,
+}: {
+  params: Promise<{ conversationId: string }>;
+}) {
   const { conversationId } = use(params);
-  const { isAuthenticated, isAdmin} = useAuth();
-  const { getConversation, addAdminReply, markAsResponded, closeConversation } = useMessages();
+  const { isAuthenticated, isAdmin } = useAuth();
+  const { getConversation, addAdminReply, markAsResponded, closeConversation } =
+    useMessages();
   const router = useRouter();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [reply, setReply] = useState('');
+  const [reply, setReply] = useState("");
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -31,19 +36,19 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
   useEffect(() => {
     if (!isLoadingAuth) {
       if (!isAuthenticated || !isAdmin) {
-        router.push('/');
+        router.push("/");
       }
     }
   }, [isLoadingAuth, isAuthenticated, isAdmin, router]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation?.messages]);
 
   if (isLoadingAuth) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"/>
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -56,8 +61,15 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
         <header className={styles.header}>
           <div className={styles.headerContent}>
             <Link href="/admin/messages" className={styles.backBtn}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
             </Link>
             <h1>Conversation Not Found</h1>
@@ -72,22 +84,22 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
 
     setIsSending(true);
     const replyText = reply.trim();
-    setReply('');
+    setReply("");
 
     try {
       addAdminReply(conversationId, replyText);
       markAsResponded(conversationId);
     } catch (error) {
-      console.error('Failed to send reply:', error);
+      console.error("Failed to send reply:", error);
     } finally {
       setIsSending(false);
     }
   };
 
   const handleClose = () => {
-    if (confirm('Are you sure you want to close this conversation?')) {
+    if (confirm("Are you sure you want to close this conversation?")) {
       closeConversation(conversationId);
-      router.push('/admin/messages');
+      router.push("/admin/messages");
     }
   };
 
@@ -97,8 +109,15 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
             <Link href="/admin/messages" className={styles.backBtn}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
             </Link>
             <div>
@@ -106,28 +125,38 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
               <p>{conversation.userEmail}</p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
             <span
               style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                background: conversation.status === 'waiting-for-admin' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                color: conversation.status === 'waiting-for-admin' ? '#ef4444' : '#22c55e',
+                padding: "0.5rem 1rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.9rem",
+                fontWeight: "bold",
+                background:
+                  conversation.status === "waiting-for-admin"
+                    ? "rgba(239, 68, 68, 0.1)"
+                    : "rgba(34, 197, 94, 0.1)",
+                color:
+                  conversation.status === "waiting-for-admin"
+                    ? "#ef4444"
+                    : "#22c55e",
               }}
             >
-              {conversation.status === 'waiting-for-admin' ? 'Pending' : conversation.status === 'admin-replied' ? 'Responded' : conversation.status}
+              {conversation.status === "waiting-for-admin"
+                ? "Pending"
+                : conversation.status === "admin-replied"
+                  ? "Responded"
+                  : conversation.status}
             </span>
             <button
               onClick={handleClose}
               style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                color: 'var(--foreground)',
-                cursor: 'pointer',
+                padding: "0.5rem 1rem",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                color: "var(--foreground)",
+                cursor: "pointer",
               }}
             >
               Close Conversation
@@ -136,17 +165,20 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
         </div>
       </header>
 
-      <main className={styles.main} style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <main
+        className={styles.main}
+        style={{ maxWidth: "900px", margin: "0 auto" }}
+      >
         <div
           style={{
-            background: 'var(--background)',
-            borderRadius: '1rem',
-            padding: '2rem',
-            minHeight: '500px',
-            maxHeight: '600px',
-            overflowY: 'auto',
-            marginBottom: '1.5rem',
-            border: '1px solid var(--border)',
+            background: "var(--background)",
+            borderRadius: "1rem",
+            padding: "2rem",
+            minHeight: "500px",
+            maxHeight: "600px",
+            overflowY: "auto",
+            marginBottom: "1.5rem",
+            border: "1px solid var(--border)",
           }}
         >
           {conversation.messages.map((message) => (
@@ -157,12 +189,12 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
 
         <div
           style={{
-            display: 'flex',
-            gap: '1rem',
-            padding: '1.5rem',
-            background: 'var(--surface)',
-            borderRadius: '1rem',
-            border: '1px solid var(--border)',
+            display: "flex",
+            gap: "1rem",
+            padding: "1.5rem",
+            background: "var(--surface)",
+            borderRadius: "1rem",
+            border: "1px solid var(--border)",
           }}
         >
           <textarea
@@ -172,42 +204,42 @@ export default function MessageThreadPage({ params }: { params: Promise<{ conver
             rows={3}
             style={{
               flex: 1,
-              padding: '0.75rem 1rem',
-              borderRadius: '0.75rem',
-              border: '1px solid var(--border)',
-              background: 'var(--background)',
-              color: 'var(--foreground)',
-              fontSize: '0.95rem',
-              resize: 'vertical',
-              outline: 'none',
-              fontFamily: 'inherit',
+              padding: "0.75rem 1rem",
+              borderRadius: "0.75rem",
+              border: "1px solid var(--border)",
+              background: "var(--background)",
+              color: "var(--foreground)",
+              fontSize: "0.95rem",
+              resize: "vertical",
+              outline: "none",
+              fontFamily: "inherit",
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = 'var(--primary)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+              e.target.style.borderColor = "var(--primary)";
+              e.target.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.1)";
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = 'var(--border)';
-              e.target.style.boxShadow = 'none';
+              e.target.style.borderColor = "var(--border)";
+              e.target.style.boxShadow = "none";
             }}
           />
           <button
             onClick={handleSendReply}
             disabled={!reply.trim() || isSending}
             style={{
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.75rem',
-              border: 'none',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
+              padding: "0.75rem 1.5rem",
+              borderRadius: "0.75rem",
+              border: "none",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
               fontWeight: 600,
-              cursor: reply.trim() && !isSending ? 'pointer' : 'not-allowed',
+              cursor: reply.trim() && !isSending ? "pointer" : "not-allowed",
               opacity: reply.trim() && !isSending ? 1 : 0.5,
-              transition: 'all 0.2s',
-              alignSelf: 'flex-end',
+              transition: "all 0.2s",
+              alignSelf: "flex-end",
             }}
           >
-            {isSending ? 'Sending...' : 'Send Reply'}
+            {isSending ? "Sending..." : "Send Reply"}
           </button>
         </div>
       </main>

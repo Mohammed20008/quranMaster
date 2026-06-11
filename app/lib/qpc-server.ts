@@ -12,11 +12,26 @@ interface QPCItem {
 }
 
 let qpcData: Record<string, QPCItem> | null = null;
+let qpcV4Data: Record<string, QPCItem> | null = null;
 let pageMapping: Record<string, number> | null = null;
 
 const DATA_DIR = path.join(process.cwd(), 'data/qpc_data');
 
-function getQPCData() {
+function getQPCData(layout: string = 'v1') {
+  if (layout === 'v4') {
+    if (!qpcV4Data) {
+      const filePath = path.join(DATA_DIR, '../qpc-v4_tajweed/qpc-v4.json');
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        qpcV4Data = JSON.parse(fileContent);
+      } catch (e) {
+        console.error('Failed to load V4 QPC data:', e);
+        return {};
+      }
+    }
+    return qpcV4Data;
+  }
+
   if (!qpcData) {
     // The file seems to be nested based on previous exploration
     const filePath = path.join(DATA_DIR, 'qpc-v1-glyph-codes-wbw.json', 'qpc-v1-glyph-codes-wbw.json');
@@ -54,9 +69,10 @@ import { QPCVerseData } from '@/types/qpc';
 
 export type { QPCVerseData };
 
-export function getSurahQPCData(surahNumber: number): QPCVerseData[] {
-  const allData = getQPCData();
+export function getSurahQPCData(surahNumber: number, layout: string = 'v1'): QPCVerseData[] {
+  const allData = getQPCData(layout);
   if (!allData) return [];
+  const layoutData = layout === 'v1' ? allData : getQPCData('v1');
 
   const mapping = getPageMapping();
   const result: Record<string, QPCVerseData> = {};
@@ -71,7 +87,10 @@ export function getSurahQPCData(surahNumber: number): QPCVerseData[] {
   // Object.keys order is not guaranteed but usually insertion order.
   
   for (const key in allData) {
-    if (key.startsWith(prefix)) {
+    // Check if the key exactly matches the surah part.
+    // e.g. "1:1:1".split(":")[0] === "1"
+    const [sNum] = key.split(":");
+    if (sNum === String(surahNumber)) {
       const item = allData[key];
       // item: { id, surah, ayah, word, location, text }
       
@@ -89,6 +108,7 @@ export function getSurahQPCData(surahNumber: number): QPCVerseData[] {
       result[verseId].words.push({
         word: parseInt(item.word),
         text: item.text,
+        layoutText: layoutData?.[key]?.text ?? item.text,
         id: item.id
       });
     }

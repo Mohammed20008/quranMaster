@@ -116,10 +116,13 @@
   cursor: not-allowed;
 }
 
-
 .surahSelector {
   padding: 10px 20px;
-  background: linear-gradient(135deg, rgba(198, 147, 32, 0.1) 0%, rgba(146, 108, 21, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(198, 147, 32, 0.1) 0%,
+    rgba(146, 108, 21, 0.1) 100%
+  );
   border: 1px solid var(--card-border);
   border-radius: 10px;
 }
@@ -308,8 +311,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Modal Styles */
@@ -363,23 +372,60 @@
 .modalBtn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 12px;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
   background: var(--background);
   border: 1px solid var(--border);
   color: var(--foreground);
-  font-size: 1rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  width: 100%;
+}
+
+.modalBtnIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(198, 147, 32, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.modalBtnText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modalBtnTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.modalBtnDesc {
+  font-size: 0.85rem;
+  color: var(--foreground-secondary);
+  font-weight: 500;
 }
 
 .modalBtn:hover:not(:disabled) {
   border-color: var(--primary);
   background: rgba(198, 147, 32, 0.05);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.modalBtn:hover .modalBtnIcon {
+  background: var(--primary-gradient);
+  color: white;
+  transform: scale(1.1);
 }
 
 .modalBtn:disabled {
@@ -425,15 +471,15 @@
   .viewModeBtn span {
     display: none;
   }
-  
+
   .viewModeBtn {
     padding: 8px 10px;
   }
-  
+
   .surahNames h2 {
     font-size: 1.25rem;
   }
-  
+
   .reciterBtn {
     min-width: 120px;
   }
@@ -448,11 +494,11 @@
   .surahNumber {
     font-size: 1.1rem;
   }
-  
+
   .surahNames h2 {
     font-size: 1.1rem;
   }
-  
+
   .surahMeta {
     font-size: 0.8rem;
   }
@@ -492,12 +538,12 @@
   .surahMeta {
     display: none; /* Hide meta on mobile to save space */
   }
-  
+
   /* Hide text selector */
   .surahSelector {
     display: none;
   }
-  
+
   /* Compact Controls */
   .controls {
     gap: 6px;
@@ -509,7 +555,7 @@
     height: 32px;
     border-radius: 8px;
   }
-  
+
   .navBtn svg,
   .iconBtn svg {
     width: 16px;
@@ -524,13 +570,13 @@
   .divider {
     display: none;
   }
-  
+
   /* Compact Reciter Button */
   .reciterBtn span,
   .reciterBtn svg {
     display: none;
   }
-  
+
   .reciterBtn {
     min-width: auto;
     padding: 0;
@@ -539,13 +585,13 @@
     justify-content: center;
     border-radius: 8px;
   }
-  
+
   .reciterBtn img {
     margin: 0;
     width: 20px;
     height: 20px;
   }
-  
+
   .reciterMenu {
     right: -20px;
     width: 220px;
@@ -558,18 +604,18 @@
     font-size: 0.75rem;
     margin-left: 0;
   }
-  
+
   /* Compact View Mode */
   .viewModeToggle {
     padding: 2px;
     gap: 2px;
   }
-  
+
   .viewModeBtn {
     padding: 4px 6px;
     border-radius: 6px;
   }
-  
+
   .viewModeBtn svg {
     width: 14px;
     height: 14px;
@@ -581,26 +627,26 @@
     gap: 6px;
     padding: 8px 10px;
   }
-  
+
   .surahInfo {
     gap: 8px;
   }
-  
+
   .controls {
     gap: 4px;
   }
-  
+
   .options {
     gap: 4px;
   }
-  
+
   .navBtn,
   .iconBtn,
   .reciterBtn {
     width: 28px;
     height: 28px;
   }
-  
+
   .reciterBtn img {
     width: 18px;
     height: 18px;
@@ -612,35 +658,35 @@
   .surahBadge {
     display: none; /* Hide badge, just show name */
   }
-  
+
   .surahNames h2 {
     font-size: 0.95rem;
   }
-  
+
   .options {
     gap: 4px;
   }
-  
+
   .fontToggleBtn {
     display: none; /* Hide font toggle on very small screens */
   }
-  
+
   /* Keep only essential controls */
   .viewModeToggle {
     display: none;
   }
-  
+
   .controls {
     gap: 3px;
   }
-  
+
   .navBtn,
   .iconBtn,
   .reciterBtn {
     width: 26px;
     height: 26px;
   }
-  
+
   .navBtn svg,
   .iconBtn svg {
     width: 14px;
@@ -654,18 +700,18 @@
     padding: 6px 8px;
     gap: 4px;
   }
-  
+
   .surahNames h2 {
     font-size: 0.85rem;
   }
-  
+
   .navBtn,
   .iconBtn,
   .reciterBtn {
     width: 24px;
     height: 24px;
   }
-  
+
   .reciterBtn img {
     width: 16px;
     height: 16px;

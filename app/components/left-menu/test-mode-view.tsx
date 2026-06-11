@@ -69,8 +69,8 @@ export default function TestModeView({ surahs }: TestModeViewProps) {
     }
   };
 
-  const startTest = () => {
-    const allVerses = getVersesBySurah(config.surahNumber);
+  const startTest = async () => {
+    const allVerses = await getVersesBySurah(config.surahNumber);
     // Filter verses based on range
     const filtered = allVerses.filter(v => v.verse >= config.startVerse && v.verse <= config.endVerse);
     
