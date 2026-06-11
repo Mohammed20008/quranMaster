@@ -310,23 +310,156 @@ export function TransitionNotification({
   );
 }
 
-// ─── Quran Page Loader ────────────────────────────────────────────────────────
+// ─── Skeleton Helpers ─────────────────────────────────────────────────────────
 
-export function QuranPageLoader({ surahName }: { surahName?: string }) {
+/** A single shimmering block — composes the skeleton layouts. */
+function SkeletonBlock({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      className={`${styles.skeletonBase} ${className ?? ""}`}
+      style={style}
+    />
+  );
+}
+
+// Arabic line widths as percentages – vary them to look realistic
+const ARABIC_LINE_WIDTHS = [100, 95, 88, 100, 92, 80, 100, 96, 85, 100, 90, 78, 100, 93, 87];
+const TRANS_LINE_WIDTHS = [100, 90, 60];
+
+/** Verse view skeleton: stacked verse cards with shimmering arabic lines + translation */
+function VerseViewSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className={styles.verseSkeleton}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={styles.verseSkeletonCard}>
+          {/* Verse number circle — top right */}
+          <div className={styles.verseSkeletonTopRow}>
+            <SkeletonBlock className={styles.verseSkeletonNumber} />
+          </div>
+
+          {/* Arabic text block — 2–3 lines */}
+          <div className={styles.verseSkeletonArabicBlock}>
+            {[0, 1, i % 3 === 0 ? 2 : -1].filter((n) => n >= 0).map((lineIdx) => (
+              <SkeletonBlock
+                key={lineIdx}
+                className={styles.verseSkeletonLine}
+                style={{ width: `${ARABIC_LINE_WIDTHS[(i * 3 + lineIdx) % ARABIC_LINE_WIDTHS.length]}%` }}
+              />
+            ))}
+          </div>
+
+          {/* Translation lines */}
+          <div className={styles.verseSkeletonTranslation}>
+            {TRANS_LINE_WIDTHS.map((w, li) => (
+              <SkeletonBlock
+                key={li}
+                className={styles.verseSkeletonTransLine}
+                style={{ width: `${w}%` }}
+              />
+            ))}
+          </div>
+
+          {/* Action buttons row */}
+          <div className={styles.verseSkeletonActions}>
+            {Array.from({ length: 5 }).map((_, bi) => (
+              <SkeletonBlock key={bi} className={`${styles.skeletonBase} ${styles.verseSkeletonBtn}`} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Mushaf page skeleton: a single page card with shimmer text lines */
+function MushafPageSkeleton() {
+  return (
+    <div className={styles.pageSkeletonCard}>
+      {/* Page header chips */}
+      <div className={styles.pageSkeletonHeader}>
+        <SkeletonBlock className={styles.pageSkeletonHeaderChip} style={{ width: 120 }} />
+        <SkeletonBlock className={styles.pageSkeletonHeaderChip} style={{ width: 60 }} />
+      </div>
+
+      {/* Text lines */}
+      <div className={styles.pageSkeletonLines}>
+        {ARABIC_LINE_WIDTHS.map((w, i) => (
+          <SkeletonBlock
+            key={i}
+            className={styles.pageSkeletonTextLine}
+            style={{ width: `${w}%` }}
+          />
+        ))}
+      </div>
+
+      {/* Page number footer */}
+      <SkeletonBlock className={styles.pageSkeletonFooter} />
+    </div>
+  );
+}
+
+/** Spread skeleton: two mushaf pages side-by-side, matching .mushafPage exactly */
+function SpreadSkeleton() {
+  return (
+    <div className={styles.spreadSkeleton}>
+      {[0, 1].map((side) => (
+        <div key={side} className={styles.spreadSkeletonPage}>
+          {/* Page header row */}
+          <div className={styles.pageSkeletonHeader}>
+            <SkeletonBlock className={styles.pageSkeletonHeaderChip} style={{ width: 100 }} />
+            <SkeletonBlock className={styles.pageSkeletonHeaderChip} style={{ width: 50 }} />
+          </div>
+
+          {/* Text lines — centered in the page body */}
+          <div className={styles.spreadSkeletonLines}>
+            {ARABIC_LINE_WIDTHS.map((w, i) => (
+              <SkeletonBlock
+                key={i}
+                className={styles.pageSkeletonTextLine}
+                style={{ width: `${w}%`, marginLeft: i % 3 !== 0 ? "auto" : undefined }}
+              />
+            ))}
+          </div>
+
+          {/* Page number footer */}
+          <SkeletonBlock className={styles.pageSkeletonFooter} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Quran Skeleton (main export) ─────────────────────────────────────────────
+
+/** Replaces the old QuranPageLoader. Renders a skeleton matching the active view mode. */
+export function QuranPageLoader({
+  viewMode = "verse",
+}: {
+  surahName?: string; // kept for backwards-compat, unused
+  viewMode?: "verse" | "page" | "spread";
+}) {
   return (
     <motion.div
-      className={styles.simpleLoaderOverlay}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.25 }}
     >
-      <div className={styles.simpleLoaderContent}>
-        <div className={styles.simpleSpinner}></div>
-        <h3 className={styles.simpleLoaderText}>
-          {surahName ? `Loading Surah ${surahName}...` : "Loading Quran..."}
-        </h3>
-      </div>
+      {viewMode === "spread" ? (
+        <SpreadSkeleton />
+      ) : viewMode === "page" ? (
+        <div className={styles.pageSkeleton}>
+          <MushafPageSkeleton />
+        </div>
+      ) : (
+        <VerseViewSkeleton count={5} />
+      )}
     </motion.div>
   );
 }

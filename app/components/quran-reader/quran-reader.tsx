@@ -142,6 +142,7 @@ export default function QuranReader({
   useEffect(() => {
     setLoadedPages(new Set());
     setFontsLoaded(false);
+    setQpcData({});
   }, [settings.mushafLayout]);
 
   // ── Metadata for transition notifications ─────────
@@ -427,6 +428,13 @@ export default function QuranReader({
       return;
     }
 
+    // Don't try to load fonts until we actually have QPC data for this surah
+    if (Object.keys(qpcData).length === 0) {
+      // If QPC data hasn't arrived yet, stay in loading state
+      // (fontsLoaded will be set once data arrives and fonts are checked)
+      return;
+    }
+
     const surahPages = new Set<number>();
     surahPages.add(1); // ALWAYS load page 1 for Basmalah typography
     Object.values(qpcData).forEach((v) => {
@@ -436,7 +444,7 @@ export default function QuranReader({
 
     const targetPages = Array.from(surahPages);
     if (targetPages.length === 0) {
-      if (!loadingQPC && Object.keys(qpcData).length > 0) setFontsLoaded(true);
+      setFontsLoaded(true);
       return;
     }
 
@@ -446,19 +454,32 @@ export default function QuranReader({
       return;
     }
 
+    let cancelled = false;
+
     const checkFonts = async () => {
       const promises = pagesToLoad.map((page) =>
         document.fonts.load(`16px "QPC_Page_${page}"`)
       );
+
+      // Safety timeout — never block loading for more than 3 seconds
+      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 3000));
+
       try {
-        await Promise.all(promises);
-        setLoadedPages((prev) => new Set([...prev, ...pagesToLoad]));
-        setFontsLoaded(true);
+        await Promise.race([Promise.all(promises), timeout]);
       } catch {
+        // Ignore font loading errors
+      }
+
+      if (!cancelled) {
+        setLoadedPages((prev) => new Set([...prev, ...pagesToLoad]));
         setFontsLoaded(true);
       }
     };
     checkFonts();
+
+    return () => {
+      cancelled = true;
+    };
   }, [fontMode, qpcData, loadingQPC, loadedPages, surahNumber]);
 
   // ── Scroll to top on Surah change ────────────────────────────────────────────
@@ -509,7 +530,7 @@ export default function QuranReader({
   }, [qpcData]);
 
   const isLoadingPages =
-    (viewMode === "page" || viewMode === "spread") &&
+    fontMode === "qpc" &&
     (loadingQPC || !fontsLoaded);
 
   // ── Handlers ──────────────────────────────────────
@@ -596,8 +617,8 @@ export default function QuranReader({
 
   if (loadingVerses) {
     return (
-      <div className={styles.reader} style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <QuranPageLoader surahName={surah.transliteration} />
+      <div className={styles.reader}>
+        <QuranPageLoader viewMode={viewMode} />
       </div>
     );
   }
@@ -615,10 +636,10 @@ export default function QuranReader({
 
   return (
     <div className={styles.reader}>
-      {/* Premium page loader for page/spread modes */}
+      {/* Skeleton loader for QPC font/data loading (all view modes) */}
       <AnimatePresence>
         {isLoadingPages && (
-          <QuranPageLoader surahName={surah.transliteration} />
+          <QuranPageLoader viewMode={viewMode} />
         )}
       </AnimatePresence>
 
