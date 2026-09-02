@@ -1,12 +1,25 @@
-import mushafLayoutV1 from "@/data/qpc_data/mushaf-layout-v1.json";
-import mushafLayoutV4 from "@/data/qpc_data/mushaf-layout-v4.json";
-import pageMapping from "@/data/qpc_data/quran-page-mapping.json";
 import { QPCVerseData } from "@/types/qpc";
 
-const mushafLayouts = {
-  v1: mushafLayoutV1 as Record<string, string[]>,
-  v4: mushafLayoutV4 as Record<string, string[]>,
-};
+let mushafLayouts: {
+  v1: Record<string, string[]>;
+  v4: Record<string, string[]>;
+} | null = null;
+
+let layoutDataPromise: Promise<void> | null = null;
+
+export function ensureLayoutDataLoaded(): Promise<void> {
+  if (layoutDataPromise) return layoutDataPromise;
+  layoutDataPromise = Promise.all([
+    import("@/data/qpc_data/mushaf-layout-v1.json").then((m) => m.default),
+    import("@/data/qpc_data/mushaf-layout-v4.json").then((m) => m.default),
+  ]).then(([v1, v4]) => {
+    mushafLayouts = {
+      v1: v1 as Record<string, string[]>,
+      v4: v4 as Record<string, string[]>,
+    };
+  });
+  return layoutDataPromise;
+}
 
 export const QPC_BASMALAH_WORDS = {
   v1: ["ﭑ", "ﭒ", "ﭓ", "ﭔ"],
@@ -35,9 +48,10 @@ export interface AlignedLine {
   hasBasmalah?: boolean;
 }
 
-function getSurahStartingOnPage(p: number): number | null {
+function getSurahStartingOnPage(p: number, pageMapping: Record<string, number>): number | null {
+  if (!pageMapping) return null;
   for (let s = 1; s <= 114; s++) {
-    if ((pageMapping as any)[`${s}:1`] === p) {
+    if (pageMapping[`${s}:1`] === p) {
       return s;
     }
   }
@@ -48,8 +62,13 @@ export function alignPageWordsToLines(
   pageNum: number,
   pageVerses: any[],
   qpcData: Record<string, QPCVerseData>,
-  layout: "v1" | "v4" = "v1"
+  layout: "v1" | "v4" = "v1",
+  pageMapping: Record<string, number>
 ): AlignedLine[] {
+  if (!mushafLayouts) {
+    console.warn("Layout data not loaded yet.");
+    return [];
+  }
   const mushafLayout = mushafLayouts[layout] || mushafLayouts.v1;
   const layoutLines = mushafLayout[String(pageNum)];
   if (!layoutLines || !pageVerses || pageVerses.length === 0) {
@@ -57,12 +76,15 @@ export function alignPageWordsToLines(
   }
 
   // 1. Gather all words for the verses on this page sequentially
-  const pageWords: AlignedWord[] = [];
+  let pageWords: AlignedWord[] = [];
   pageVerses.forEach((verse) => {
     const verseId = `${verse.chapter}-${verse.verse}`;
     const verseQPC = qpcData[verseId];
     if (verseQPC && verseQPC.words) {
-      verseQPC.words.forEach((w) => {
+      verseQPC.words.forEach((w: any) => {
+        if (w.page && w.page !== pageNum) {
+          return;
+        }
         pageWords.push({
           id: w.id,
           word: w.word,
@@ -78,57 +100,65 @@ export function alignPageWordsToLines(
     }
   });
 
+  // Fallback: if page-specific filtering yielded 0 words, gather all words from the page verses
+  if (pageWords.length === 0) {
+    pageVerses.forEach((verse) => {
+      const verseId = `${verse.chapter}-${verse.verse}`;
+      const verseQPC = qpcData[verseId];
+      if (verseQPC && verseQPC.words) {
+        verseQPC.words.forEach((w: any) => {
+          pageWords.push({
+            id: w.id,
+            word: w.word,
+            text: w.text,
+            layoutText: w.layoutText ?? w.text,
+            spaceAfter: true,
+            verseId,
+            verse,
+            surahNum: verse.chapter,
+            verseNum: verse.verse,
+          });
+        });
+      }
+    });
+  }
+
   if (pageWords.length === 0) {
     return [];
   }
 
-  // 2. Align by the v1 layout's glyph stream.
-  // This makes newer fonts, including v4, inherit v1's exact printed line breaks
-  // and spacing, even when a QPC word contains an internal space or spans lines.
-  const qpcGlyphs: { char: string; word: AlignedWord }[] = [];
-  pageWords.forEach((word) => {
-    for (const char of word.text.replace(/\s+/g, "")) {
-      qpcGlyphs.push({ char, word });
-    }
-  });
-
-  let glyphPtr = 0;
+  // 2. Map words directly by line tokens from the layout definition.
+  // Each line in the layout JSON contains space-separated word tokens corresponding
+  // to the exact printed words on that specific line of the Mushaf.
+  let wordPtr = 0;
   const lineWordsMap = layoutLines.map(() => [] as AlignedWord[]);
 
   for (let lineIdx = 0; lineIdx < layoutLines.length; lineIdx++) {
-    let currentChunk: AlignedWord | null = null;
+    const rawTokens = layoutLines[lineIdx].trim().split(/\s+/).filter(Boolean);
 
-    for (const layoutChar of layoutLines[lineIdx]) {
-      if (/\s/.test(layoutChar)) {
-        if (currentChunk) {
-          currentChunk.spaceAfter = true;
-          currentChunk = null;
-        }
-        continue;
-      }
+    for (let tIdx = 0; tIdx < rawTokens.length; tIdx++) {
+      const layoutToken = rawTokens[tIdx];
+      const word = pageWords[wordPtr];
+      if (!word) break;
+      wordPtr++;
 
-      const glyph = qpcGlyphs[glyphPtr];
-      if (!glyph) break;
-      glyphPtr++;
+      lineWordsMap[lineIdx].push({
+        ...word,
+        layoutText: layoutToken,
+        spaceAfter: tIdx < rawTokens.length - 1,
+      });
+    }
+  }
 
-      if (
-        currentChunk &&
-        currentChunk.id === glyph.word.id &&
-        currentChunk.verseId === glyph.word.verseId &&
-        !currentChunk.spaceAfter
-      ) {
-        currentChunk.text += glyph.char;
-        currentChunk.layoutText += layoutChar;
-        continue;
-      }
-
-      currentChunk = {
-        ...glyph.word,
-        text: glyph.char,
-        layoutText: layoutChar,
-        spaceAfter: false,
-      };
-      lineWordsMap[lineIdx].push(currentChunk);
+  // If there are any remaining words on the page, append them to the last line
+  if (wordPtr < pageWords.length && lineWordsMap.length > 0) {
+    const lastLineIdx = lineWordsMap.length - 1;
+    while (wordPtr < pageWords.length) {
+      const word = pageWords[wordPtr++];
+      lineWordsMap[lastLineIdx].push({
+        ...word,
+        spaceAfter: true,
+      });
     }
   }
 
@@ -211,7 +241,7 @@ export function alignPageWordsToLines(
   }
 
   // Check if the next page starts with a new Surah
-  const nextSurah = getSurahStartingOnPage(pageNum + 1);
+  const nextSurah = getSurahStartingOnPage(pageNum + 1, pageMapping);
   if (nextSurah) {
     const currentLinesCount = layoutLines.length;
     if (currentLinesCount === 14) {

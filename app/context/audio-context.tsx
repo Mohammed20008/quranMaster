@@ -21,6 +21,9 @@ export interface AudioState {
   currentSurah: number | null;
   currentVerse: number | null;
   playbackMode: 'surah' | 'verse' | null;
+  playbackRate: number;
+  repeatCount: number;
+  currentVersePlayCount: number;
 }
 
 interface AudioContextType {
@@ -33,6 +36,8 @@ interface AudioContextType {
   stop: () => void;
   playNextVerse: () => void;
   playPreviousVerse: () => void;
+  setPlaybackRate: (rate: number) => void;
+  setRepeatCount: (count: number) => void;
   currentReciter: Reciter | undefined;
 }
 
@@ -75,7 +80,11 @@ async function fetchVerseTimings(
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const { settings } = useUserData();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audio1Ref = useRef<HTMLAudioElement | null>(null);
+  const audio2Ref = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null); // Active player
+  const preloadRef = useRef<HTMLAudioElement | null>(null); // Preload player
+  const preloadedKeyRef = useRef<string | null>(null);
 
   const [state, setState] = useState<AudioState>({
     isPlaying: false,
@@ -85,10 +94,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     currentSurah: null,
     currentVerse: null,
     playbackMode: null,
+    playbackRate: 1.0,
+    repeatCount: 1,
+    currentVersePlayCount: 1,
   });
 
   // Verse timings for the currently playing Surah
   const verseTimingsRef = useRef<VerseTiming[]>([]);
+  const currentVersePlayCountRef = useRef(1);
 
   const currentReciter = reciters.find(r => r.id === settings.selectedReciterId);
 
@@ -99,14 +112,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  const safePlay = async () => {
+  const safePlay = useCallback(async () => {
     if (!audioRef.current) return;
     try {
       await audioRef.current.play();
     } catch (err: any) {
       if (err.name !== 'AbortError') console.error('Audio play error:', err);
     }
-  };
+  }, []);
 
   // ── Verse tracking during continuous surah playback ───────────────────────
 
@@ -124,24 +137,107 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Helpers for getting URL
+  const getVerseUrl = useCallback((reciter: Reciter, surah: number, verse: number) => {
+    const everyAyahKey = reciter.everyAyahKey || 'Alafasy_128kbps';
+    const surahStr = surah.toString().padStart(3, '0');
+    const verseStr = verse.toString().padStart(3, '0');
+    return `https://www.everyayah.com/data/${everyAyahKey}/${surahStr}${verseStr}.mp3`;
+  }, []);
+
+  const getSurahUrl = useCallback((reciter: Reciter, surah: number) => {
+    const surahStr = surah.toString().padStart(3, '0');
+    return `${reciter.baseUrl}${surahStr}.mp3`;
+  }, []);
+
+  const getNextVerse = useCallback((surahNumber: number, verseNumber: number) => {
+    const surah = surahs.find(s => s.number === surahNumber);
+    if (!surah) return null;
+    if (verseNumber < surah.totalVerses) {
+      return { surah: surahNumber, verse: verseNumber + 1 };
+    } else if (surahNumber < 114) {
+      return { surah: surahNumber + 1, verse: 1 };
+    }
+    return null;
+  }, []);
+
+  // Preloading helper functions
+  const preloadNextVerse = useCallback((reciter: Reciter, surahNum: number, verseNum: number) => {
+    if (!preloadRef.current) return;
+    const next = getNextVerse(surahNum, verseNum);
+    if (next) {
+      const url = getVerseUrl(reciter, next.surah, next.verse);
+      preloadRef.current.src = url;
+      preloadRef.current.load();
+      preloadedKeyRef.current = `${reciter.id}:verse:${next.surah}:${next.verse}`;
+    } else {
+      preloadRef.current.src = '';
+      preloadedKeyRef.current = null;
+    }
+  }, [getVerseUrl, getNextVerse]);
+
+  const preloadNextSurah = useCallback((reciter: Reciter, surahNum: number) => {
+    if (!preloadRef.current) return;
+    if (surahNum < 114) {
+      const nextSurah = surahNum + 1;
+      const url = getSurahUrl(reciter, nextSurah);
+      preloadRef.current.src = url;
+      preloadRef.current.load();
+      preloadedKeyRef.current = `${reciter.id}:surah:${nextSurah}`;
+    } else {
+      preloadRef.current.src = '';
+      preloadedKeyRef.current = null;
+    }
+  }, [getSurahUrl]);
+
   // ── Play actions ──────────────────────────────────────────────────────────
 
   const playSurah = useCallback(async (surahNumber: number) => {
     if (!currentReciter || !audioRef.current) return;
 
-    // Start playing the full Surah MP3 immediately
-    const surahStr = surahNumber.toString().padStart(3, '0');
-    const url = `${currentReciter.baseUrl}${surahStr}.mp3`;
-    audioRef.current.src = url;
-    safePlay();
+    const key = `${currentReciter.id}:surah:${surahNumber}`;
+    currentVersePlayCountRef.current = 1;
 
-    setState(prev => ({
-      ...prev,
-      currentSurah: surahNumber,
-      currentVerse: 1, // Start at verse 1 until timings arrive
-      playbackMode: 'surah',
-      isPlaying: true,
-    }));
+    if (preloadedKeyRef.current === key && preloadRef.current && preloadRef.current.src) {
+      // Pause active
+      audioRef.current.pause();
+
+      // Swap
+      const temp = audioRef.current;
+      audioRef.current = preloadRef.current;
+      preloadRef.current = temp;
+
+      preloadedKeyRef.current = null;
+
+      audioRef.current.playbackRate = stateRef.current.playbackRate;
+      safePlay();
+
+      setState(prev => ({
+        ...prev,
+        currentSurah: surahNumber,
+        currentVerse: 1,
+        playbackMode: 'surah',
+        isPlaying: true,
+        currentTime: audioRef.current!.currentTime,
+        duration: audioRef.current!.duration || 0,
+        currentVersePlayCount: 1,
+      }));
+    } else {
+      audioRef.current.pause();
+      const url = getSurahUrl(currentReciter, surahNumber);
+      audioRef.current.src = url;
+      audioRef.current.playbackRate = stateRef.current.playbackRate;
+      safePlay();
+
+      setState(prev => ({
+        ...prev,
+        currentSurah: surahNumber,
+        currentVerse: 1,
+        playbackMode: 'surah',
+        isPlaying: true,
+        currentVersePlayCount: 1,
+      }));
+    }
 
     // Fetch verse timings in the background (non-blocking)
     if (currentReciter.quranComId) {
@@ -149,38 +245,79 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       const timings = await fetchVerseTimings(currentReciter.quranComId, surahNumber);
       verseTimingsRef.current = timings;
     }
-  }, [currentReciter]);
+
+    // Preload next surah
+    preloadNextSurah(currentReciter, surahNumber);
+  }, [currentReciter, getSurahUrl, safePlay, preloadNextSurah]);
 
   const playVerse = useCallback((surahNumber: number, verseNumber: number) => {
     if (!currentReciter || !audioRef.current) return;
     verseTimingsRef.current = []; // No timing needed for single-verse mode
+    currentVersePlayCountRef.current = 1;
 
-    const everyAyahKey = currentReciter.everyAyahKey || 'Alafasy_128kbps';
-    const surahStr = surahNumber.toString().padStart(3, '0');
-    const verseStr = verseNumber.toString().padStart(3, '0');
-    const url = `https://www.everyayah.com/data/${everyAyahKey}/${surahStr}${verseStr}.mp3`;
-    audioRef.current.src = url;
-    safePlay();
-    setState(prev => ({
-      ...prev,
-      currentSurah: surahNumber,
-      currentVerse: verseNumber,
-      playbackMode: 'verse',
-      isPlaying: true,
-    }));
-  }, [currentReciter]);
+    const key = `${currentReciter.id}:verse:${surahNumber}:${verseNumber}`;
+
+    if (preloadedKeyRef.current === key && preloadRef.current && preloadRef.current.src) {
+      audioRef.current.pause();
+
+      const temp = audioRef.current;
+      audioRef.current = preloadRef.current;
+      preloadRef.current = temp;
+
+      preloadedKeyRef.current = null;
+
+      audioRef.current.playbackRate = stateRef.current.playbackRate;
+      safePlay();
+
+      setState(prev => ({
+        ...prev,
+        currentSurah: surahNumber,
+        currentVerse: verseNumber,
+        playbackMode: 'verse',
+        isPlaying: true,
+        currentTime: audioRef.current!.currentTime,
+        duration: audioRef.current!.duration || 0,
+        currentVersePlayCount: 1,
+      }));
+    } else {
+      audioRef.current.pause();
+      const url = getVerseUrl(currentReciter, surahNumber, verseNumber);
+      audioRef.current.src = url;
+      audioRef.current.playbackRate = stateRef.current.playbackRate;
+      safePlay();
+
+      setState(prev => ({
+        ...prev,
+        currentSurah: surahNumber,
+        currentVerse: verseNumber,
+        playbackMode: 'verse',
+        isPlaying: true,
+        currentVersePlayCount: 1,
+      }));
+    }
+
+    preloadNextVerse(currentReciter, surahNumber, verseNumber);
+  }, [currentReciter, getVerseUrl, safePlay, preloadNextVerse]);
 
   const stop = () => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
+    if (audio1Ref.current) {
+      audio1Ref.current.pause();
+      audio1Ref.current.currentTime = 0;
+    }
+    if (audio2Ref.current) {
+      audio2Ref.current.pause();
+      audio2Ref.current.currentTime = 0;
+    }
+    preloadedKeyRef.current = null;
     verseTimingsRef.current = [];
+    currentVersePlayCountRef.current = 1;
     setState(prev => ({
       ...prev,
       isPlaying: false,
       currentSurah: null,
       currentVerse: null,
       playbackMode: null,
+      currentVersePlayCount: 1,
     }));
   };
 
@@ -239,39 +376,88 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     audioRef.current.currentTime = time;
   };
 
-  // ── Audio element lifecycle ───────────────────────────────────────────────
+  const setPlaybackRate = (rate: number) => {
+    if (audio1Ref.current) audio1Ref.current.playbackRate = rate;
+    if (audio2Ref.current) audio2Ref.current.playbackRate = rate;
+    setState(prev => ({ ...prev, playbackRate: rate }));
+    try {
+      localStorage.setItem('audio_playback_rate', rate.toString());
+    } catch {}
+  };
+
+  const setRepeatCount = (count: number) => {
+    setState(prev => ({ ...prev, repeatCount: count }));
+    try {
+      localStorage.setItem('audio_repeat_count', count.toString());
+    } catch {}
+  };
+
+  // ── Audio elements lifecycle ───────────────────────────────────────────────
 
   useEffect(() => {
-    const audio = new Audio();
-    audio.preload = 'auto';
-    audioRef.current = audio;
+    const audio1 = new Audio();
+    audio1.preload = 'auto';
+    const audio2 = new Audio();
+    audio2.preload = 'auto';
 
-    const handleTimeUpdate = () => {
-      const ms = audio.currentTime * 1000;
+    audio1Ref.current = audio1;
+    audio2Ref.current = audio2;
+    audioRef.current = audio1;
+    preloadRef.current = audio2;
+
+    const handleTimeUpdate = (e: Event) => {
+      if (e.currentTarget !== audioRef.current) return;
+      const audio = audioRef.current;
+      if (!audio) return;
       setState(prev => ({ ...prev, currentTime: audio.currentTime }));
 
-      // Update active verse based on timing data (only in surah mode)
+      const ms = audio.currentTime * 1000;
       if (stateRef.current.playbackMode === 'surah') {
         updateCurrentVerseFromTime(ms);
       }
     };
 
-    const handleDurationChange = () => {
-      setState(prev => ({ ...prev, duration: audio.duration }));
+    const handleDurationChange = (e: Event) => {
+      if (e.currentTarget !== audioRef.current) return;
+      const audio = audioRef.current;
+      if (audio) {
+        setState(prev => ({ ...prev, duration: audio.duration }));
+      }
     };
 
-    const handlePlay = () => {
+    const handlePlay = (e: Event) => {
+      if (e.currentTarget !== audioRef.current) return;
       setState(prev => ({ ...prev, isPlaying: true }));
     };
 
-    const handlePause = () => {
+    const handlePause = (e: Event) => {
+      if (e.currentTarget !== audioRef.current) return;
       setState(prev => ({ ...prev, isPlaying: false }));
     };
 
-    const handleEnded = () => {
+    const handleEnded = (e: Event) => {
+      if (e.currentTarget !== audioRef.current) return;
       const s = stateRef.current;
+      
       if (s.playbackMode === 'verse') {
-        playNextVerse();
+        const currentPlayCount = currentVersePlayCountRef.current;
+        const isInfinite = s.repeatCount === 999;
+        
+        if ((isInfinite || currentPlayCount < s.repeatCount) && s.repeatCount > 1) {
+          const nextPlayCount = isInfinite ? currentPlayCount : currentPlayCount + 1;
+          currentVersePlayCountRef.current = nextPlayCount;
+          setState(prev => ({ ...prev, currentVersePlayCount: nextPlayCount }));
+          
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.playbackRate = s.playbackRate;
+            safePlay();
+          }
+        } else {
+          currentVersePlayCountRef.current = 1;
+          setState(prev => ({ ...prev, currentVersePlayCount: 1 }));
+          playNextVerse();
+        }
       } else if (s.playbackMode === 'surah') {
         playNextSurah();
       } else {
@@ -279,8 +465,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const handleProgress = () => {
-      if (audio.buffered.length > 0) {
+    const handleProgress = (e: Event) => {
+      if (e.currentTarget !== audioRef.current) return;
+      const audio = audioRef.current;
+      if (audio && audio.buffered.length > 0) {
         setState(prev => ({
           ...prev,
           buffered: audio.buffered.end(audio.buffered.length - 1),
@@ -288,29 +476,54 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('durationchange', handleDurationChange);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('progress', handleProgress);
+    const attachListeners = (audio: HTMLAudioElement) => {
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('durationchange', handleDurationChange);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('pause', handlePause);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('progress', handleProgress);
+    };
 
-    return () => {
+    const removeListeners = (audio: HTMLAudioElement) => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('progress', handleProgress);
-      audio.pause();
-      audioRef.current = null;
     };
-  }, [playNextSurah, playNextVerse, updateCurrentVerseFromTime]);
+
+    attachListeners(audio1);
+    attachListeners(audio2);
+
+    // Load initial settings
+    try {
+      const savedRate = localStorage.getItem('audio_playback_rate');
+      const savedRepeat = localStorage.getItem('audio_repeat_count');
+      setState(prev => ({
+        ...prev,
+        playbackRate: savedRate ? parseFloat(savedRate) : 1.0,
+        repeatCount: savedRepeat ? parseInt(savedRepeat) : 1,
+      }));
+    } catch {}
+
+    return () => {
+      removeListeners(audio1);
+      removeListeners(audio2);
+      audio1.pause();
+      audio2.pause();
+      audio1Ref.current = null;
+      audio2Ref.current = null;
+      audioRef.current = null;
+      preloadRef.current = null;
+    };
+  }, [playNextSurah, playNextVerse, updateCurrentVerseFromTime, safePlay]);
 
   return (
     <AudioContext.Provider value={{
       state, playSurah, playVerse, playPage, togglePlay, seek, stop,
-      playNextVerse, playPreviousVerse, currentReciter,
+      playNextVerse, playPreviousVerse, setPlaybackRate, setRepeatCount, currentReciter,
     }}>
       {children}
     </AudioContext.Provider>

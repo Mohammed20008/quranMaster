@@ -1,91 +1,72 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useUserData } from '@/app/context/user-data-context';
 import styles from './side-controls.module.css';
 
+const DEFAULT_FONT_SIZE = 32;
+
 export default function SideControls() {
-  const [isAutoScroll, setIsAutoScroll] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(1); // 1 to 10
+  const { settings, updateSettings } = useUserData();
+  const fontSize = settings?.fontSize || DEFAULT_FONT_SIZE;
 
-  useEffect(() => {
-    let animationFrameId: number;
-    let lastTime = 0;
-    
-    // Accumulator for sub-pixel scrolling
-    let scrollAccumulator = 0;
-
-    const animateScroll = (timestamp: number) => {
-      if (!lastTime) lastTime = timestamp;
-      
-      const deltaTime = timestamp - lastTime;
-      lastTime = timestamp;
-
-      // Base speed: 20px per second
-      // Multiplier: scrollSpeed (1-10)
-      // Total pixels per second = 20 + (scrollSpeed * 15)
-      // Example: Speed 1 = 35px/s, Speed 10 = 170px/s
-      const pixelsPerSecond = 20 + (scrollSpeed * 15);
-      
-      const pixelsToScroll = (pixelsPerSecond * deltaTime) / 1000;
-      scrollAccumulator += pixelsToScroll;
-
-      // Allow sub-pixel scrolling if browser supports it, otherwise keep accumulating
-      if (scrollAccumulator >= 0.5) {
-        window.scrollBy({ top: scrollAccumulator, behavior: 'auto' });
-        scrollAccumulator = 0;
-      }
-
-      animationFrameId = requestAnimationFrame(animateScroll);
-    };
-
-    if (isAutoScroll) {
-      animationFrameId = requestAnimationFrame(animateScroll);
-    }
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [isAutoScroll, scrollSpeed]);
-
-  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setScrollSpeed(Number(e.target.value));
+  const handleZoomIn = () => {
+    updateSettings({ fontSize: Math.min(64, fontSize + 2) });
   };
+
+  const handleZoomOut = () => {
+    updateSettings({ fontSize: Math.max(16, fontSize - 2) });
+  };
+
+  const handleReset = () => {
+    updateSettings({ fontSize: DEFAULT_FONT_SIZE });
+  };
+
+  const isDefault = fontSize === DEFAULT_FONT_SIZE;
+  const zoomPercentage = Math.round((fontSize / DEFAULT_FONT_SIZE) * 100);
 
   return (
     <div className={styles.container}>
-      {/* Auto Scroll Control */}
       <div className={styles.controlGroup}>
-        <h3 className={styles.groupTitle}>Auto Scroll</h3>
-        <div className={styles.row}>
-          <button 
-            className={`${styles.iconBtn} ${isAutoScroll ? styles.active : ''}`}
-            onClick={() => setIsAutoScroll(!isAutoScroll)}
-            title={isAutoScroll ? "Pause Auto Scroll" : "Start Auto Scroll"}
+        <h3 className={styles.groupTitle}>Page Zoom</h3>
+
+        {/* 3 stacked buttons: +, reset (neutral), - */}
+        <div className={styles.btnStack}>
+          {/* Zoom In */}
+          <button
+            className={styles.iconBtn}
+            onClick={handleZoomIn}
+            title="Zoom In"
+            aria-label="Zoom In"
+            disabled={fontSize >= 64}
           >
-            {isAutoScroll ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="6" y="4" width="4" height="16" />
-                <rect x="14" y="4" width="4" height="16" />
-              </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 5v14M19 12l-7 7-7-7" />
-              </svg>
-            )}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
           </button>
-          <div className={styles.sliderContainer}>
-            <input 
-              type="range" 
-              min="1" 
-              max="10" 
-              value={scrollSpeed} 
-              onChange={handleSpeedChange}
-              className={styles.rangeInput}
-            />
-            <span className={styles.speedValue}>{scrollSpeed}x</span>
-          </div>
+
+          {/* Reset / Neutral */}
+          <button
+            className={`${styles.iconBtn} ${styles.resetBtn} ${isDefault ? styles.resetBtnActive : ''}`}
+            onClick={handleReset}
+            title="Reset to 100%"
+            aria-label="Reset Zoom"
+          >
+            <span className={styles.resetLabel}>{zoomPercentage}%</span>
+          </button>
+
+          {/* Zoom Out */}
+          <button
+            className={styles.iconBtn}
+            onClick={handleZoomOut}
+            title="Zoom Out"
+            aria-label="Zoom Out"
+            disabled={fontSize <= 16}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

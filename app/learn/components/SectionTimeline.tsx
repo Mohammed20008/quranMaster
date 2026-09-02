@@ -21,6 +21,44 @@ const arabicLevels = {
   master: 'المتقن'
 };
 
+const getLessonIcon = (lesson: LessonData) => {
+  if (lesson.isAlphabet && lesson.alphabetData && lesson.alphabetData.letters.length > 0) {
+    return (
+      <span 
+        style={{ 
+          fontFamily: 'var(--font-qpc), var(--font-uthmanic), sans-serif', 
+          fontSize: '2.5rem', 
+          color: '#c69320', 
+          fontWeight: 'bold',
+          lineHeight: 1
+        }}
+      >
+        {lesson.alphabetData.letters[0]}
+      </span>
+    );
+  }
+  
+  // Custom Emojis for general lessons
+  const titleLower = lesson.title.toLowerCase();
+  if (titleLower.includes('shaddah')) return <span style={{ fontSize: '2.2rem', color: '#c69320', fontWeight: 'bold' }}>ّ</span>;
+  if (titleLower.includes('tanween')) return <span style={{ fontSize: '2rem', color: '#c69320', fontWeight: 'bold' }}>◌ٌ</span>;
+  if (titleLower.includes('purification') || titleLower.includes('water') || titleLower.includes('taharah')) return '💧';
+  if (titleLower.includes('wudu')) return '🧼';
+  if (titleLower.includes('salah') || titleLower.includes('prayer')) return '🕌';
+  if (titleLower.includes('fasting') || titleLower.includes('ramadan') || titleLower.includes('sawm')) return '🌙';
+  if (titleLower.includes('iman') || titleLower.includes('faith')) return '🌟';
+  if (titleLower.includes('tawhid')) return '☝️';
+  if (titleLower.includes('shirk')) return '🚫';
+  if (titleLower.includes('adam')) return '🌱';
+  if (titleLower.includes('musa') || titleLower.includes('sea')) return '🦯';
+  if (titleLower.includes('yusuf')) return '👑';
+  if (titleLower.includes('birth') || titleLower.includes('early')) return '👶';
+  if (titleLower.includes('hijrah') || titleLower.includes('migration')) return '🗺️';
+  if (titleLower.includes('conquest') || titleLower.includes('makkah')) return '🕋';
+  
+  return '📖'; // Fallback
+};
+
 export default function SectionTimeline({
   selectedSection,
   styles,
@@ -31,41 +69,83 @@ export default function SectionTimeline({
   onStartQuiz,
   onStartUnlockQuiz
 }: SectionTimelineProps) {
-  const [activeLvlKey, setActiveLvlKey] = useState<'explorer' | 'adventure' | 'master'>('explorer');
+  // Modal popover state for the selected lesson card
+  const [activeLessonOptions, setActiveLessonOptions] = useState<{
+    lesson: LessonData & { sequenceNum: number; isCompleted: boolean };
+    levelKey: 'explorer' | 'adventure' | 'master';
+  } | null>(null);
 
-  // Automatically focus on the highest unlocked level tier upon loading a section
+  // Parallax Scroll Tracking
   useEffect(() => {
-    const masterStatus = getLevelStatus(selectedSection.id, 'master');
-    const adventureStatus = getLevelStatus(selectedSection.id, 'adventure');
+    const handleScroll = () => {
+      const doc = document.documentElement;
+      const totalHeight = doc.scrollHeight - doc.clientHeight;
+      if (totalHeight <= 0) return;
+      const percent = window.scrollY / totalHeight;
+      document.documentElement.style.setProperty('--scroll-percent', `${percent}`);
+    };
     
-    if (masterStatus !== 'locked') {
-      setActiveLvlKey('master');
-    } else if (adventureStatus !== 'locked') {
-      setActiveLvlKey('adventure');
-    } else {
-      setActiveLvlKey('explorer');
-    }
-  }, [selectedSection.id]);
+    window.addEventListener('scroll', handleScroll);
+    // Initial compute
+    setTimeout(handleScroll, 100);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const activeLevel = selectedSection.levels[activeLvlKey];
-  const activeLevelStatus = getLevelStatus(selectedSection.id, activeLvlKey);
-  const activeLevelXp = activeLevel?.lessons.reduce((acc, curr) => acc + curr.points, 0) || 0;
+  // Compute sequential lesson numbers and group levels data
+  const allTiers = ['explorer', 'adventure', 'master'] as const;
+  let lessonCounter = 0;
+
+  const levelsData = allTiers.map((lvlKey) => {
+    const level = selectedSection.levels[lvlKey];
+    const status = getLevelStatus(selectedSection.id, lvlKey);
+    const isLocked = status === 'locked';
+    const isPassed = status === 'passed';
+    
+    const lessonsWithNumbers = level.lessons.map((lesson) => {
+      lessonCounter++;
+      return {
+        ...lesson,
+        sequenceNum: lessonCounter,
+        isLocked,
+        isCompleted: (userProgress?.completedLessons || []).includes(lesson.id)
+      };
+    });
+
+    return {
+      lvlKey,
+      level,
+      status,
+      isLocked,
+      isPassed,
+      lessons: lessonsWithNumbers
+    };
+  });
+
+  const handleCheckpointClick = (lvlKey: 'explorer' | 'adventure', isLocked: boolean) => {
+    if (isLocked) {
+      alert("🔒 Lock: Please complete all lessons in this level first to unlock the Checkpoint Review!");
+    } else {
+      const targetLvl = lvlKey === 'explorer' ? 'adventure' : 'master';
+      onStartUnlockQuiz(lvlKey, targetLvl);
+    }
+  };
 
   return (
     <motion.div
+      id="timeline-parallax-container"
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       className={styles.timelineView}
     >
-      {/* Top Section Header */}
+      {/* Top Header Row */}
       <div className={styles.detailHeader}>
         <div className={styles.detailTitleText}>
-          <h2>
-            <span>{selectedSection.icon}</span> 
+          <h2 className={styles.detailTitle}>
+            <span className={styles.detailIcon}>{selectedSection.icon}</span> 
             {selectedSection.title} ({selectedSection.arabicTitle})
           </h2>
-          <p>Choose a level from the left primary menu to view and study its lessons on the right.</p>
+          <p className={styles.detailSubtitle}>Follow the continuous grid path below. Complete lessons and pass checkpoint reviews to progress!</p>
         </div>
         
         <button onClick={onBack} className={styles.backBtn}>
@@ -73,196 +153,159 @@ export default function SectionTimeline({
         </button>
       </div>
 
-      {/* Two Column Layout: Left Column = Levels Menu, Right Column = Lessons Stack */}
-      <div className={styles.twoColPathway}>
-        
-        {/* Left Column: Premium Gold-Themed Levels Primary Menu */}
-        <div className={styles.primaryMenuColumn}>
-          {(['explorer', 'adventure', 'master'] as const).map((lvlKey) => {
-            const level = selectedSection.levels[lvlKey];
-            const status = getLevelStatus(selectedSection.id, lvlKey);
-            const isLocked = status === 'locked';
-            const isPassed = status === 'passed';
-            const isActive = activeLvlKey === lvlKey;
-
-            let cardClass = styles.levelGoldCard;
-            if (isActive) cardClass += ` ${styles.levelGoldCardActive}`;
-            if (isLocked) cardClass += ` ${styles.levelGoldCardLocked}`;
-
-            return (
-              <div
-                key={lvlKey}
-                className={cardClass}
-                onClick={() => {
-                  if (!isLocked) {
-                    setActiveLvlKey(lvlKey);
-                  }
-                }}
-              >
-                <div className={styles.levelGoldCardHeader}>
-                  <div className={styles.levelGoldCardTitleRow}>
-                    <h3>{lvlKey} tier</h3>
-                    <span className={styles.levelGoldCardArabic}>
-                      {arabicLevels[lvlKey]}
-                    </span>
-                  </div>
-                  
-                  {/* Status Indicator */}
-                  <span className={styles.levelStatusIcon}>
-                    {isLocked ? '🔒' : isPassed ? '✅' : '🎯'}
+      {/* Gamified Stacked Timeline Path */}
+      <div className={styles.timelineRoadmap}>
+        {levelsData.map(({ lvlKey, level, status, isLocked, isPassed, lessons }) => {
+          return (
+            <div key={lvlKey} className={styles.timelineLevelSection}>
+              {/* Kid-friendly Level Header */}
+              <div className={`${styles.levelHeader} ${styles[`levelHeader_${lvlKey}`]}`}>
+                <div className={styles.levelHeaderInfo}>
+                  <span className={styles.levelBadge}>
+                    Level {lvlKey === 'explorer' ? '1' : lvlKey === 'adventure' ? '2' : '3'}
                   </span>
+                  <h3>{level.title} Tier ({arabicLevels[lvlKey]})</h3>
                 </div>
-
-                <p className={styles.levelGoldCardDesc}>
-                  {level.title}
-                </p>
-
-                <div className={styles.levelGoldCardFooter}>
-                  <span className={styles.levelGoldCardXp}>
-                    ⭐ {level.lessons.reduce((acc, curr) => acc + curr.points, 0)} XP
-                  </span>
-
-                  {!isLocked && (
-                    <button className={styles.levelGoldCardBtn}>
-                      {isActive ? 'Active 👀' : 'Select ➡️'}
-                    </button>
+                <div className={styles.levelHeaderStatus}>
+                  {isLocked ? (
+                    <span className={styles.statusLabelLocked}>🔒 Locked</span>
+                  ) : isPassed ? (
+                    <span className={styles.statusLabelPassed}>✅ Completed</span>
+                  ) : (
+                    <span className={styles.statusLabelActive}>🎯 In Progress</span>
                   )}
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Right Column: Lessons Secondary Menu Area */}
-        <div className={styles.secondaryMenuColumn}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeLvlKey}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {activeLevelStatus === 'locked' ? (
-                (() => {
-                  const prevLvlKey = activeLvlKey === 'master' ? 'adventure' : 'explorer';
-                  const prevLvlLessons = selectedSection.levels[prevLvlKey]?.lessons || [];
-                  const completedList = userProgress?.completedLessons || [];
-                  const completedPrevCount = prevLvlLessons.filter(l => completedList.includes(l.id)).length;
-                  const totalPrevCount = prevLvlLessons.length;
-                  const prevLvlCompleted = totalPrevCount > 0 && completedPrevCount === totalPrevCount;
+              {/* Grid of Lesson Cards */}
+              <div className={styles.lessonsGrid}>
+                {lessons.map((lesson) => {
+                  return (
+                    <div 
+                      key={lesson.id} 
+                      className={`${styles.lessonCard} ${lesson.isLocked ? styles.lessonCardLocked : ''} ${lesson.isCompleted ? styles.lessonCardCompleted : ''}`}
+                      onClick={() => {
+                        if (lesson.isLocked) {
+                          alert("🔒 This lesson is locked! Complete the previous levels first.");
+                        } else {
+                          setActiveLessonOptions({ lesson, levelKey: lvlKey });
+                        }
+                      }}
+                    >
+                      {/* Top Row: Num & Star */}
+                      <span className={styles.cardNum}>{lesson.sequenceNum}</span>
+                      {lesson.isLocked ? (
+                        <span className={styles.cardStatus}>🔒</span>
+                      ) : lesson.isCompleted ? (
+                        <span className={styles.cardStatus} style={{ color: '#eab308' }}>⭐</span>
+                      ) : (
+                        <span className={styles.cardStatus} style={{ color: '#c69320', opacity: 0.5 }}>☆</span>
+                      )}
 
-                  if (prevLvlCompleted) {
-                    return (
-                      <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'rgba(198, 147, 32, 0.03)', borderRadius: '2rem', border: '1px dashed var(--primary)' }}>
-                        <span style={{ fontSize: '3rem' }}>🔑</span>
-                        <h3 style={{ marginTop: '1rem', fontWeight: '900', fontSize: '1.5rem', color: 'var(--foreground)' }}>Unlock {activeLvlKey.charAt(0).toUpperCase() + activeLvlKey.slice(1)} Tier</h3>
-                        <p style={{ fontSize: '1rem', maxWidth: '400px', margin: '0.75rem auto 1.5rem', color: 'var(--foreground-secondary)', lineHeight: '1.6' }}>
-                          Excellent job! You have completed all lessons in the <strong>{prevLvlKey}</strong> tier. 
-                          To unlock the next level, you must pass a comprehensive review quiz covering those lessons.
-                        </p>
-                        <button 
-                          onClick={() => onStartUnlockQuiz(prevLvlKey, activeLvlKey as any)}
-                          className={styles.learnBtn}
-                          style={{ padding: '1rem 2.5rem', fontSize: '1rem', borderRadius: '14px', width: 'auto', fontWeight: '800' }}
-                        >
-                          Start Tier Unlock Quiz 🎯
-                        </button>
+                      {/* Letter / Emoji Center */}
+                      <div className={styles.cardIcon}>
+                        {getLessonIcon(lesson)}
                       </div>
-                    );
-                  } else {
+
+                      {/* Small Label bottom */}
+                      <span className={styles.cardTitle}>{lesson.title}</span>
+                    </div>
+                  );
+                })}
+
+                {/* Level Checkpoint Card (Review Quiz) for Explorer and Adventure */}
+                {lvlKey !== 'master' && (
+                  (() => {
+                    const completedCount = lessons.filter(l => l.isCompleted).length;
+                    const totalCount = lessons.length;
+                    const allLessonsDone = totalCount > 0 && completedCount === totalCount;
+                    const nextLevelStatus = getLevelStatus(selectedSection.id, lvlKey === 'explorer' ? 'adventure' : 'master');
+                    const checkpointPassed = nextLevelStatus !== 'locked';
+
                     return (
-                      <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--foreground-secondary)' }}>
-                        <span style={{ fontSize: '3rem' }}>🔒</span>
-                        <h3 style={{ marginTop: '1rem', fontWeight: '800', color: 'var(--foreground)' }}>{activeLvlKey.charAt(0).toUpperCase() + activeLvlKey.slice(1)} Level is Locked</h3>
-                        <p style={{ fontSize: '0.95rem', maxWidth: '350px', margin: '0.75rem auto 0', lineHeight: '1.6' }}>
-                          To unlock this tier, you must first complete all lessons in the <strong>{prevLvlKey}</strong> tier.
-                        </p>
-                        <div style={{ marginTop: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'var(--background-secondary)', borderRadius: '999px', fontSize: '0.85rem', fontWeight: '800' }}>
-                          Progress: {completedPrevCount} / {totalPrevCount} Lessons Completed
+                      <div 
+                        className={`${styles.lessonCard} ${styles.checkpointCard} ${checkpointPassed ? styles.checkpointCardCompleted : ''} ${!allLessonsDone ? styles.lessonCardLocked : ''}`}
+                        onClick={() => handleCheckpointClick(lvlKey, !allLessonsDone)}
+                        title="Checkpoint Review Quiz"
+                      >
+                        <span className={styles.cardNum}>CP</span>
+                        {checkpointPassed ? (
+                          <span className={styles.cardStatus}>🏆</span>
+                        ) : (
+                          <span className={styles.cardStatus}>🔑</span>
+                        )}
+
+                        <div className={styles.cardIcon}>
+                          <span style={{ fontSize: '2.5rem' }}>{checkpointPassed ? '🏆' : '🔑'}</span>
                         </div>
+
+                        <span className={styles.cardTitle}>Review Checkpoint</span>
                       </div>
                     );
-                  }
-                })()
-              ) : (
-                <>
-                  {/* Secondary Menu Header */}
-                  <div className={styles.secondaryHeaderRow}>
-                    <div className={styles.secondaryHeaderTitle}>
-                      <h2>
-                        <span>{activeLvlKey} Menu</span>
-                        <span style={{ color: 'var(--primary)', fontFamily: 'var(--font-arabic)' }}>
-                          ({arabicLevels[activeLvlKey]})
-                        </span>
-                      </h2>
-                      <p>{activeLevel.description}</p>
-                    </div>
-
-                    <div style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '0.95rem' }}>
-                      ⭐ {activeLevelXp} XP Available
-                    </div>
-                  </div>
-
-                  {/* Secondary Menu Lessons list */}
-                  {activeLevel.lessons.length === 0 ? (
-                    <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--foreground-secondary)' }}>
-                      No lessons available inside this level tier yet.
-                    </p>
-                  ) : (
-                    <div className={styles.secondaryLessonsGrid}>
-                      {activeLevel.lessons.map((lesson) => {
-                        const isCompleted = (userProgress?.completedLessons || []).includes(lesson.id);
-                        return (
-                          <div 
-                            key={lesson.id} 
-                            className={styles.lessonRow}
-                          >
-                            <div className={styles.lessonHeader}>
-                              <span className={styles.lessonTitle}>
-                                {lesson.title}
-                              </span>
-                              {isCompleted && (
-                                <span className={styles.lessonCompletedBadge}>
-                                  Done
-                                </span>
-                              )}
-                            </div>
-                            
-                            {lesson.description && (
-                              <p className={styles.lessonDesc}>
-                                {lesson.description}
-                              </p>
-                            )}
-
-                            <div className={styles.lessonBtnRow}>
-                              <button
-                                onClick={() => onStartLesson(lesson, activeLvlKey)}
-                                className={styles.learnBtn}
-                                style={{ flex: 1, padding: '0.65rem', fontSize: '0.85rem' }}
-                              >
-                                Study Slide 📖
-                              </button>
-                              <button
-                                onClick={() => onStartQuiz(lesson, activeLvlKey)}
-                                className={isCompleted ? styles.quizBtnPassed : styles.quizBtn}
-                                style={{ flex: 1, padding: '0.65rem', fontSize: '0.85rem' }}
-                              >
-                                {isCompleted ? 'Quiz Done ✓' : 'Take Quiz 🎯'}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
+                  })()
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
+
+      {/* Activity selector modal popup */}
+      <AnimatePresence>
+        {activeLessonOptions && (
+          <div 
+            className={styles.modalOverlay} 
+            onClick={() => setActiveLessonOptions(null)}
+          >
+            <motion.div 
+              className={styles.kidModal} 
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+            >
+              <div className={styles.kidModalHeader}>
+                <div className={styles.kidModalEmoji}>
+                  {getLessonIcon(activeLessonOptions.lesson)}
+                </div>
+                <h2>Lesson {activeLessonOptions.lesson.sequenceNum}</h2>
+                <h3>{activeLessonOptions.lesson.title}</h3>
+              </div>
+              <p className={styles.kidModalDesc}>
+                {activeLessonOptions.lesson.description || "Learn this lesson by reading the interactive slides and testing your knowledge in a quick quiz!"}
+              </p>
+              
+              <div className={styles.kidModalButtons}>
+                <button 
+                  className={styles.kidModalStudyBtn}
+                  onClick={() => {
+                    onStartLesson(activeLessonOptions.lesson, activeLessonOptions.levelKey);
+                    setActiveLessonOptions(null);
+                  }}
+                >
+                  Study Slides 📖
+                </button>
+                <button 
+                  className={activeLessonOptions.lesson.isCompleted ? styles.kidModalQuizDoneBtn : styles.kidModalQuizBtn}
+                  onClick={() => {
+                    onStartQuiz(activeLessonOptions.lesson, activeLessonOptions.levelKey);
+                    setActiveLessonOptions(null);
+                  }}
+                >
+                  {activeLessonOptions.lesson.isCompleted ? 'Play Quiz Again 🎯' : 'Play Quiz 🎯'}
+                </button>
+              </div>
+              
+              <button 
+                className={styles.kidModalClose} 
+                onClick={() => setActiveLessonOptions(null)}
+              >
+                ✕ Close
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

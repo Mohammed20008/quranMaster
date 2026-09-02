@@ -1,6 +1,7 @@
 import { QuranVerse } from "@/data/quran-verses";
-import { ViewMode } from "../header/header";
 import { QPCVerseData } from "@/types/qpc";
+
+export type ViewMode = "verse" | "page";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,7 @@ export interface VersePopupProps {
   onTafsir: (verseId: string) => void;
   onMutashabihat: (verseId: string) => void;
   onPlay: (verse: QuranVerse) => void;
+  onToggleTranslation?: (verseId: string) => void;
 }
 
 // ─── Shared render props passed into view sub-components ─────────────────────
@@ -48,6 +50,9 @@ export interface SharedViewProps {
   displayFontSize: number;
   displayLineHeight: number;
   juzData: any;
+  pageMapping: Record<string, number>;
+  translations: Record<string, string>;
+  transliterations: Record<string, string>;
   audioCurrentSurah: number | null;
   audioCurrentVerse: number | null;
   audioIsPlaying: boolean;

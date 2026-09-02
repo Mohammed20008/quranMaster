@@ -4,44 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import styles from "./page.module.css";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { useAuth } from "@/app/context/auth-context";
 import { useArticles } from "@/app/context/article-context";
-
-// Decorative Pattern Component
-const GeometricPattern = () => (
-  <div className={styles.patternBg}>
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern
-          id="islamic-pattern"
-          x="0"
-          y="0"
-          width="80"
-          height="80"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M0 40 L40 0 L80 40 L40 80 Z"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="0.5"
-          />
-          <circle cx="40" cy="40" r="8" fill="currentColor" opacity="0.5" />
-          <rect
-            x="38"
-            y="38"
-            width="4"
-            height="4"
-            transform="rotate(45 40 40)"
-            fill="currentColor"
-          />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#islamic-pattern)" />
-    </svg>
-    <div className={styles.patternOverlay}></div>
-  </div>
-);
+import GeometricPattern from "@/app/components/ui/geometric-pattern";
 
 const Navbar = () => {
   const { isAuthenticated, openAuthModal, isAdmin } = useAuth();
@@ -75,22 +41,9 @@ const Navbar = () => {
           <Link href="/sunnah" className={styles.navLink}>
             Sunnah
           </Link>
-          <Link href="/calendar" className={styles.navLink}>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              style={{ marginRight: "4px" }}
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            Calendar
+          <Link href="/calendar" className={`${styles.navLink} inline-flex items-center gap-1.5`}>
+            <CalendarIcon size={16} className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity" />
+            <span>Calendar</span>
           </Link>
           <Link href="/learn" className={styles.navLink}>
             Learn
@@ -119,7 +72,6 @@ const Hero = () => {
 
   return (
     <div className={styles.hero}>
-      <div className={styles.heroGlow}></div>
       <div className={styles.container}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -714,7 +666,7 @@ const Features = () => {
 export default function LandingPage() {
   return (
     <div className={styles.container}>
-      <GeometricPattern />
+      <GeometricPattern showOverlay={false} fixed={true} />
       {/* Pass no props, components use hook internally */}
       <Navbar />
       <main>

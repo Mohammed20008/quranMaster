@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { type MotionValue } from 'motion/react';
+import { type MotionValue } from 'framer-motion';
 
 function useMotionValueState(motionValue: MotionValue): number {
   return React.useSyncExternalStore(

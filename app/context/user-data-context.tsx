@@ -23,10 +23,10 @@ export interface LastRead {
 
 export interface UserSettings {
   fontSize: number;
-  viewMode: "verse" | "page" | "spread";
+  viewMode: "verse" | "page";
   showTranslation: boolean;
   showTransliteration: boolean;
-  theme: "light" | "dark";
+  theme: "light" | "dark" | "sepia";
   selectedReciterId: number;
   fontMode: "uthmanic" | "qpc";
   mushafLayout: "v1" | "v4";
@@ -53,7 +53,7 @@ const DEFAULT_STATS: UserStats = {
 };
 
 const DEFAULT_SETTINGS: UserSettings = {
-  fontSize: 32,
+  fontSize: 64,
   viewMode: "verse",
   showTranslation: true,
   showTransliteration: true,
@@ -91,6 +91,7 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
         parsed.fontMode = "qpc"; // Enforce QPC font mode
+        parsed.fontSize = 64; // Enforce 200% zoom
         setSettings({ ...DEFAULT_SETTINGS, ...parsed });
       }
     } catch (e) {

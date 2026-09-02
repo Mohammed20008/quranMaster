@@ -5,40 +5,56 @@ import path from "path";
 export async function fetchQuranMetadata(
   type: "juz" | "hizb" | "rub",
 ): Promise<any> {
-  const filePath = path.join(
-    process.cwd(),
-    "scripts",
-    `quran-metadata-${type}.json`,
-  );
-  try {
-    if (!fs.existsSync(filePath)) {
-      console.error(`Metadata file not found: ${filePath}`);
-      return null;
+  const fileName = `quran-metadata-${type}.json`;
+  const possiblePaths = [
+    path.join(process.cwd(), "scripts", fileName),
+    path.join(process.cwd(), "data", fileName),
+    path.join(process.cwd(), fileName),
+  ];
+
+  for (let filePath of possiblePaths) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+          filePath = path.join(filePath, fileName);
+          if (!fs.existsSync(filePath)) continue;
+        }
+        const content = fs.readFileSync(filePath, "utf-8");
+        return JSON.parse(content);
+      }
+    } catch (e) {
+      console.error(`Failed reading metadata at ${filePath}:`, e);
     }
-    const content = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(content);
-  } catch (e) {
-    console.error(`Failed to load ${type} metadata:`, e);
-    return null;
   }
+
+  console.error(`Metadata file not found for ${type}`);
+  return null;
 }
 
 export async function fetchPageMapping(): Promise<Record<string, number>> {
-  const filePath = path.join(
-    process.cwd(),
-    "data",
-    "qpc_data",
-    "quran-page-mapping.json",
-  );
-  try {
-    if (!fs.existsSync(filePath)) {
-      console.error(`Page mapping file not found: ${filePath}`);
-      return {};
+  const fileName = "quran-page-mapping.json";
+  const possiblePaths = [
+    path.join(process.cwd(), "data", "qpc_data", fileName),
+    path.join(process.cwd(), "data", fileName),
+  ];
+
+  for (let filePath of possiblePaths) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+          filePath = path.join(filePath, fileName);
+          if (!fs.existsSync(filePath)) continue;
+        }
+        const content = fs.readFileSync(filePath, "utf-8");
+        return JSON.parse(content);
+      }
+    } catch (e) {
+      console.error(`Failed reading page mapping at ${filePath}:`, e);
     }
-    const content = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(content);
-  } catch (e) {
-    console.error(`Failed to load page mapping:`, e);
-    return {};
   }
+
+  console.error(`Page mapping file not found`);
+  return {};
 }

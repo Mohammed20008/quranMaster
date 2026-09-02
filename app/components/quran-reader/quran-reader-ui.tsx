@@ -73,13 +73,14 @@ export function VersePopup({
   onTafsir,
   onMutashabihat,
   onPlay,
+  onToggleTranslation,
 }: VersePopupProps) {
   return (
     <span className={styles.versePopup} onClick={(e) => e.stopPropagation()}>
       <button
         className={styles.popupBtn}
-        onClick={() => onCopy(verse)}
-        title="Copy"
+        onClick={() => onPlay(verse)}
+        title="Play Verse"
       >
         <svg
           width="16"
@@ -89,8 +90,47 @@ export function VersePopup({
           stroke="currentColor"
           strokeWidth="2"
         >
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </button>
+      {onToggleTranslation && (
+        <button
+          className={styles.popupBtn}
+          onClick={() => onToggleTranslation(verseId)}
+          title="Translation"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M5 8l6 6" />
+            <path d="M4 14l6-6 2-3" />
+            <path d="M2 5h12" />
+            <path d="M7 2h1" />
+            <path d="M22 22l-5-10-5 10" />
+            <path d="M14 18h6" />
+          </svg>
+        </button>
+      )}
+      <button
+        className={styles.popupBtn}
+        onClick={() => onTafsir(verseId)}
+        title="Tafsir"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
         </svg>
       </button>
       <button
@@ -107,6 +147,23 @@ export function VersePopup({
           strokeWidth="2"
         >
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+      <button
+        className={styles.popupBtn}
+        onClick={() => onCopy(verse)}
+        title="Copy"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
       </button>
       <button
@@ -131,39 +188,6 @@ export function VersePopup({
       </button>
       <button
         className={styles.popupBtn}
-        onClick={() => onPlay(verse)}
-        title="Play Verse"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-      </button>
-      <button
-        className={styles.popupBtn}
-        onClick={() => onTafsir(verseId)}
-        title="Tafsir"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-        </svg>
-      </button>
-      <button
-        className={styles.popupBtn}
         onClick={() => onMutashabihat(verseId)}
         title="Mutashabihat"
       >
@@ -179,6 +203,68 @@ export function VersePopup({
           <line x1="9" y1="9" x2="15" y2="9"></line>
           <line x1="9" y1="13" x2="15" y2="13"></line>
           <line x1="9" y1="17" x2="13" y2="17"></line>
+        </svg>
+      </button>
+    </span>
+  );
+}
+
+// ─── Word Popup (Play & Translation Only) ────────────────────────────────────
+
+export interface WordPopupProps {
+  onPlayWord: () => void;
+  onTranslation: () => void;
+  isPlaying?: boolean;
+}
+
+export function WordPopup({
+  onPlayWord,
+  onTranslation,
+  isPlaying = false,
+}: WordPopupProps) {
+  return (
+    <span className={styles.versePopup} onClick={(e) => e.stopPropagation()}>
+      <button
+        className={`${styles.popupBtn} ${isPlaying ? styles.active : ""}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPlayWord();
+        }}
+        title="Play Word"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </button>
+      <button
+        className={styles.popupBtn}
+        onClick={(e) => {
+          e.stopPropagation();
+          onTranslation();
+        }}
+        title="Translation & Tafsir"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M5 8l6 6" />
+          <path d="M4 14l6-6 2-3" />
+          <path d="M2 5h12" />
+          <path d="M7 2h1" />
+          <path d="M22 22l-5-10-5 10" />
+          <path d="M14 18h6" />
         </svg>
       </button>
     </span>
@@ -404,37 +490,6 @@ function MushafPageSkeleton() {
   );
 }
 
-/** Spread skeleton: two mushaf pages side-by-side, matching .mushafPage exactly */
-function SpreadSkeleton() {
-  return (
-    <div className={styles.spreadSkeleton}>
-      {[0, 1].map((side) => (
-        <div key={side} className={styles.spreadSkeletonPage}>
-          {/* Page header row */}
-          <div className={styles.pageSkeletonHeader}>
-            <SkeletonBlock className={styles.pageSkeletonHeaderChip} style={{ width: 100 }} />
-            <SkeletonBlock className={styles.pageSkeletonHeaderChip} style={{ width: 50 }} />
-          </div>
-
-          {/* Text lines — centered in the page body */}
-          <div className={styles.spreadSkeletonLines}>
-            {ARABIC_LINE_WIDTHS.map((w, i) => (
-              <SkeletonBlock
-                key={i}
-                className={styles.pageSkeletonTextLine}
-                style={{ width: `${w}%`, marginLeft: i % 3 !== 0 ? "auto" : undefined }}
-              />
-            ))}
-          </div>
-
-          {/* Page number footer */}
-          <SkeletonBlock className={styles.pageSkeletonFooter} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── Quran Skeleton (main export) ─────────────────────────────────────────────
 
 /** Replaces the old QuranPageLoader. Renders a skeleton matching the active view mode. */
@@ -442,7 +497,7 @@ export function QuranPageLoader({
   viewMode = "verse",
 }: {
   surahName?: string; // kept for backwards-compat, unused
-  viewMode?: "verse" | "page" | "spread";
+  viewMode?: "verse" | "page";
 }) {
   return (
     <motion.div
@@ -451,9 +506,7 @@ export function QuranPageLoader({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
     >
-      {viewMode === "spread" ? (
-        <SpreadSkeleton />
-      ) : viewMode === "page" ? (
+      {viewMode === "page" ? (
         <div className={styles.pageSkeleton}>
           <MushafPageSkeleton />
         </div>

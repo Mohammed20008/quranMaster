@@ -979,6 +979,10 @@
   background: var(--primary);
 }
 
+.toggleSepia {
+  background: #c5a059;
+}
+
 .toggleOff {
   background: var(--border);
 }
@@ -996,6 +1000,10 @@
 
 .toggleThumbOn {
   transform: translateX(1.75rem);
+}
+
+.toggleThumbSepia {
+  transform: translateX(1.0rem);
 }
 
 .toggleThumbOff {

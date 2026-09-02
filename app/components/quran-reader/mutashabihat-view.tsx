@@ -1,6 +1,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import styles from './quran-reader.module.css';
+import { useUserData } from '@/app/context/user-data-context';
 import { surahs } from '../../../data/surah-data';
 import phraseVersesRaw from '../../../data/Mutashabihat ul Quran.json/phrase_verses.json';
 import phrasesRaw from '../../../data/Mutashabihat ul Quran.json/phrases.json';
@@ -39,6 +40,9 @@ interface MutashabihatViewProps {
 }
 
 const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, verseWords, versePage }) => {
+  const { settings } = useUserData();
+  const mushafLayout = settings.mushafLayout;
+
   // Normalize verse key to match JSON format (surah:verse)
   const normalizedKey = verseKey.replace('-', ':');
   const phraseIds = useMemo(() => phraseVerses[normalizedKey] || [], [normalizedKey]);
@@ -68,7 +72,8 @@ const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, 
               <div className={styles.phraseArabic} dir="rtl">
                   {words.map((w, i) => (
                       <span key={i} className={`qpc-page-${versePage}`} style={{ fontSize: '1.75rem', lineHeight: '2' }}>
-                          {w.text}{' '}
+                          {w.text}
+                          {mushafLayout !== 'v1' ? ' ' : '\u200B'}
                       </span>
                   ))}
               </div>
@@ -82,7 +87,7 @@ const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, 
         arabicContent
       };
     }).filter((p): p is NonNullable<typeof p> => p !== null);
-  }, [phraseIds, verseWords, normalizedKey, versePage]);
+  }, [phraseIds, verseWords, normalizedKey, versePage, mushafLayout]);
 
   // Get all unique pages for font loading
   const activePages = useMemo(() => {
@@ -252,7 +257,8 @@ const MutashabihatView: React.FC<MutashabihatViewProps> = ({ verseKey, onClose, 
                                             key={i} 
                                             className={`qpc-page-${verseData.page}`}
                                           >
-                                            {w.text}{' '}
+                                            {w.text}
+                                            {mushafLayout !== 'v1' ? ' ' : '\u200B'}
                                           </span>
                                         ))}
                                       </div>

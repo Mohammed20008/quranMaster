@@ -137,22 +137,6 @@
   gap: 2rem;
 }
 
-.modalContent::-webkit-scrollbar {
-  width: 8px;
-}
-
-.modalContent::-webkit-scrollbar-track {
-  background: var(--border-light);
-  border-radius: 10px;
-}
-
-.modalContent::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--primary) 0%, rgba(198, 147, 32, 0.7) 100%);
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
 /* Internal grid adjustments */
 .splitLayout {
   display: flex;

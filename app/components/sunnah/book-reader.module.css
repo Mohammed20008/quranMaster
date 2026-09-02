@@ -19,24 +19,6 @@
   padding: 0.5rem;
 }
 
-.chapterGrid::-webkit-scrollbar {
-  width: 8px;
-}
-
-.chapterGrid::-webkit-scrollbar-track {
-  background: var(--background);
-  border-radius: 4px;
-}
-
-.chapterGrid::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
-
-.chapterGrid::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
-}
-
 .chapterBtn {
   padding: 1rem 1.25rem;
   border-radius: 12px;

@@ -10,6 +10,19 @@ import { useAuth } from '@/app/context/auth-context';
 import { useChat } from '@/app/context/chat-context';
 import { User, Settings, LogOut, MessageCircle } from 'lucide-react';
 import { renderAvatar, getAvatarPreset } from '@/app/components/avatar/avatar-utils';
+import { useUserData } from '@/app/context/user-data-context';
+import { useAudio } from '@/app/context/audio-context';
+import { reciters, Reciter } from '@/data/reciters';
+import { ViewMode } from '@/app/components/quran-reader/quran-reader.types';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export interface PlaybackOption {
+  id: string;
+  title: string;
+  description: string;
+  action: () => void;
+  icon: React.ReactNode;
+}
 
 
 interface LeftMenuProps {
@@ -17,6 +30,14 @@ interface LeftMenuProps {
   onSurahSelect: (surahNumber: number) => void;
   bookmarkedVerses?: Set<string>;
   onToggleBookmark?: (verseId: string) => void;
+  currentPage?: number;
+  pageContext?: {
+    page: number;
+    surahs: number[];
+    startsSurahOnPage: number[];
+  };
+  onPrevSurah?: () => void;
+  onNextSurah?: () => void;
 }
 
 type MenuSection = 'search' | 'surahs' | 'bookmarks' | 'progress' | 'settings';
@@ -41,7 +62,11 @@ export default function LeftMenu({
   currentSurah, 
   onSurahSelect, 
   bookmarkedVerses = new Set(),
-  onToggleBookmark
+  onToggleBookmark,
+  currentPage,
+  pageContext,
+  onPrevSurah,
+  onNextSurah
 }: LeftMenuProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +76,187 @@ export default function LeftMenu({
   const { unreadTotal, openChat } = useChat();
   const secondarySidebarRef = useRef<HTMLDivElement>(null);
   const primarySidebarRef = useRef<HTMLDivElement>(null);
+
+  const { settings, updateSettings } = useUserData();
+  const {
+    state: audioState,
+    playSurah,
+    playPage,
+    togglePlay,
+    currentReciter,
+  } = useAudio();
+
+  const [showReciters, setShowReciters] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [playbackOptions, setPlaybackOptions] = useState<PlaybackOption[]>([]);
+  const [, setQueuedReciter] = useState<Reciter | null>(null);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const surah = surahs.find((s) => s.number === currentSurah);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowReciters(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleReciterSelect = (reciter: Reciter) => {
+    updateSettings({ selectedReciterId: reciter.id });
+    setQueuedReciter(reciter);
+    setShowReciters(false);
+  };
+
+  const startPlayback = (
+    type: "surah" | "page",
+    sNum?: number,
+    pNum?: number,
+  ) => {
+    const s = sNum || currentSurah;
+    if (type === "surah") {
+      playSurah(s);
+    } else if (type === "page") {
+      const p = pNum || currentPage;
+      if (p) playPage(s, p);
+    }
+    setShowPrompt(false);
+  };
+
+  const handlePlayClick = () => {
+    if (!surah) return;
+
+    if (audioState.isPlaying) {
+      togglePlay();
+      return;
+    }
+
+    if (audioState.currentSurah && audioState.currentTime > 0) {
+      togglePlay();
+      return;
+    }
+
+    // Generate context-aware options
+    const options: PlaybackOption[] = [];
+
+    if (pageContext && pageContext.surahs.length > 0) {
+      const { surahs: sOnPage, startsSurahOnPage } = pageContext;
+
+      // If multiple surahs or transitions
+      if (sOnPage.length > 1 || startsSurahOnPage.length > 0) {
+        // Option for each surah starting on this page
+        startsSurahOnPage.forEach((sNum) => {
+          const sObj = surahs.find((s) => s.number === sNum);
+          options.push({
+            id: `start-${sNum}`,
+            title: `Beginning of Surah ${sObj?.transliteration}`,
+            description: `Start reciting ${sObj?.name} from Verse 1`,
+            action: () => startPlayback("surah", sNum),
+            icon: (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            ),
+          });
+        });
+
+        // "From Current Page" option
+        const firstSurahOnPage = sOnPage[0];
+        const sObj = surahs.find((s) => s.number === firstSurahOnPage);
+
+        // Redundancy check: if the only surah on page starts at verse 1, "From Current Page" is redundant
+        const isRedundant =
+          sOnPage.length === 1 && startsSurahOnPage.includes(firstSurahOnPage);
+
+        if (!isRedundant) {
+          options.push({
+            id: "page-top",
+            title: `From Top of Page`,
+            description: `Recite from the first verse visible (${sObj?.transliteration})`,
+            action: () => startPlayback("page", firstSurahOnPage),
+            icon: (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+            ),
+          });
+        }
+      }
+    }
+
+    // Default options if no complex context
+    if (options.length === 0) {
+      options.push({
+        id: "start-surah",
+        title: `Beginning of Surah ${surah?.transliteration || ""}`,
+        description: `Recite ${surah?.name || ""} from the start`,
+        action: () => startPlayback("surah"),
+        icon: (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        ),
+      });
+
+      if (currentPage) {
+        options.push({
+          id: "page-current",
+          title: `From Current Page`,
+          description: `Resume from page ${currentPage}`,
+          action: () => startPlayback("page"),
+          icon: (
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+          ),
+        });
+      }
+    }
+
+    setPlaybackOptions(options);
+    setShowPrompt(true);
+  };
   
   const [bookmarkTexts, setBookmarkTexts] = useState<Record<string, string>>({});
 
@@ -127,43 +333,9 @@ export default function LeftMenu({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const [quranData, translationData] = await Promise.all([
-          import('@/data/quran.json').then(m => m.default),
-          import('@/data/translation/en-maarif-ul-quran-simple.json').then(m => m.default),
-        ]);
-
-        const quranResults: SearchResult[] = [];
-        const queryLower = advancedSearchQuery.toLowerCase();
-        let matchCount = 0;
-
-        // Search both Arabic and English
-        for (const [, verses] of Object.entries(quranData)) {
-          if (matchCount >= 50) break;
-          for (const verse of verses as Array<{ chapter: number; verse: number; text: string }>) {
-            if (matchCount >= 50) break;
-            const key = `${verse.chapter}:${verse.verse}`;
-            const translationEntry = (translationData as Record<string, { t: string }>)[key];
-            const englishText = translationEntry?.t || '';
-            
-            // Normalize Arabic text for better matching
-            const normalizedVerseText = normalizeArabic(verse.text);
-            const normalizedQuery = normalizeArabic(advancedSearchQuery);
-            
-            // Check Arabic (normalized) OR English (case-insensitive)
-            if (normalizedVerseText.includes(normalizedQuery) || englishText.toLowerCase().includes(queryLower)) {
-              quranResults.push({
-                surahNum: verse.chapter,
-                verseNum: verse.verse,
-                arabicText: verse.text,
-                englishText,
-                key,
-              });
-              matchCount++;
-            }
-          }
-        }
-
-        setSearchResults(quranResults);
+        const { searchQuran } = await import('@/app/actions/get-verses');
+        const results = await searchQuran(advancedSearchQuery);
+        setSearchResults(results);
       } catch (error) {
         console.error('Quran search failed:', error);
       } finally {
@@ -503,6 +675,40 @@ export default function LeftMenu({
                   <h2>Surahs</h2>
                   <p>114 Chapters</p>
                 </div>
+
+                {/* Current Surah Navigation Card */}
+                <div className={styles.currentSurahNavCard}>
+                  <button
+                    className={styles.currentSurahNavBtn}
+                    onClick={onPrevSurah}
+                    disabled={currentSurah === 1}
+                    aria-label="Previous Surah"
+                    title="Previous Surah"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+
+                  <div className={styles.currentSurahNavInfo}>
+                    <span className={styles.currentSurahNavLabel}>Reading Surah</span>
+                    <span className={`${styles.currentSurahNavName} arabic-font`}>
+                      {surah?.name} ({surah?.transliteration})
+                    </span>
+                  </div>
+
+                  <button
+                    className={styles.currentSurahNavBtn}
+                    onClick={onNextSurah}
+                    disabled={currentSurah === 114}
+                    aria-label="Next Surah"
+                    title="Next Surah"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
                  <div className={styles.searchBox}>
                   <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8"></circle>
@@ -661,35 +867,220 @@ export default function LeftMenu({
                 </div>
                 
                 <div className={styles.settingsPanel}>
+                  {/* Theme Settings */}
                   <div className={styles.settingGroup}>
                     <label>Theme</label>
-                    <select className={styles.settingSelect}>
-                      <option value="auto">Auto</option>
-                      <option value="light">Light</option>
-                      <option value="dark">Dark</option>
-                    </select>
+                    <div className={styles.segmentedToggle}>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.theme === 'light' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ theme: 'light' })}
+                        title="Light Theme"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="5"></circle>
+                          <line x1="12" y1="1" x2="12" y2="3"></line>
+                          <line x1="12" y1="21" x2="12" y2="23"></line>
+                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                          <line x1="1" y1="12" x2="3" y2="12"></line>
+                          <line x1="21" y1="12" x2="23" y2="12"></line>
+                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <span>Light</span>
+                      </button>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.theme === 'sepia' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ theme: 'sepia' })}
+                        title="Sepia Theme"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        <span>Sepia</span>
+                      </button>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.theme === 'dark' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ theme: 'dark' })}
+                        title="Dark Theme"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <span>Dark</span>
+                      </button>
+                    </div>
                   </div>
 
+                  {/* View Mode (Page Modes) */}
                   <div className={styles.settingGroup}>
-                    <label>Font Size</label>
-                    <select className={styles.settingSelect}>
-                      <option value="small">Small</option>
-                      <option value="medium">Medium</option>
-                      <option value="large">Large</option>
-                    </select>
+                    <label>View Mode</label>
+                    <div className={styles.segmentedToggle}>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.viewMode === 'verse' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ viewMode: 'verse' })}
+                        title="Verse view"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 2h18" />
+                          <rect width="18" height="12" x="3" y="6" rx="2" />
+                          <path d="M3 22h18" />
+                        </svg>
+                        <span>Verses</span>
+                      </button>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.viewMode === 'page' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ viewMode: 'page' })}
+                        title="Continuous Page view"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M2 6h4" />
+                          <path d="M2 10h4" />
+                          <path d="M2 14h4" />
+                          <path d="M2 18h4" />
+                          <rect width="16" height="20" x="4" y="2" rx="2" />
+                          <path d="M9.5 8h5" />
+                          <path d="M9.5 12H16" />
+                          <path d="M9.5 16H14" />
+                        </svg>
+                        <span>Page</span>
+                      </button>
+                    </div>
                   </div>
 
+                  {/* Mushaf Layout */}
                   <div className={styles.settingGroup}>
-                     <label className={styles.checkboxLabel}>
-                      <input type="checkbox" defaultChecked />
-                      <span>Show Transliteration</span>
+                    <label>Mushaf Layout Font</label>
+                    <div className={styles.segmentedToggle}>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.mushafLayout === 'v1' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ mushafLayout: 'v1' })}
+                        title="V1 Print Layout"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                        <span>V1 Print</span>
+                      </button>
+                      <button
+                        className={`${styles.segmentedToggleBtn} ${settings.mushafLayout === 'v4' ? styles.active : ''}`}
+                        onClick={() => updateSettings({ mushafLayout: 'v4' })}
+                        title="V4 Print Layout"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 22h6a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v10"></path>
+                          <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                          <path d="M10.4 12.6a2 2 0 1 1-3 3l-3-3a2 2 0 0 1 3-3z"></path>
+                        </svg>
+                        <span>V4 Print</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Reciter Settings */}
+                  <div className={styles.settingGroup}>
+                    <label>Reciter</label>
+                    <div className={styles.reciterSelectWrapper} ref={dropdownRef}>
+                      <button
+                        className={styles.reciterSelectBtn}
+                        onClick={() => setShowReciters(!showReciters)}
+                      >
+                        <span>{currentReciter?.name || 'Select Reciter'}</span>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          style={{
+                            transform: showReciters ? "rotate(180deg)" : "none",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </button>
+
+                      <AnimatePresence>
+                        {showReciters && (
+                          <motion.div
+                            className={styles.reciterDropdownMenu}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 5 }}
+                          >
+                            {reciters.map((reciter) => (
+                              <button
+                                key={reciter.id}
+                                className={`${styles.reciterDropdownItem} ${settings.selectedReciterId === reciter.id ? styles.active : ''}`}
+                                onClick={() => handleReciterSelect(reciter)}
+                              >
+                                <span className={styles.reciterDropdownName}>
+                                  {reciter.name}
+                                </span>
+                                <span className={styles.reciterDropdownSub}>
+                                  {reciter.subtext}
+                                </span>
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Audio Playback Control Card */}
+                    <div className={styles.audioPlaybackCard}>
+                      <button
+                        className={`${styles.audioPlaybackPlayBtn} ${audioState.isPlaying ? styles.active : ''}`}
+                        onClick={handlePlayClick}
+                        aria-label={audioState.isPlaying ? "Pause audio" : "Play audio"}
+                        title={audioState.isPlaying ? "Pause" : "Play"}
+                      >
+                        {audioState.isPlaying ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                          </svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                          </svg>
+                        )}
+                      </button>
+                      <div className={styles.audioPlaybackInfo}>
+                        <span className={styles.audioPlaybackTitle}>
+                          {audioState.isPlaying ? 'Reciting Surah' : 'Recite Now'}
+                        </span>
+                        <span className={styles.audioPlaybackDesc}>
+                          {surah ? `${surah.transliteration} (${surah.number})` : ''}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Text Translations toggles */}
+                  <div className={styles.settingGroup}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={settings.showTranslation}
+                        onChange={(e) => updateSettings({ showTranslation: e.target.checked })}
+                      />
+                      <span>Show Translation</span>
                     </label>
                   </div>
 
                   <div className={styles.settingGroup}>
                     <label className={styles.checkboxLabel}>
-                      <input type="checkbox" defaultChecked />
-                      <span>Show Translation</span>
+                      <input
+                        type="checkbox"
+                        checked={settings.showTransliteration}
+                        onChange={(e) => updateSettings({ showTransliteration: e.target.checked })}
+                      />
+                      <span>Show Transliteration</span>
                     </label>
                   </div>
                 </div>
@@ -698,6 +1089,54 @@ export default function LeftMenu({
           </div>
         )}
       </div>
+
+      {/* Playback Prompt Modal */}
+      <AnimatePresence>
+        {showPrompt && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setShowPrompt(false)}
+          >
+            <motion.div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <h3>How do you want to start?</h3>
+              <p className={styles.modalSub}>
+                {pageContext?.surahs && pageContext.surahs.length > 1
+                  ? "Multiple surahs detected on this page."
+                  : `Ready to recite Surah ${surah?.transliteration}`}
+              </p>
+              <div className={styles.modalActions}>
+                {playbackOptions.map((opt) => (
+                  <button
+                    key={opt.id}
+                    className={styles.modalBtn}
+                    onClick={opt.action}
+                  >
+                    <div className={styles.modalBtnIcon}>{opt.icon}</div>
+                    <div className={styles.modalBtnText}>
+                      <span className={styles.modalBtnTitle}>{opt.title}</span>
+                      <span className={styles.modalBtnDesc}>
+                        {opt.description}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowPrompt(false)}
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
-}
+}

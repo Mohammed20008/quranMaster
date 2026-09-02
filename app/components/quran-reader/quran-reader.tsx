@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { surahs } from "@/data/surah-data";
 import { QuranVerse } from "@/data/quran-verses";
-import { ViewMode } from "../header/header";
+import { ViewMode } from "./quran-reader.types";
 import { AnimatePresence } from "framer-motion";
 import styles from "./quran-reader.module.css";
 import Toast from "../ui/toast";
@@ -13,6 +13,7 @@ import {
   fetchQuranMetadata,
   fetchPageMapping,
 } from "@/app/actions/get-metadata";
+import { getPersistentCache, setPersistentCache } from "@/app/lib/quran-cache";
 import QPCFontLoader from "./qpc-font-loader";
 import { QPCVerseData } from "@/types/qpc";
 import dynamic from "next/dynamic";
@@ -39,43 +40,47 @@ import {
 import {
   TransitionNotification,
   QuranPageLoader,
-  NextSurahTrigger,
 } from "./quran-reader-ui";
-import SpreadView from "./spread-view";
 import PageView from "./page-view";
 import VerseView from "./verse-view";
 
 // Types & constants
 
+// Client-side cache for fetched QPC data and verses to make loading instantaneous
+const qpcCache: Record<string, QPCVerseData[]> = {};
+const versesCache: Record<number, QuranVerse[]> = {};
+const translationsCache: Record<number, Record<string, string>> = {};
+const transliterationsCache: Record<number, Record<string, string>> = {};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function QuranReader({
   surahNumber,
-  viewMode: propViewMode = "verse",
+  viewMode = "verse",
   bookmarkedVerses,
   onToggleBookmark,
   onNextSurah,
-  fontSize = 32,
+  fontSize = 64,
   onPageChange,
   onPageSurahsChange,
 }: QuranReaderProps) {
   const { playVerse: playVerseAudio, state: audioState } = useAudio();
 
-  // ── Responsive: disable spread on narrow screens ──
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  useEffect(() => {
-    const checkScreen = () => setIsSmallScreen(window.innerWidth < 1024);
-    checkScreen();
-    window.addEventListener("resize", checkScreen);
-    return () => window.removeEventListener("resize", checkScreen);
-  }, []);
-  const viewMode: ViewMode =
-    propViewMode === "spread" && isSmallScreen ? "page" : propViewMode;
-
   // ── Data ──────────────────────────────────────────
   const surah = surahs.find((s) => s.number === surahNumber);
   const [verses, setVerses] = useState<QuranVerse[]>([]);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [transliterations, setTransliterations] = useState<Record<string, string>>({});
+  const [allActiveVerses, setAllActiveVerses] = useState<any[]>([]);
   const [loadingVerses, setLoadingVerses] = useState(true);
+  const [layoutLoaded, setLayoutLoaded] = useState(false);
+
+  // Load layout data dynamically on mount
+  useEffect(() => {
+    import("./qpc-layout").then(({ ensureLayoutDataLoaded }) => {
+      ensureLayoutDataLoaded().then(() => setLayoutLoaded(true));
+    });
+  }, []);
 
   // Load verses asynchronously using Server Action
   useEffect(() => {
@@ -85,7 +90,9 @@ export default function QuranReader({
       const { fetchSurahVerses } = await import("@/app/actions/get-verses");
       const data = await fetchSurahVerses(surahNumber);
       if (active) {
-        setVerses(data);
+        setVerses(data.verses);
+        setTranslations(data.translations);
+        setTransliterations(data.transliterations);
         setLoadingVerses(false);
       }
     };
@@ -106,13 +113,10 @@ export default function QuranReader({
       ? fontSize * 0.80 // Scaled down slightly to fit the new compact 530px container width
       : fontSize * 0.92; // Scaled down slightly for V1 as well to make it compact
   const displayFontSize =
-    viewMode === "spread"
-      ? baseFontSize * 0.58 // Adjusted spread scaling
-      : viewMode === "page"
-        ? baseFontSize * 0.74 // Make page mode font size bigger (0.74 instead of 0.58)
-        : baseFontSize;
-  const displayLineHeight =
-    viewMode === "spread" ? 1.75 : viewMode === "page" ? 1.75 : 2.2;
+    viewMode === "page"
+      ? baseFontSize * 0.74 // Make page mode font size bigger (0.74 instead of 0.58)
+      : baseFontSize;
+  const displayLineHeight = viewMode === "page" ? 1.62 : 2.0;
 
   // ── UI State ──────────────────────────────────────
   const [toast, setToast] = useState<string | null>(null);
@@ -156,9 +160,18 @@ export default function QuranReader({
   const [lastKeys, setLastKeys] = useState({ juz: "", hizb: "", rub: "" });
   const [pageMapping, setPageMapping] = useState<Record<string, number>>({});
 
-  // ── Effects ───────────────────────────────────────
-
   useEffect(() => {
+    // 1. Instant load from persistent cache (<5ms)
+    getPersistentCache<any>("quran_all_metadata").then((cached) => {
+      if (cached) {
+        setJuzData(cached.juz);
+        setHizbData(cached.hizb);
+        setRubData(cached.rub);
+        setPageMapping(cached.mapping);
+      }
+    });
+
+    // 2. Fetch fresh data and update persistent cache
     import("@/app/actions/get-all-metadata").then(
       ({ fetchAllQuranSettings }) => {
         fetchAllQuranSettings().then((data) => {
@@ -166,6 +179,7 @@ export default function QuranReader({
           setHizbData(data.hizb);
           setRubData(data.rub);
           setPageMapping(data.mapping);
+          setPersistentCache("quran_all_metadata", data);
         });
       }
     );
@@ -332,66 +346,218 @@ export default function QuranReader({
     }
   }, [visiblePages, onPageChange, onPageSurahsChange, pageMapping]);
 
-  // Load QPC data for all surahs present on the pages containing the current surah
+  // Load QPC data and verses for all surahs present on the pages containing the current surah
   useEffect(() => {
     if (Object.keys(pageMapping).length === 0) return;
 
-    setLoadingQPC(true);
-
-    // 1. Find all pages that contain verses from the current surah
-    const surahPages = new Set<number>();
-    Object.entries(pageMapping).forEach(([key, page]) => {
-      const [s] = key.split(":");
-      if (parseInt(s) === surahNumber) surahPages.add(page);
-    });
-
-    // 2. Find all surahs that have verses on those pages
-    const surahsOnThesePages = new Set<number>();
-    Object.entries(pageMapping).forEach(([key, page]) => {
-      if (surahPages.has(page)) {
-        const [s] = key.split(":");
-        surahsOnThesePages.add(parseInt(s));
-      }
-    });
-
-    // 3. For spread mode, we also want the neighboring pages' surahs
-    if (viewMode === "spread") {
-      const minPage = Math.min(...Array.from(surahPages));
-      const maxPage = Math.max(...Array.from(surahPages));
-      const neighboringPages = [minPage - 1, maxPage + 1];
+    const loadQPCAndVerses = async () => {
+      // 1. Find all pages that contain verses from the current surah
+      const surahPages = new Set<number>();
       Object.entries(pageMapping).forEach(([key, page]) => {
-        if (neighboringPages.includes(page)) {
+        const [s] = key.split(":");
+        if (parseInt(s) === surahNumber) surahPages.add(page);
+      });
+
+      // 2. Find all surahs that have verses on those pages
+      const surahsOnThesePages = new Set<number>();
+      Object.entries(pageMapping).forEach(([key, page]) => {
+        if (surahPages.has(page)) {
           const [s] = key.split(":");
           surahsOnThesePages.add(parseInt(s));
         }
       });
-    }
 
-    const surahsToLoad = Array.from(surahsOnThesePages).filter(
-      (n) => n >= 1 && n <= 114
-    );
+      const surahsToLoad = Array.from(surahsOnThesePages).filter(
+        (n) => n >= 1 && n <= 114
+      );
 
-    Promise.all(
-      surahsToLoad.map((n) => fetchSurahQPCData(n, settings.mushafLayout))
-    ).then((results) => {
-      const map: Record<string, QPCVerseData> = {};
-      results.forEach((surahData) => {
-        surahData.forEach((d) => {
-          const [s, v] = d.id.split(":");
-          map[`${s}-${v}`] = d;
+      const layout = settings.mushafLayout;
+
+      // 1. Check in-memory cache and IndexedDB cache for all required surahs
+      await Promise.all(
+        surahsToLoad.map(async (n) => {
+          const cacheKey = `${layout}-${n}`;
+          if (!qpcCache[cacheKey]) {
+            const cachedQPC = await getPersistentCache<QPCVerseData[]>(`qpc_v9_${cacheKey}`);
+            if (cachedQPC) qpcCache[cacheKey] = cachedQPC;
+          }
+          if (!versesCache[n]) {
+            const cachedPayload = await getPersistentCache<{
+              verses: QuranVerse[];
+              translations: Record<string, string>;
+              transliterations: Record<string, string>;
+            }>(`verses_${n}`);
+            if (cachedPayload) {
+              versesCache[n] = cachedPayload.verses;
+              translationsCache[n] = cachedPayload.translations;
+              transliterationsCache[n] = cachedPayload.transliterations;
+            }
+          }
+        })
+      );
+
+      // Check if all surahs to load are now available
+      const allCached = surahsToLoad.every(
+        (n) => qpcCache[`${layout}-${n}`] && versesCache[n]
+      );
+
+      let qpcResults: QPCVerseData[][];
+      let versesResults: { verses: QuranVerse[]; translations: Record<string, string>; transliterations: Record<string, string> }[];
+
+      if (allCached) {
+        // Instant load from memory / IndexedDB cache (< 5ms) - ZERO delay!
+        qpcResults = surahsToLoad.map((n) => qpcCache[`${layout}-${n}`]);
+        versesResults = surahsToLoad.map((n) => ({
+          verses: versesCache[n],
+          translations: translationsCache[n] || {},
+          transliterations: transliterationsCache[n] || {},
+        }));
+      } else {
+        setLoadingQPC(true);
+
+        const { fetchSurahVerses } = await import("@/app/actions/get-verses");
+
+        // Fetch each surah, checking cache first to avoid duplicate network calls
+        const qpcPromises = surahsToLoad.map(async (n) => {
+          const cacheKey = `${layout}-${n}`;
+          if (qpcCache[cacheKey]) return qpcCache[cacheKey];
+          const data = await fetchSurahQPCData(n, layout);
+          qpcCache[cacheKey] = data;
+          setPersistentCache(`qpc_v9_${cacheKey}`, data);
+          return data;
         });
+
+        const versesPromises = surahsToLoad.map(async (n) => {
+          if (versesCache[n]) {
+            return {
+              verses: versesCache[n],
+              translations: translationsCache[n] || {},
+              transliterations: transliterationsCache[n] || {},
+            };
+          }
+          const payload = await fetchSurahVerses(n);
+          versesCache[n] = payload.verses;
+          translationsCache[n] = payload.translations;
+          transliterationsCache[n] = payload.transliterations;
+          setPersistentCache(`verses_${n}`, payload);
+          return payload;
+        });
+
+        [qpcResults, versesResults] = await Promise.all([
+          Promise.all(qpcPromises),
+          Promise.all(versesPromises),
+        ]);
+      }
+
+      const map: Record<string, QPCVerseData> = {};
+      qpcResults.forEach((surahData) => {
+        if (Array.isArray(surahData)) {
+          surahData.forEach((d) => {
+            if (d && d.id) {
+              const parts = d.id.includes(":") ? d.id.split(":") : d.id.split("-");
+              const s = parts[0];
+              const v = parts[1];
+              map[`${s}-${v}`] = d;
+            }
+          });
+        }
       });
       setQpcData(map);
       setLoadingQPC(false);
 
-      const initialData = results.find(
+      // Background prefetch adjacent surahs in idle time
+      if (typeof window !== "undefined") {
+        const prefetchAdjacent = async () => {
+          const neighbors = [surahNumber + 1, surahNumber - 1].filter(
+            (n) => n >= 1 && n <= 114
+          );
+          const { fetchSurahVerses } = await import("@/app/actions/get-verses");
+          for (const n of neighbors) {
+            const cacheKey = `${layout}-${n}`;
+            if (!qpcCache[cacheKey]) {
+              const cached = await getPersistentCache<QPCVerseData[]>(`qpc_${cacheKey}`);
+              if (!cached) {
+                fetchSurahQPCData(n, layout).then((data) => {
+                  qpcCache[cacheKey] = data;
+                  setPersistentCache(`qpc_${cacheKey}`, data);
+                });
+              } else {
+                qpcCache[cacheKey] = cached;
+              }
+            }
+            if (!versesCache[n]) {
+              const cached = await getPersistentCache<any>(`verses_${n}`);
+              if (!cached) {
+                fetchSurahVerses(n).then((payload) => {
+                  versesCache[n] = payload.verses;
+                  translationsCache[n] = payload.translations;
+                  transliterationsCache[n] = payload.transliterations;
+                  setPersistentCache(`verses_${n}`, payload);
+                });
+              } else {
+                versesCache[n] = cached.verses;
+                translationsCache[n] = cached.translations;
+                transliterationsCache[n] = cached.transliterations;
+              }
+            }
+          }
+        };
+
+        if ("requestIdleCallback" in window) {
+          (window as any).requestIdleCallback(() => prefetchAdjacent());
+        } else {
+          setTimeout(prefetchAdjacent, 1000);
+        }
+      }
+
+      const combinedVerses = versesResults.flatMap((payload, idx) => {
+        const sNum = surahsToLoad[idx];
+        return payload.verses.map((v) => ({
+          ...v,
+          chapter: sNum,
+          verseKey: `${sNum}-${v.verse}`,
+        }));
+      });
+      setAllActiveVerses(combinedVerses);
+
+      const initialData = qpcResults.find(
         (_, idx) => surahsToLoad[idx] === surahNumber
       );
       if (initialData && initialData.length > 0) {
         const firstPage = initialData[0]?.page;
         if (firstPage) setVisiblePages(new Set([firstPage]));
       }
-    });
+
+      // Background prefetching of adjacent surahs (+1 and -1)
+      const adjacentSurahs = [surahNumber - 1, surahNumber + 1].filter(
+        (n) => n >= 1 && n <= 114 && (!qpcCache[`${layout}-${n}`] || !versesCache[n])
+      );
+
+      if (adjacentSurahs.length > 0) {
+        const { fetchSurahVerses } = await import("@/app/actions/get-verses");
+        adjacentSurahs.forEach(async (n) => {
+          try {
+            const cacheKey = `${layout}-${n}`;
+            if (!qpcCache[cacheKey]) {
+              fetchSurahQPCData(n, layout).then((data) => {
+                qpcCache[cacheKey] = data;
+              });
+            }
+            if (!versesCache[n]) {
+              fetchSurahVerses(n).then((payload) => {
+                versesCache[n] = payload.verses;
+                translationsCache[n] = payload.translations;
+                transliterationsCache[n] = payload.transliterations;
+              });
+            }
+          } catch (e) {
+            console.error("Failed to prefetch adjacent surah:", n, e);
+          }
+        });
+      }
+    };
+
+    loadQPCAndVerses();
   }, [surahNumber, viewMode, pageMapping, settings.mushafLayout]);
 
   // IntersectionObserver – track visible pages
@@ -439,17 +605,18 @@ export default function QuranReader({
     surahPages.add(1); // ALWAYS load page 1 for Basmalah typography
     Object.values(qpcData).forEach((v) => {
       const [sNum] = v.id.split(":");
-      if (v.page && parseInt(sNum) === surahNumber) surahPages.add(v.page);
+      if (v.page && parseInt(sNum) === surahNumber) {
+        surahPages.add(v.page);
+        if (v.page % 2 === 1) {
+          surahPages.add(v.page + 1);
+        } else {
+          surahPages.add(Math.max(1, v.page - 1));
+        }
+      }
     });
 
-    const targetPages = Array.from(surahPages);
+    const targetPages = Array.from(surahPages).sort((a, b) => a - b);
     if (targetPages.length === 0) {
-      setFontsLoaded(true);
-      return;
-    }
-
-    const pagesToLoad = targetPages.filter((p) => !loadedPages.has(p));
-    if (pagesToLoad.length === 0) {
       setFontsLoaded(true);
       return;
     }
@@ -457,22 +624,50 @@ export default function QuranReader({
     let cancelled = false;
 
     const checkFonts = async () => {
-      const promises = pagesToLoad.map((page) =>
-        document.fonts.load(`16px "QPC_Page_${page}"`)
-      );
+      // Prioritize the visible pages for this view mode (first 2-3 pages + page 1)
+      const initialPages = targetPages.slice(0, 4);
+      const initialToLoad = initialPages.filter((p) => !loadedPages.has(p));
 
-      // Safety timeout — never block loading for more than 3 seconds
-      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 3000));
+      if (initialToLoad.length === 0) {
+        setFontsLoaded(true);
+      } else {
+        const initialPromises = initialToLoad.map((page) =>
+          document.fonts.load(`16px "QPC_Page_${page}"`)
+        );
 
-      try {
-        await Promise.race([Promise.all(promises), timeout]);
-      } catch {
-        // Ignore font loading errors
+        // Fast safety timeout of 400ms so skeleton never hangs
+        const timeout = new Promise<void>((resolve) => setTimeout(resolve, 400));
+
+        try {
+          await Promise.race([Promise.all(initialPromises), timeout]);
+        } catch {
+          // Ignore font errors
+        }
+
+        if (!cancelled) {
+          setLoadedPages((prev) => new Set([...prev, ...initialToLoad]));
+          setFontsLoaded(true);
+        }
       }
 
-      if (!cancelled) {
-        setLoadedPages((prev) => new Set([...prev, ...pagesToLoad]));
-        setFontsLoaded(true);
+      // Stream the remaining pages asynchronously in the background
+      const remainingToLoad = targetPages.slice(4).filter((p) => !loadedPages.has(p));
+      if (remainingToLoad.length > 0 && !cancelled) {
+        const loadRest = () => {
+          remainingToLoad.forEach((page) => {
+            document.fonts.load(`16px "QPC_Page_${page}"`).then(() => {
+              if (!cancelled) {
+                setLoadedPages((prev) => new Set([...prev, page]));
+              }
+            });
+          });
+        };
+
+        if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+          (window as any).requestIdleCallback(loadRest);
+        } else {
+          setTimeout(loadRest, 200);
+        }
       }
     };
     checkFonts();
@@ -496,17 +691,22 @@ export default function QuranReader({
     if (!audioSurah) return;
 
     // If audio moved into a DIFFERENT Surah than the one currently displayed,
-    // navigate to that Surah and scroll to the top smoothly.
-    if (audioSurah !== surahNumber && audioSurah === surahNumber + 1) {
-      onNextSurah?.();
-      // Small delay so the new content mounts before scrolling
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 300);
-    }
+    // notify the user and give them an option to switch
+    if (audioSurah !== surahNumber && prevAudioSurahRef.current !== audioSurah) {
+      prevAudioSurahRef.current = audioSurah;
+      const targetSurahInfo = surahs.find((s) => s.number === audioSurah);
+      const targetName = targetSurahInfo
+        ? `Surat ${targetSurahInfo.transliteration}`
+        : `Surah #${audioSurah}`;
 
-    prevAudioSurahRef.current = audioSurah;
-  }, [audioState.currentSurah]); // eslint-disable-line react-hooks/exhaustive-deps
+      setOutstandingNotification({
+        title: "Now Playing",
+        message: `Audio moved to ${targetName}. Click to open.`,
+      });
+    } else if (audioSurah === surahNumber) {
+      prevAudioSurahRef.current = audioSurah;
+    }
+  }, [audioState.currentSurah, surahNumber]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Scroll active verse into view ────────────────────────────────────────────
   useEffect(() => {
@@ -526,12 +726,26 @@ export default function QuranReader({
     Object.values(qpcData).forEach((v) => {
       if (v.page) p.add(v.page);
     });
+
+    // Prefetch adjacent surahs' font pages from pageMapping
+    const adjacentSurahs = [surahNumber - 1, surahNumber + 1];
+    adjacentSurahs.forEach((surahNum) => {
+      if (surahNum >= 1 && surahNum <= 114) {
+        Object.entries(pageMapping).forEach(([key, page]) => {
+          const [s] = key.split(":");
+          if (parseInt(s) === surahNum) {
+            p.add(page);
+          }
+        });
+      }
+    });
+
     return Array.from(p).sort();
-  }, [qpcData]);
+  }, [qpcData, surahNumber, pageMapping]);
 
   const isLoadingPages =
     fontMode === "qpc" &&
-    (loadingQPC || !fontsLoaded);
+    (loadingQPC || !layoutLoaded);
 
   // ── Handlers ──────────────────────────────────────
 
@@ -566,10 +780,8 @@ export default function QuranReader({
     }
   };
 
-  const shareVerse = async (verse: any) => {
-    const translation = (await import("../../../data/translation/en-maarif-ul-quran-simple.json")).default;
-    const englishText =
-      (translation as any)[`${surahNumber}:${verse.verse}`]?.t || "";
+  const shareVerse = (verse: any) => {
+    const englishText = translations[`${surahNumber}:${verse.verse}`] || "";
     setShareVerseData({
       arabic: verse.text,
       english: englishText,
@@ -592,6 +804,9 @@ export default function QuranReader({
     displayFontSize,
     displayLineHeight,
     juzData,
+    pageMapping,
+    translations,
+    transliterations,
     audioCurrentSurah: audioState.currentSurah,
     audioCurrentVerse: audioState.currentVerse,
     audioIsPlaying: audioState.isPlaying,
@@ -615,7 +830,7 @@ export default function QuranReader({
     );
   }
 
-  if (loadingVerses) {
+  if (loadingVerses && viewMode === "verse") {
     return (
       <div className={styles.reader}>
         <QuranPageLoader viewMode={viewMode} />
@@ -623,7 +838,7 @@ export default function QuranReader({
     );
   }
 
-  if (verses.length === 0) {
+  if (!loadingVerses && verses.length === 0) {
     return (
       <div className={styles.error}>
         <h2>No verses found</h2>
@@ -636,9 +851,9 @@ export default function QuranReader({
 
   return (
     <div className={styles.reader}>
-      {/* Skeleton loader for QPC font/data loading (all view modes) */}
+      {/* Skeleton loader for Verse view mode only - Page mode renders in-place with real dimensions */}
       <AnimatePresence>
-        {isLoadingPages && (
+        {isLoadingPages && viewMode === "verse" && (
           <QuranPageLoader viewMode={viewMode} />
         )}
       </AnimatePresence>
@@ -675,24 +890,14 @@ export default function QuranReader({
         />
       )}
 
-      {/* Surah Header removed per user request for single page mode as well */}
-
       {/* Verses */}
       <div className={styles.verses}>
-        {verses.length > 0 ? (
+        {verses.length > 0 || viewMode === "page" || loadingVerses ? (
           <>
-            {/* Page / Spread View */}
-            {(viewMode === "page" || viewMode === "spread") && (
-              <div
-                className={
-                  viewMode === "spread" ? styles.spreadView : styles.pageView
-                }
-              >
-                {viewMode === "spread" ? (
-                  <SpreadView {...sharedViewProps} verses={verses} />
-                ) : (
-                  <PageView {...sharedViewProps} verses={verses} />
-                )}
+            {/* Page View */}
+            {viewMode === "page" && (
+              <div className={styles.pageView}>
+                <PageView {...sharedViewProps} allVerses={allActiveVerses} verses={verses} />
               </div>
             )}
 
@@ -701,17 +906,7 @@ export default function QuranReader({
               <VerseView {...sharedViewProps} verses={verses} />
             )}
 
-            {/* Continuous Next Surah Trigger */}
-            <NextSurahTrigger
-              onNext={surahNumber < 114 ? onNextSurah : undefined}
-              nextSurahNumber={surahNumber + 1}
-              nextSurahName={
-                surahs.find((s) => s.number === surahNumber + 1)?.transliteration
-              }
-              nextSurahNameArabic={
-                surahs.find((s) => s.number === surahNumber + 1)?.name
-              }
-            />
+
           </>
         ) : (
           <div className={styles.noVerses}>

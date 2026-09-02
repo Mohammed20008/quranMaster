@@ -1,10 +1,9 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import styles from "./quran-reader.module.css";
 import { CollapsibleSection } from "./quran-reader-ui";
 import { SharedViewProps } from "./quran-reader.types";
-import translationData from "../../../data/translation/en-maarif-ul-quran-simple.json";
-import transliterationData from "../../../data/translitration/syllables-transliteration.json";
 
 interface VerseViewProps extends SharedViewProps {
   verses: any[];
@@ -19,6 +18,7 @@ export default function VerseView({
   revealedVerses,
   bookmarkedVerses,
   fontMode,
+  mushafLayout,
   displayFontSize,
   audioCurrentSurah,
   audioCurrentVerse,
@@ -31,7 +31,71 @@ export default function VerseView({
   setActiveMutashabihatVerse,
   playVerseAudio,
   verses,
+  translations,
+  transliterations,
 }: VerseViewProps) {
+  const [playingWordKey, setPlayingWordKey] = useState<string | null>(null);
+  const [wordTranslations, setWordTranslations] = useState<
+    Record<string, string[]>
+  >({});
+  const wordAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch(
+      `https://api.quran.com/api/v4/verses/by_chapter/${surahNumber}?words=true&word_fields=translation`
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch words");
+        return res.json();
+      })
+      .then((data) => {
+        if (!isMounted || !data.verses) return;
+        const map: Record<string, string[]> = {};
+        for (const v of data.verses) {
+          map[v.verse_key] = (v.words || [])
+            .filter((w: any) => w.char_type_name === "word")
+            .map((w: any) => w.translation?.text || "");
+        }
+        setWordTranslations(map);
+      })
+      .catch((err) => {
+        console.warn("Could not load word-by-word translations:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [surahNumber]);
+
+  const playWordOnly = (surah: number, verse: number, wordIdx: number) => {
+    const key = `${surah}-${verse}-${wordIdx}`;
+    const pad = (n: number) => n.toString().padStart(3, "0");
+    const wordPosition = wordIdx + 1;
+    const url = `https://audio.qurancdn.com/wbw/${pad(surah)}_${pad(verse)}_${pad(wordPosition)}.mp3`;
+
+    if (wordAudioRef.current) {
+      wordAudioRef.current.pause();
+    }
+
+    const audio = new Audio(url);
+    wordAudioRef.current = audio;
+    setPlayingWordKey(key);
+
+    audio.play().catch((err) => {
+      console.warn("Word audio playback failed, fallback:", err);
+      setPlayingWordKey(null);
+    });
+
+    audio.onended = () => {
+      setPlayingWordKey(null);
+    };
+
+    audio.onerror = () => {
+      setPlayingWordKey(null);
+    };
+  };
+
   return (
     <>
       {verses.map((verse) => {
@@ -68,78 +132,133 @@ export default function VerseView({
               </div>
             )}
 
-            {/* Arabic Text */}
-            <div className={styles.arabicText}>
-              {fontMode === "qpc" &&
-              (loadingQPC || !qpcData[verseId] || !fontsLoaded) ? (
-                <div className={styles.skeletonVerse}>
-                  <div
-                    className={styles.skeletonLine}
-                    style={{ width: "95%" }}
-                  />
-                  <div
-                    className={styles.skeletonLine}
-                    style={{ width: "80%" }}
-                  />
-                  <div
-                    className={styles.skeletonLine}
-                    style={{ width: "70%" }}
-                  />
-                </div>
-              ) : (
-                <p
-                  className={
-                    fontMode === "qpc"
-                      ? `qpc-page-${qpcData[verseId]?.page || 0}`
-                      : "arabic-text"
-                  }
-                  style={{
-                    fontSize: `${displayFontSize}px`,
-                    lineHeight: "2",
-                    marginBottom: "0",
-                    textAlign: "right",
-                    direction: "rtl",
-                    fontFamily:
+            {/* Arabic Text with Word Hover Translation & Click Audio */}
+            <div className={styles.verseTextContainer}>
+              <div className={styles.arabicText}>
+                {fontMode === "qpc" &&
+                (loadingQPC || !fontsLoaded || !qpcData[verseId]) ? (
+                  <div className={styles.skeletonVerse}>
+                    <div
+                      className={styles.skeletonLine}
+                      style={{ width: "95%" }}
+                    />
+                    <div
+                      className={styles.skeletonLine}
+                      style={{ width: "80%" }}
+                    />
+                    <div
+                      className={styles.skeletonLine}
+                      style={{ width: "70%" }}
+                    />
+                  </div>
+                ) : (
+                  <p
+                    className={
                       fontMode === "qpc"
-                        ? "inherit"
-                        : "'Uthmanic Hafs', var(--font-arabic)",
-                  }}
-                >
-                  {fontMode === "qpc" && qpcData[verseId]
-                    ? qpcData[verseId].words.map((w: any) => (
-                        <span key={w.id}>{w.text} </span>
-                      ))
-                    : verse.text}
-                </p>
-              )}
+                        ? `qpc-page-${qpcData[verseId]?.page || 0}`
+                        : "arabic-text"
+                    }
+                    style={{
+                      fontSize: `${displayFontSize}px`,
+                      lineHeight: "2.3",
+                      marginBottom: "0",
+                      textAlign: "right",
+                      direction: "rtl",
+                      fontFamily:
+                        fontMode === "qpc"
+                          ? "inherit"
+                          : "'Uthmanic Hafs', var(--font-arabic)",
+                    }}
+                  >
+                    {fontMode === "qpc" && qpcData[verseId]
+                      ? qpcData[verseId].words.map((w: any, wIdx: number) => {
+                          const wordKey = `${surahNumber}-${verse.verse}-${wIdx}`;
+                          const translation =
+                            wordTranslations[`${surahNumber}:${verse.verse}`]?.[
+                              wIdx
+                            ] || "";
+                          const isPlayingWord = playingWordKey === wordKey;
+
+                          return (
+                            <span
+                              key={w.id || wIdx}
+                              className={`${styles.verseWord} ${isPlayingWord ? styles.wordPlaying : ""}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                playWordOnly(surahNumber, verse.verse, wIdx);
+                              }}
+                              title={
+                                translation
+                                  ? `Click to listen • "${translation}"`
+                                  : "Click to listen"
+                              }
+                            >
+                              {w.text}
+                              {mushafLayout !== "v1" ? " " : "\u200B"}
+                              {translation && (
+                                <span
+                                  className={styles.wordTranslationTooltip}
+                                >
+                                  {translation}
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })
+                      : verse.text.split(" ").map((w: string, wIdx: number) => {
+                          const wordKey = `${surahNumber}-${verse.verse}-${wIdx}`;
+                          const translation =
+                            wordTranslations[`${surahNumber}:${verse.verse}`]?.[
+                              wIdx
+                            ] || "";
+                          const isPlayingWord = playingWordKey === wordKey;
+
+                          return (
+                            <span
+                              key={wIdx}
+                              className={`${styles.verseWord} ${isPlayingWord ? styles.wordPlaying : ""}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                playWordOnly(surahNumber, verse.verse, wIdx);
+                              }}
+                              title={
+                                translation
+                                  ? `Click to listen • "${translation}"`
+                                  : "Click to listen"
+                              }
+                            >
+                              {w}{" "}
+                              {translation && (
+                                <span
+                                  className={styles.wordTranslationTooltip}
+                                >
+                                  {translation}
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Translation and Transliteration */}
             <div className={styles.verseTranslations}>
-              {(transliterationData as any)[
-                `${surahNumber}:${verse.verse}`
-              ] && (
+              {transliterations[`${surahNumber}:${verse.verse}`] && (
                 <CollapsibleSection title="Transliteration">
                   <div className={styles.transliteration}>
                     <p>
-                      {
-                        (transliterationData as any)[
-                          `${surahNumber}:${verse.verse}`
-                        ]
-                      }
+                      {transliterations[`${surahNumber}:${verse.verse}`]}
                     </p>
                   </div>
                 </CollapsibleSection>
               )}
-              {(translationData as any)[`${surahNumber}:${verse.verse}`]?.t && (
+              {translations[`${surahNumber}:${verse.verse}`] && (
                 <CollapsibleSection title="Translation">
                   <div className={styles.translation}>
                     <p>
-                      {
-                        (translationData as any)[
-                          `${surahNumber}:${verse.verse}`
-                        ]?.t
-                      }
+                      {translations[`${surahNumber}:${verse.verse}`]}
                     </p>
                   </div>
                 </CollapsibleSection>

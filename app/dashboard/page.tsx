@@ -505,13 +505,31 @@ export default function Dashboard() {
                         <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                       </svg>
                     </div>
-                    <span className={styles.settingLabel}>Dark Mode</span>
+                    <span className={styles.settingLabel}>
+                      {settings.theme === 'light' ? 'Light Theme' : settings.theme === 'sepia' ? 'Sepia Theme' : 'Dark Theme'}
+                    </span>
                   </div>
                   <button 
-                    onClick={() => updateSettings({ theme: settings.theme === 'light' ? 'dark' : 'light' })}
-                    className={`${styles.toggle} ${settings.theme === 'dark' ? styles.toggleOn : styles.toggleOff}`}
+                    onClick={() => {
+                      const newTheme = settings.theme === 'light' ? 'sepia' : settings.theme === 'sepia' ? 'dark' : 'light';
+                      updateSettings({ theme: newTheme });
+                    }}
+                    className={`${styles.toggle} ${
+                      settings.theme === 'dark' 
+                        ? styles.toggleOn 
+                        : settings.theme === 'sepia' 
+                          ? styles.toggleSepia 
+                          : styles.toggleOff
+                    }`}
+                    title="Toggle Theme"
                   >
-                    <div className={`${styles.toggleThumb} ${settings.theme === 'dark' ? styles.toggleThumbOn : styles.toggleThumbOff}`} />
+                    <div className={`${styles.toggleThumb} ${
+                      settings.theme === 'dark' 
+                        ? styles.toggleThumbOn 
+                        : settings.theme === 'sepia' 
+                          ? styles.toggleThumbSepia 
+                          : styles.toggleThumbOff
+                    }`} />
                   </button>
                 </div>
 

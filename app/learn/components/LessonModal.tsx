@@ -307,7 +307,7 @@ export default function LessonModal({
 
                       <div className={styles.shapesGrid}>
                         <div 
-                          className={`${styles.shapeCard} ${selectedShapeType === 'isolated' ? styles.shapeCardActive : ''}`}
+                          className={`${styles.shapeCard} ${styles.isolated} ${selectedShapeType === 'isolated' ? styles.shapeCardActive : ''}`}
                           onClick={() => setSelectedShapeType('isolated')}
                           style={{ borderRadius: '20px', padding: '1.5rem' }}
                         >
@@ -321,7 +321,7 @@ export default function LessonModal({
                         {!activeLesson.alphabetData.letterDetails[selectedAlphabetLetter].shapes.isNonConnecting && (
                           <>
                             <div 
-                              className={`${styles.shapeCard} ${selectedShapeType === 'initial' ? styles.shapeCardActive : ''}`}
+                              className={`${styles.shapeCard} ${styles.initial} ${selectedShapeType === 'initial' ? styles.shapeCardActive : ''}`}
                               onClick={() => setSelectedShapeType('initial')}
                               style={{ borderRadius: '20px', padding: '1.5rem' }}
                             >
@@ -333,7 +333,7 @@ export default function LessonModal({
                             </div>
 
                             <div 
-                              className={`${styles.shapeCard} ${selectedShapeType === 'medial' ? styles.shapeCardActive : ''}`}
+                              className={`${styles.shapeCard} ${styles.medial} ${selectedShapeType === 'medial' ? styles.shapeCardActive : ''}`}
                               onClick={() => setSelectedShapeType('medial')}
                               style={{ borderRadius: '20px', padding: '1.5rem' }}
                             >
@@ -347,7 +347,7 @@ export default function LessonModal({
                         )}
 
                         <div 
-                          className={`${styles.shapeCard} ${selectedShapeType === 'final' ? styles.shapeCardActive : ''}`}
+                          className={`${styles.shapeCard} ${styles.final} ${selectedShapeType === 'final' ? styles.shapeCardActive : ''}`}
                           onClick={() => setSelectedShapeType('final')}
                           style={{ borderRadius: '20px', padding: '1.5rem' }}
                         >
@@ -431,8 +431,12 @@ export default function LessonModal({
                             <div className={styles.illustrationArabic} style={{ fontSize: '3.5rem', marginBottom: '0.75rem', color: 'var(--foreground)' }}>
                               {activeArab}
                             </div>
-                            <div className={styles.illustrationEnglish} style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--foreground-secondary)' }}>
+                            <div className={styles.illustrationEnglish} style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--foreground-secondary)', marginBottom: '1rem' }}>
                               Example: <span style={{ color: 'var(--foreground)' }}>{activeWord}</span> ({activeTrans})
+                            </div>
+
+                            <div className={styles.pronouncePrompt}>
+                              🗣️ Say it out loud: <strong>{activeArab}</strong>!
                             </div>
                           </div>
                         );
@@ -581,10 +585,15 @@ export default function LessonModal({
                           <div className={styles.illustrationArabic} style={{ fontSize: '3.5rem', marginBottom: '0.75rem', color: 'var(--foreground)' }}>
                             {currentVowelData.exampleArabic}
                           </div>
-                          <div className={styles.illustrationEnglish} style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--foreground-secondary)' }}>
+                          <div className={styles.illustrationEnglish} style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--foreground-secondary)', marginBottom: '1rem' }}>
                             Example: <span style={{ color: 'var(--foreground)' }}>{currentVowelData.exampleWord}</span> ({currentVowelData.exampleTranslation})
                           </div>
-                          <span style={{ marginTop: '1.5rem', fontSize: '0.9rem', fontWeight: '800', color: 'var(--primary)', background: 'rgba(198,147,32,0.08)', padding: '0.45rem 1rem', borderRadius: '50px', border: '1px solid rgba(198,147,32,0.15)' }}>
+
+                          <div className={styles.pronouncePrompt} style={{ marginBottom: '1.5rem' }}>
+                            🗣️ Pronounce: <strong>{currentVowelData.letterApplied}</strong> makes the sound <strong>"{currentVowelData.sound}"</strong>!
+                          </div>
+
+                          <span style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--primary)', background: 'rgba(198,147,32,0.08)', padding: '0.45rem 1rem', borderRadius: '50px', border: '1px solid rgba(198,147,32,0.15)' }}>
                             Vowel applied: {currentVowelData.letterApplied} (Pronounced: "{currentVowelData.sound}")
                           </span>
                         </div>
@@ -661,7 +670,9 @@ export default function LessonModal({
                           key={i} 
                           onClick={() => setCurrentSlideIndex(i)}
                           className={`${styles.dot} ${i === currentSlideIndex ? styles.dotActive : ''}`}
-                        />
+                        >
+                          ★
+                        </span>
                       ))}
                     </div>
 

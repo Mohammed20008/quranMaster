@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import canvasConfetti from 'canvas-confetti';
 
@@ -10,6 +11,7 @@ import styles from './learn.module.css';
 import { SectionData, LessonData, UserProgress, QuizQuestion } from './types';
 import { INITIAL_LEARNING_SECTIONS } from './data/curriculum';
 import { useTeachers } from '@/app/context/teacher-context';
+import GeometricPattern from '@/app/components/ui/geometric-pattern';
 
 // Import newly externalized modular components
 import UserProgressBanner from './components/UserProgressBanner';
@@ -17,15 +19,21 @@ import SectionTimeline from './components/SectionTimeline';
 import LessonModal from './components/LessonModal';
 import QuizModal from './components/QuizModal';
 import TeacherMarketplace from './components/TeacherMarketplace';
+import GamesArcade from './components/GamesArcade';
 
 const BookingModal = dynamic(() => import('./booking-modal'), { 
   ssr: false,
   loading: () => null 
 });
 
-export default function LearnPage() {
+interface LearnPageProps {
+  subject?: string;
+}
+
+export default function LearnPage({ subject }: LearnPageProps = {}) {
+  const router = useRouter();
   // Navigation & View Toggles
-  const [activeTab, setActiveTab] = useState<'path' | 'teachers'>('path');
+  const [activeTab, setActiveTab] = useState<'path' | 'teachers' | 'games'>('path');
   const [selectedSection, setSelectedSection] = useState<SectionData | null>(null);
   const [selectedLevelKey, setSelectedLevelKey] = useState<'explorer' | 'adventure' | 'master' | null>(null);
 
@@ -38,6 +46,19 @@ export default function LearnPage() {
 
   // Load Curriculum state (respecting custom LocalStorage modifications from architect)
   const [learningSections, setLearningSections] = useState<SectionData[]>(INITIAL_LEARNING_SECTIONS);
+
+  // Resolve initial selected section based on subject parameter
+  const initialSection = useMemo(() => {
+    if (!subject) return null;
+    const normalized = subject.toLowerCase();
+    const targetId = normalized === 'aqida' ? 'aqidah' : normalized;
+    return learningSections.find(s => s.id === targetId) || null;
+  }, [subject, learningSections]);
+
+  // Sync selectedSection state when the deep-link subject changes
+  useEffect(() => {
+    setSelectedSection(initialSection);
+  }, [initialSection]);
 
   // Studying states
   const [activeLesson, setActiveLesson] = useState<LessonData | null>(null);
@@ -366,7 +387,9 @@ export default function LearnPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${selectedSection ? styles.hasBackground : ''}`} style={{ position: 'relative', overflowX: 'hidden' }}>
+      {!selectedSection && <GeometricPattern showOverlay={false} fixed={true} />}
+      {selectedSection && <div className={styles.parallaxBg} />}
       
       {/* Top Breadcrumb & Architect Jump links */}
       <div className={styles.architectBar}>
@@ -410,7 +433,13 @@ export default function LearnPage() {
           📚 Self-Paced Curriculum
         </button>
         <button 
-          onClick={() => setActiveTab('teachers')}
+          onClick={() => { setActiveTab('games'); setSelectedSection(null); setSelectedLevelKey(null); }}
+          className={`${styles.tabButton} ${activeTab === 'games' ? styles.tabButtonActive : ''}`}
+        >
+          🎮 Play & Learn Arcade
+        </button>
+        <button 
+          onClick={() => { setActiveTab('teachers'); setSelectedSection(null); setSelectedLevelKey(null); }}
           className={`${styles.tabButton} ${activeTab === 'teachers' ? styles.tabButtonActive : ''}`}
         >
           🎓 Certified Teachers
@@ -452,7 +481,11 @@ export default function LearnPage() {
                     <motion.div
                       key={section.id}
                       className={section.id === 'arabic' ? `${styles.sectionCard} ${styles.sectionCardArabic}` : styles.sectionCard}
-                      onClick={() => setSelectedSection(section)}
+                      onClick={() => {
+                        setSelectedSection(section);
+                        const subjectSlug = section.id === 'aqidah' ? 'aqida' : section.id;
+                        router.push(`/learn/${subjectSlug}`);
+                      }}
                       initial={{ opacity: 0, y: 20 }}
                       whileHover={{ y: -6, scale: 1.01 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -485,7 +518,11 @@ export default function LearnPage() {
               styles={styles}
               userProgress={userProgress}
               getLevelStatus={getLevelStatus}
-              onBack={() => { setSelectedSection(null); setSelectedLevelKey(null); }}
+              onBack={() => {
+                setSelectedSection(null);
+                setSelectedLevelKey(null);
+                router.push('/learn');
+              }}
               onStartLesson={(lesson, levelKey) => {
                 setActiveLesson(lesson);
                 setSelectedLevelKey(levelKey);
@@ -503,6 +540,22 @@ export default function LearnPage() {
               onStartUnlockQuiz={startUnlockQuiz}
             />
           )}
+        </motion.div>
+      )}
+      {/* Tab: Games Arcade */}
+      {activeTab === 'games' && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+          <GamesArcade
+            styles={styles}
+            userProgress={userProgress}
+            onAwardXp={(xpAmount) => {
+              const newXp = (userProgress?.xp || 0) + xpAmount;
+              saveProgress({
+                ...userProgress,
+                xp: newXp,
+              });
+            }}
+          />
         </motion.div>
       )}
 

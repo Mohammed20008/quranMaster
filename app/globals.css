@@ -9,33 +9,46 @@
   font-display: swap;
 }
 
-:root {
-  /* Premium Theme: White, Black, Gold */
-  --background: #ffffff;
-  --background-secondary: #fafafa;
-  --foreground: #000000;
-  --foreground-secondary: #333333;
+/* Custom Surah Name Icon Font from mobile app */
+@font-face {
+  font-family: "surah-name-v2-icon";
+  src: url("/fonts/surah-name-v2.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
-  /* Primary Colors - Luxury Gold */
-  --primary: #c69320; /* Deep Gold */
-  --primary-light: #ebcf74; /* Soft Gold */
-  --primary-dark: #926c15; /* Antique Gold */
-  --primary-gradient: linear-gradient(135deg, #c69320 0%, #926c15 100%);
+:root {
+  /* Premium Theme: Soft Paper White, Dark Charcoal, Vivid Gold */
+  --background: #faf8f5;
+  --background-secondary: #f3efe9;
+  --background-rgb: 250, 248, 245;
+  --foreground: #1a1a1a;
+  --foreground-secondary: #7f8c8d;
+
+  /* Primary Colors - Vivid Radiant Gold */
+  --primary: #d99b26;
+  /* Radiant Gold */
+  --primary-light: #fde392;
+  /* Luminous Champagne Gold */
+  --primary-dark: #9e6308;
+  /* Deep Antique Bronze Gold */
+  --primary-gradient: linear-gradient(135deg, #f0af32 0%, #d99b26 50%, #a46708 100%);
 
   /* Accent Colors */
-  --accent-gold: #c69320;
-  --accent-black: #000000;
-  --accent-white: #ffffff;
+  --accent-gold: #d99b26;
+  --accent-black: #1a1a1a;
+  --accent-white: #faf8f5;
 
   /* UI Colors */
-  --border: #e5e5e5;
-  --border-light: #f4f4f4;
-  --card-bg: #ffffff;
-  --card-border: rgba(198, 147, 32, 0.2);
+  --border: #e8debe;
+  --border-light: #f4edd4;
+  --card-bg: #faf8f5;
+  --card-border: rgba(217, 155, 38, 0.3);
 
   /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(198, 147, 32, 0.2);
+  --glass-bg: rgba(250, 248, 245, 0.9);
+  --glass-border: rgba(217, 155, 38, 0.25);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
 
   /* Shadows - Soft & Luxurious */
@@ -53,58 +66,58 @@
   --font-arabic-alt: "Amiri", "Cairo", sans-serif;
 }
 
-/* Manual theme control only */
-[data-theme="dark"] {
-  /* Dark Theme: Deep Black & Gold */
-  --background: #050505;
-  --background-secondary: #0a0a0a;
-  --foreground: #ffffff;
-  --foreground-secondary: #a1a1aa;
+[data-theme="sepia"] {
+  /* Rich Cream-Sepia Theme */
+  --background: #f7e6c9;
+  --background-secondary: #efe0c0;
+  --background-rgb: 247, 230, 201;
+  --foreground: #1c120c;
+  --foreground-secondary: #8b6c56;
 
-  --primary: #d4af37;
-  --primary-light: #f3e5ab;
-  --primary-dark: #b59410;
-  --primary-gradient: linear-gradient(135deg, #d4af37 0%, #aa8929 100%);
+  --primary: #c98a18;
+  --primary-light: #fad986;
+  --primary-dark: #8f5407;
+  --primary-gradient: linear-gradient(135deg, #df9c22 0%, #c98a18 50%, #8f5407 100%);
 
-  --accent-gold: #d4af37;
+  --accent-gold: #c98a18;
 
-  --border: #27272a;
-  --border-light: #18181b;
-  --card-bg: #0a0a0a;
-  --card-border: rgba(212, 175, 55, 0.25);
+  --border: #dec696;
+  --border-light: #e8d4ac;
+  --card-bg: #f7e6c9;
+  --card-border: rgba(201, 138, 24, 0.3);
 
-  --glass-bg: rgba(0, 0, 0, 0.7);
-  --glass-border: rgba(212, 175, 55, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  --glass-bg: rgba(247, 230, 201, 0.9);
+  --glass-border: rgba(201, 138, 24, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(28, 18, 12, 0.05);
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
+  --shadow-sm: 0 1px 2px 0 rgba(28, 18, 12, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(28, 18, 12, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(28, 18, 12, 0.15);
+  --shadow-xl: 0 20px 25px -5px rgba(28, 18, 12, 0.2);
 }
 
-/* Dark theme via manual toggle */
 [data-theme="dark"] {
-  /* Dark Theme: Deep Black & Gold */
-  --background: #050505;
-  --background-secondary: #0a0a0a;
-  --foreground: #ffffff;
-  --foreground-secondary: #a1a1aa;
+  /* Dark Theme: Deep Black & Vivid Gold */
+  --background: #121416;
+  --background-secondary: #000101;
+  --background-rgb: 18, 20, 22;
+  --foreground: #f0e2be;
+  --foreground-secondary: #b5aa88;
 
-  --primary: #d4af37;
-  --primary-light: #f3e5ab;
-  --primary-dark: #b59410;
-  --primary-gradient: linear-gradient(135deg, #d4af37 0%, #aa8929 100%);
+  --primary: #e8b835;
+  --primary-light: #ffeaa1;
+  --primary-dark: #ba8611;
+  --primary-gradient: linear-gradient(135deg, #f7cb4d 0%, #e8b835 50%, #b37e09 100%);
 
-  --accent-gold: #d4af37;
+  --accent-gold: #e8b835;
 
-  --border: #27272a;
-  --border-light: #18181b;
-  --card-bg: #0a0a0a;
-  --card-border: rgba(212, 175, 55, 0.25);
+  --border: #343739;
+  --border-light: #232527;
+  --card-bg: #121416;
+  --card-border: rgba(232, 184, 53, 0.32);
 
-  --glass-bg: rgba(0, 0, 0, 0.7);
-  --glass-border: rgba(212, 175, 55, 0.2);
+  --glass-bg: rgba(18, 20, 22, 0.9);
+  --glass-border: rgba(232, 184, 53, 0.25);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -152,14 +165,16 @@ h6 {
 
 /* Global Content Offset for Sidebar */
 main {
-  margin-left: 70px; /* Accounts for desktop sidebar width */
+  margin-left: 70px;
+  /* Accounts for desktop sidebar width */
   transition: margin-left 0.3s ease;
 }
 
 @media (max-width: 768px) {
   main {
     margin-left: 0;
-    margin-bottom: 60px; /* Accounts for mobile bottom nav */
+    margin-bottom: 60px;
+    /* Accounts for mobile bottom nav */
   }
 }
 
@@ -180,24 +195,7 @@ main {
   font-weight: 700;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
 
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
-}
 
 /* Utility Classes */
 .glass {
@@ -224,6 +222,7 @@ main {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -234,6 +233,7 @@ main {
     transform: translateX(-100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -245,6 +245,7 @@ main {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -256,6 +257,7 @@ main {
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -263,10 +265,12 @@ main {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -276,6 +280,7 @@ main {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -323,4 +328,25 @@ main {
 ::selection {
   background: var(--primary);
   color: white;
+}
+
+/* Islamic Geometric Pattern Background */
+.patternBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.06;
+  pointer-events: none;
+  overflow: hidden;
+  color: var(--foreground);
+}
+
+.patternBg.fixed {
+  position: fixed;
+}
+
+.patternOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(var(--background-rgb), 0.5), var(--background));
 }

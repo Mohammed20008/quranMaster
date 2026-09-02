@@ -3,11 +3,12 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import LeftMenu from "../components/left-menu/left-menu";
-import Header, { ViewMode } from "../components/header/header";
+import { ViewMode } from "../components/quran-reader/quran-reader.types";
 import QuranReader from "../components/quran-reader/quran-reader";
-import SideControls from "../components/side-controls/side-controls";
+
 import { useUserData } from "@/app/hooks/use-user-data";
 import AudioPlayerBar from "../components/audio/audio-player-bar";
+import GeometricPattern from "../components/ui/geometric-pattern";
 
 function QuranContent() {
   const searchParams = useSearchParams();
@@ -72,7 +73,8 @@ function QuranContent() {
   };
 
   const handleThemeToggle = () => {
-    updateSettings({ theme: settings.theme === "light" ? "dark" : "light" });
+    const newTheme = settings.theme === "light" ? "sepia" : settings.theme === "sepia" ? "dark" : "light";
+    updateSettings({ theme: newTheme });
   };
 
   const handleViewModeChange = (mode: ViewMode) => {
@@ -81,12 +83,17 @@ function QuranContent() {
 
   return (
     <div className="app-container">
+      <GeometricPattern showOverlay={false} fixed={true} />
       {/* Left Menu - Two-tier sidebar */}
       <LeftMenu
         currentSurah={currentSurah}
         onSurahSelect={handleSurahSelect}
         bookmarkedVerses={bookmarks}
         onToggleBookmark={toggleBookmark}
+        currentPage={currentPage}
+        pageContext={pageSurahsContext}
+        onPrevSurah={handlePrevSurah}
+        onNextSurah={handleNextSurah}
       />
 
       {/* Main Content */}
@@ -97,22 +104,8 @@ function QuranContent() {
           transition: "margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
-        {/* Header */}
-        <Header
-          currentSurah={currentSurah}
-          onPrevSurah={handlePrevSurah}
-          onNextSurah={handleNextSurah}
-          onThemeToggle={handleThemeToggle}
-          theme={settings.theme}
-          viewMode={settings.viewMode}
-          onViewModeChange={handleViewModeChange}
-          currentPage={currentPage}
-          pageContext={pageSurahsContext}
-        />
 
         {/* Quran Reader */}
-        <SideControls />
-
         <QuranReader
           surahNumber={currentSurah}
           showTransliteration={settings.showTransliteration}
@@ -133,6 +126,8 @@ function QuranContent() {
         .app-container {
           min-height: 100vh;
           background: var(--background);
+          position: relative;
+          overflow-x: hidden;
         }
 
         .main-content {

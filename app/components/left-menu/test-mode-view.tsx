@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Surah } from '@/types/quran';
-import { getVersesBySurah, QuranVerse } from '@/data/quran-verses';
+import { QuranVerse } from '@/data/quran-verses';
 import styles from './test-mode.module.css';
 
 interface TestModeViewProps {
@@ -70,9 +70,10 @@ export default function TestModeView({ surahs }: TestModeViewProps) {
   };
 
   const startTest = async () => {
-    const allVerses = await getVersesBySurah(config.surahNumber);
+    const { fetchSurahVerses } = await import('@/app/actions/get-verses');
+    const { verses } = await fetchSurahVerses(config.surahNumber);
     // Filter verses based on range
-    const filtered = allVerses.filter(v => v.verse >= config.startVerse && v.verse <= config.endVerse);
+    const filtered = verses.filter(v => v.verse >= config.startVerse && v.verse <= config.endVerse);
     
     if (filtered.length === 0) return;
 

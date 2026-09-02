@@ -1343,9 +1343,9 @@
 }
 
 .goldBadge {
-  background: linear-gradient(135deg, #c69320, #b8860b);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 16px rgba(198, 147, 32, 0.4);
+  background: linear-gradient(135deg, #e8a928, #c98514);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(217, 155, 38, 0.45);
 }
 
 .cardContent {
@@ -1469,21 +1469,21 @@
   font-size: 1.125rem;
   text-decoration: none;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(198, 147, 32, 0.3);
+  box-shadow: 0 10px 30px rgba(217, 155, 38, 0.35);
 }
 
 .cardCta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 15px 40px rgba(198, 147, 32, 0.4);
+  box-shadow: 0 15px 40px rgba(217, 155, 38, 0.45);
 }
 
 .goldCta {
-  background: linear-gradient(135deg, #c69320 0%, #b8860b 100%);
-  box-shadow: 0 10px 30px rgba(198, 147, 32, 0.4);
+  background: linear-gradient(135deg, #e8a928 0%, #c48210 100%);
+  box-shadow: 0 10px 30px rgba(217, 155, 38, 0.45);
 }
 
 .goldCta:hover {
-  box-shadow: 0 15px 50px rgba(198, 147, 32, 0.5);
+  box-shadow: 0 15px 50px rgba(217, 155, 38, 0.6);
 }
 
 :global(.dark) .platformCard {
